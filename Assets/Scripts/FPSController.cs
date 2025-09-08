@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
@@ -14,6 +15,7 @@ public class FPSController : MonoBehaviour
     public float lookXLimit = 45f;
 
     public float interactionRange = 100f;
+    private PlayerInputManager inputActions;
 
 
     Vector3 moveDirection = Vector3.zero;
@@ -31,6 +33,19 @@ public class FPSController : MonoBehaviour
     CharacterController characterController;
     private RaycastHit hit;
 
+    private void Awake()
+    {
+        inputActions = new PlayerInputManager();
+    }
+    private void OnEnable()
+    {
+        inputActions.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Disable();
+    }
     void Start()
     {
         characterController = GetComponent<CharacterController>();
@@ -53,7 +68,7 @@ public class FPSController : MonoBehaviour
         float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetKeyDown(KeyCode.E) && canMove)
+        if (inputActions.Player.Interact.triggered && canMove)
         {
             Ray ray = GameObject.Find("RayCam").GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
             //Debug.DrawRay(ray.origin, transform.forward, Color.green);
