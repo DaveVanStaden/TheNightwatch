@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour
@@ -14,6 +15,7 @@ public class FPSController : MonoBehaviour
     public float lookXLimit = 45f;
 
     public float interactionRange = 100f;
+    private PlayerInputManager inputActions;
 
 
     Vector3 moveDirection = Vector3.zero;
@@ -25,11 +27,25 @@ public class FPSController : MonoBehaviour
     public int currentLayer = 0;
 
     public Interactable lastInteraction;
+    private int interactionCount = 0; 
 
 
     CharacterController characterController;
     private RaycastHit hit;
 
+    private void Awake()
+    {
+        inputActions = new PlayerInputManager();
+    }
+    private void OnEnable()
+    {
+        inputActions.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Disable();
+    }
     void Start()
     {
         characterController = GetComponent<CharacterController>();
@@ -52,7 +68,7 @@ public class FPSController : MonoBehaviour
         float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        if (Input.GetKeyDown(KeyCode.E) && canMove)
+        if (inputActions.Player.Interact.triggered && canMove)
         {
             Ray ray = GameObject.Find("RayCam").GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
             //Debug.DrawRay(ray.origin, transform.forward, Color.green);
@@ -85,42 +101,48 @@ public class FPSController : MonoBehaviour
         }
         if (inView)
         {
-            if (!lastInteraction.busy)
+            if(!lastInteraction == false || interactionCount == 0)
             {
-                if (Input.GetKeyDown(KeyCode.W))
+                if(interactionCount == 0) 
+                    interactionCount++;
+                if (!lastInteraction.busy)
                 {
-                    currentLayer = 1;
-                    StopAllCoroutines();
-                    StartCoroutine(lastInteraction.SetAngle(1));
-                }
-                if (Input.GetKeyDown(KeyCode.A))
-                {
-                    currentLayer = 1;
-                    StopAllCoroutines();
-                    StartCoroutine(lastInteraction.SetAngle(2));
-                }
-                if (Input.GetKeyDown(KeyCode.D))
-                {
-                    currentLayer = 1;
-                    StopAllCoroutines();
-                    StartCoroutine(lastInteraction.SetAngle(3));
-                }
-                if (Input.GetKeyDown(KeyCode.S))
-                {
-                    if (currentLayer >= 1)
+                    if (Input.GetKeyDown(KeyCode.W))
                     {
+                        currentLayer = 1;
                         StopAllCoroutines();
-                        StartCoroutine(lastInteraction.SetAngle(0));
-                        currentLayer--;
+                        StartCoroutine(lastInteraction.SetAngle(1));
                     }
-                    else
+                    if (Input.GetKeyDown(KeyCode.A))
                     {
+                        currentLayer = 1;
                         StopAllCoroutines();
-                        StartCoroutine(lastInteraction.LeaveTheThing());
-                        lastInteraction = null;
+                        StartCoroutine(lastInteraction.SetAngle(2));
+                    }
+                    if (Input.GetKeyDown(KeyCode.D))
+                    {
+                        currentLayer = 1;
+                        StopAllCoroutines();
+                        StartCoroutine(lastInteraction.SetAngle(3));
+                    }
+                    if (Input.GetKeyDown(KeyCode.S))
+                    {
+                        if (currentLayer >= 1)
+                        {
+                            StopAllCoroutines();
+                            StartCoroutine(lastInteraction.SetAngle(0));
+                            currentLayer--;
+                        }
+                        else
+                        {
+                            StopAllCoroutines();
+                            StartCoroutine(lastInteraction.LeaveTheThing());
+                            lastInteraction = null;
+                        }
                     }
                 }
             }
+            
         }
 
         #endregion
