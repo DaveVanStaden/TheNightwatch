@@ -80,6 +80,7 @@ public class Interactable : MonoBehaviour
         player.canMove = true;
         busy = false;
         flashlightRotator.canMove = true;
+        flashlight.SetActive(true);
         yield return null;
     }
 
