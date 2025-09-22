@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: DoorOpen
+  m_Name: Switch2Off
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -19,62 +19,44 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: 90, y: 0, z: 0}
-        inSlope: {x: 790.87415, y: 0, z: 0}
-        outSlope: {x: 790.87415, y: 0, z: 0}
+        value: {x: 0, y: 0, z: -240}
+        inSlope: {x: 0, y: 0, z: -35.929745}
+        outSlope: {x: 0, y: 0, z: -35.929745}
         tangentMode: 0
-        weightedMode: 0
+        weightedMode: 3
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.95452476, y: 0.33333334, z: 0.33333334}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.7383842}
       - serializedVersion: 3
-        time: 0.16666667
-        value: {x: 254.64499, y: 0, z: 0}
-        inSlope: {x: 336.25232, y: 0, z: 0}
-        outSlope: {x: 336.25232, y: 0, z: 0}
+        time: 0.11666667
+        value: {x: 0, y: 0, z: -133}
+        inSlope: {x: 0, y: 0, z: 1723.6582}
+        outSlope: {x: 0, y: 0, z: 757.11206}
         tangentMode: 0
         weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.1914242}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.09153021}
       - serializedVersion: 3
         time: 0.33333334
-        value: {x: 282.66602, y: 0, z: 0}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 2
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.40819404, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 0.73333335
-        value: {x: 264.71902, y: 0, z: 0}
-        inSlope: {x: -63.875305, y: 0, z: 0}
-        outSlope: {x: -63.875305, y: 0, z: 0}
+        value: {x: 0, y: 0, z: -119}
+        inSlope: {x: 0, y: 0, z: 534.75055}
+        outSlope: {x: 0, y: 0, z: -1158.5022}
         tangentMode: 0
         weightedMode: 3
-        inWeight: {x: 0.32025743, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.22714306, y: 0.33333334, z: 0.33333334}
+        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.6761693}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.08422629}
       - serializedVersion: 3
-        time: 1.4166666
-        value: {x: 262.12454, y: 0, z: 0}
-        inSlope: {x: 43.31116, y: 0, z: 0}
-        outSlope: {x: 43.31116, y: 0, z: 0}
+        time: 0.46666667
+        value: {x: 0, y: 0, z: -120}
+        inSlope: {x: 0, y: 0, z: -7.5000005}
+        outSlope: {x: 0, y: 0, z: -7.5000005}
         tangentMode: 0
         weightedMode: 3
-        inWeight: {x: 0.5038557, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 2.5
-        value: {x: 262.12454, y: 0, z: 0}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: Box/BoxArmature/DoorHandle
+    path: Box/BoxArmature/Switch2
   m_PositionCurves: []
   m_ScaleCurves: []
   m_FloatCurves: []
@@ -87,7 +69,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 1933219508
+      path: 887713743
       attribute: 4
       script: {fileID: 0}
       typeID: 4
@@ -101,7 +83,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 2.5
+    m_StopTime: 0.46666667
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -123,25 +105,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 90
-        inSlope: 790.87415
-        outSlope: 790.87415
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.95452476
-      - serializedVersion: 3
-        time: 0.16666667
-        value: 254.64499
-        inSlope: 336.25232
-        outSlope: 336.25232
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.33333334
-        value: 282.66602
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -149,20 +113,11 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.4166666
-        value: 262.12454
-        inSlope: 43.31116
-        outSlope: 43.31116
-        tangentMode: 0
-        weightedMode: 3
-        inWeight: 0.5801198
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 2.5
-        value: 262.12454
+        time: 0.46666667
+        value: 0
         inSlope: 0
         outSlope: 0
-        tangentMode: 34
+        tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
@@ -170,7 +125,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.x
-    path: Box/BoxArmature/DoorHandle
+    path: Box/BoxArmature/Switch2
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -188,34 +143,7 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.16666667
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.33333334
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.73333335
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 1.4166666
+        time: 0.46666667
         value: 0
         inSlope: 0
         outSlope: 0
@@ -227,7 +155,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.y
-    path: Box/BoxArmature/DoorHandle
+    path: Box/BoxArmature/Switch2
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -237,54 +165,45 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
+        value: -240
+        inSlope: -35.929745
+        outSlope: -35.929745
+        tangentMode: 0
+        weightedMode: 3
         inWeight: 0.33333334
-        outWeight: 0.33333334
+        outWeight: 0.7383842
       - serializedVersion: 3
-        time: 0.16666667
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
+        time: 0.11666667
+        value: -133
+        inSlope: 1723.6582
+        outSlope: 757.11206
+        tangentMode: 1
         weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
+        inWeight: 0.1914242
+        outWeight: 0.09153021
       - serializedVersion: 3
         time: 0.33333334
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
+        value: -119
+        inSlope: 534.75055
+        outSlope: -1158.5022
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 0.6761693
+        outWeight: 0.08422629
       - serializedVersion: 3
-        time: 0.73333335
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 1.4166666
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
+        time: 0.46666667
+        value: -120
+        inSlope: -7.5000005
+        outSlope: -7.5000005
+        tangentMode: 34
+        weightedMode: 3
         inWeight: 0.33333334
         outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.z
-    path: Box/BoxArmature/DoorHandle
+    path: Box/BoxArmature/Switch2
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -297,7 +216,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: Box/BoxArmature/DoorHandle
+    path: Box/BoxArmature/Switch2
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -309,7 +228,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: Box/BoxArmature/DoorHandle
+    path: Box/BoxArmature/Switch2
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -321,7 +240,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: Box/BoxArmature/DoorHandle
+    path: Box/BoxArmature/Switch2
     classID: 4
     script: {fileID: 0}
     flags: 0
