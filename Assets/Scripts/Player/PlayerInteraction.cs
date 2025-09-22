@@ -5,8 +5,7 @@ using System.Collections;
 public class PlayerInteraction : PlayerModule
 {
     private PlayerInputManager inputActions;
-    private Interactable lastInteraction;
-    private int currentLayer = 0;
+    private IInteraction activeInteraction;
     private bool isInteracting = false;
 
     // Track previous move input for edge detection
@@ -14,7 +13,7 @@ public class PlayerInteraction : PlayerModule
 
     public PlayerInteraction(PlayerManager manager) : base(manager)
     {
-        inputActions = manager.inputActions; // Use shared instance
+        inputActions = manager.inputActions;
     }
 
     public override void OnUpdate()
@@ -25,97 +24,104 @@ public class PlayerInteraction : PlayerModule
             Ray ray = manager.playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit, manager.interactionRange))
             {
-                if (hit.collider.TryGetComponent<Interactable>(out var interactable))
+                if (hit.collider.TryGetComponent<IInteraction>(out var interactable))
                 {
-                    lastInteraction = interactable;
-                    lastInteraction.DoTheThing();
+                    activeInteraction = interactable;
+                    activeInteraction.EnterInteraction(manager);
                     isInteracting = true;
-                    manager.inInteractionView = true; // Disable camera look and movement
-                    currentLayer = 0;
+                    manager.inInteractionView = true;
+                    manager.currentLayer = 0;
                 }
             }
         }
 
-        // Handle interaction camera view logic
-        if (isInteracting && lastInteraction != null && !lastInteraction.busy)
+        // Update active interaction
+        if (isInteracting && activeInteraction != null)
         {
-            Vector2 moveInput = inputActions.Player.Move.ReadValue<Vector2>();
+            activeInteraction.UpdateInteraction(manager);
 
-            // Detect rising edge for S/down (wasd or stick down)
-            bool sPressed = moveInput.y < -0.5f && prevMoveInput.y >= -0.5f;
-            bool wPressed = moveInput.y > 0.5f && prevMoveInput.y <= 0.5f;
-            bool aPressed = moveInput.x < -0.5f && prevMoveInput.x >= -0.5f;
-            bool dPressed = moveInput.x > 0.5f && prevMoveInput.x <= 0.5f;
+            // If the interaction is an Interactable, handle camera angles and leaving
+            if (activeInteraction is Interactable interactable && !interactable.busy)
+            {
+                Vector2 moveInput = inputActions.Player.Move.ReadValue<Vector2>();
 
-            if (wPressed) // W/up
-            {
-                currentLayer = 1;
-                manager.StopAllCoroutines();
-                manager.StartCoroutine(lastInteraction.SetAngle(1));
-            }
-            else if (aPressed) // A/left
-            {
-                currentLayer = 1;
-                manager.StopAllCoroutines();
-                manager.StartCoroutine(lastInteraction.SetAngle(2));
-            }
-            else if (dPressed) // D/right
-            {
-                currentLayer = 1;
-                manager.StopAllCoroutines();
-                manager.StartCoroutine(lastInteraction.SetAngle(3));
-            }
-            else if (sPressed)
-            {
-                if (currentLayer >= 1)
+                // Detect rising edge for S/down (wasd or stick down)
+                bool sPressed = moveInput.y < -0.5f && prevMoveInput.y >= -0.5f;
+                bool wPressed = moveInput.y > 0.5f && prevMoveInput.y <= 0.5f;
+                bool aPressed = moveInput.x < -0.5f && prevMoveInput.x >= -0.5f;
+                bool dPressed = moveInput.x > 0.5f && prevMoveInput.x <= 0.5f;
+
+                if (wPressed) // W/up
                 {
+                    manager.currentLayer = 1;
                     manager.StopAllCoroutines();
-                    manager.StartCoroutine(lastInteraction.SetAngle(0));
-                    currentLayer--;
+                    manager.StartCoroutine(interactable.SetAngle(1));
                 }
-                else
+                else if (aPressed) // A/left
                 {
-                    // First S press: return camera to parent, and IMMEDIATELY allow player to move/look again
-                    if (manager.cameraParent != null && manager.playerCamera != null)
+                    manager.currentLayer = 1;
+                    manager.StopAllCoroutines();
+                    manager.StartCoroutine(interactable.SetAngle(2));
+                }
+                else if (dPressed) // D/right
+                {
+                    manager.currentLayer = 1;
+                    manager.StopAllCoroutines();
+                    manager.StartCoroutine(interactable.SetAngle(3));
+                }
+                else if (sPressed)
+                {
+                    if (manager.currentLayer >= 1)
                     {
-                        manager.playerCamera.transform.SetParent(manager.cameraParent);
-                        manager.playerCamera.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                        manager.StopAllCoroutines();
+                        manager.StartCoroutine(interactable.SetAngle(0));
+                        manager.currentLayer--;
                     }
-                    // Start the interactable's leave coroutine for proper cleanup (flashlight, etc.)
-                    manager.StopAllCoroutines();
-                    manager.StartCoroutine(LeaveInteraction());
+                    else
+                    {
+                        // Leave interaction
+                        manager.StopAllCoroutines();
+                        StartLeaveInteraction();
+                    }
                 }
-            }
 
-            // Store current move input for next frame
-            prevMoveInput = moveInput;
+                prevMoveInput = moveInput;
+            }
+            else
+            {
+                prevMoveInput = Vector2.zero;
+            }
         }
         else
         {
-            // Reset previous input if not interacting
             prevMoveInput = Vector2.zero;
         }
     }
 
-    private IEnumerator LeaveInteraction()
+    private void StartLeaveInteraction()
     {
-        if (lastInteraction != null)
+        if (activeInteraction is Interactable interactable)
         {
-            yield return manager.StartCoroutine(lastInteraction.LeaveTheThing());
-            lastInteraction = null;
+            manager.StartCoroutine(LeaveInteractionCoroutine(interactable));
         }
+        else if (activeInteraction != null)
+        {
+            activeInteraction.LeaveInteraction(manager);
+            CleanupInteraction();
+        }
+    }
+
+    private IEnumerator LeaveInteractionCoroutine(Interactable interactable)
+    {
+        yield return manager.StartCoroutine(interactable.LeaveTheThing(manager));
+        CleanupInteraction();
+    }
+
+    private void CleanupInteraction()
+    {
+        activeInteraction = null;
         isInteracting = false;
-        currentLayer = 0;
-
-        // Optionally reset camera again to parent (safety)
-        if (manager.cameraParent != null && manager.playerCamera != null)
-        {
-            manager.playerCamera.transform.SetPositionAndRotation(
-                manager.cameraParent.position,
-                manager.cameraParent.rotation
-            );
-        }
-
-        manager.inInteractionView = false; // Re-enable camera look and movement at the very end
+        manager.currentLayer = 0;
+        manager.inInteractionView = false;
     }
 }

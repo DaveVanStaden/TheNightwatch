@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class MonitorCursor : MonoBehaviour
 {
-    FPSController player;
+    PlayerManager player;
     public bool beingControlled = false;
     public float cursorSpeed;
     Vector3 cursorPos;
@@ -18,7 +18,7 @@ public class MonitorCursor : MonoBehaviour
     bool clickR;
     void Start()
     {
-        player = FindObjectOfType<FPSController>();
+        player = FindObjectOfType<PlayerManager>();
     }
 
     // Update is called once per frame

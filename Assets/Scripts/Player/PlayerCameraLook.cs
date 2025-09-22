@@ -8,7 +8,8 @@ public class PlayerCameraLook : PlayerModule
     private float rotationX = 0f;
     private float currentYaw = 0f;
     private float currentPitch = 0f;
-
+    private float yawBeforeInteraction = 0f;
+    private float yawAfterInteraction = 0f;
     // Smoothing
     private float smoothSpeed = 12f; // Higher = snappier
 
@@ -24,7 +25,8 @@ public class PlayerCameraLook : PlayerModule
 
     public override void OnUpdate()
     {
-        if (manager.inInteractionView || manager.playerCamera == null) return;
+        if (manager.inInteractionView || manager.playerCamera == null)
+            return;
 
         // Read look input (mouse or right stick)
         lookInput = inputActions.Player.Look.ReadValue<Vector2>() * manager.lookSpeed;
@@ -51,5 +53,49 @@ public class PlayerCameraLook : PlayerModule
         // Apply rotations
         manager.playerCamera.transform.localRotation = Quaternion.Euler(smoothPitch, 0f, 0f);
         manager.transform.rotation = Quaternion.Euler(0f, smoothYaw, 0f);
+    }
+
+    public void SetYawFromTransform()
+    {
+        // Use the current world yaw of the player/camera
+        if (manager.playerCamera != null)
+        {
+            // Use the world Y rotation of the camera's transform
+            currentYaw = manager.playerCamera.transform.eulerAngles.y;
+        }
+    }
+
+    // After re-parenting and resetting the camera
+    public void StoreYawBeforeInteraction()
+    {
+        if (manager.playerCamera != null)
+            yawBeforeInteraction = manager.playerCamera.transform.eulerAngles.y;
+    }
+
+    public void RestoreYawAfterInteraction()
+    {
+        currentYaw = yawBeforeInteraction;
+        // Also set the player and camera parent yaw
+        if (manager.transform != null)
+            manager.transform.rotation = Quaternion.Euler(0f, yawBeforeInteraction, 0f);
+        if (manager.cameraParent != null)
+        {
+            Vector3 parentEuler = manager.cameraParent.eulerAngles;
+            manager.cameraParent.rotation = Quaternion.Euler(parentEuler.x, yawBeforeInteraction, parentEuler.z);
+        }
+    }
+    public void SyncYawToCamera()
+    {
+        if (manager.playerCamera != null)
+        {
+            float yaw = manager.playerCamera.transform.eulerAngles.y;
+            currentYaw = yaw;
+            manager.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            if (manager.cameraParent != null)
+            {
+                Vector3 parentEuler = manager.cameraParent.eulerAngles;
+                manager.cameraParent.rotation = Quaternion.Euler(parentEuler.x, yaw, parentEuler.z);
+            }
+        }
     }
 }

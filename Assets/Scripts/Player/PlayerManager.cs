@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerManager : MonoBehaviour
@@ -17,10 +18,13 @@ public class PlayerManager : MonoBehaviour
     public float lookXLimit = 45f;
 
     [Header("Interaction Settings")]
+    public float currentLayer = 0;
     public float interactionRange = 100f;
 
     [Header("Camera")]
     public Transform cameraParent; // Assign this in the Inspector
+    public Camera interactionCamera;
+    public Transform cameraAnchor;
 
     [HideInInspector] public bool inInteractionView = false;
     [HideInInspector] public CharacterController characterController;
@@ -28,17 +32,21 @@ public class PlayerManager : MonoBehaviour
 
     private List<PlayerModule> modules = new();
 
+    public PlayerCameraLook cameraLookModule;
+
     void Awake()
     {
         characterController = GetComponent<CharacterController>();
-
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         // Initialize inputActions ONCE here:
         inputActions = new PlayerInputManager();
         inputActions.Enable();
 
         // Add your modules here, passing 'this' as manager
+        cameraLookModule = new PlayerCameraLook(this);
+        modules.Add(cameraLookModule);
         modules.Add(new PlayerMovement(this));
-        modules.Add(new PlayerCameraLook(this));
         modules.Add(new PlayerInteraction(this));
 
         foreach (var m in modules) m.OnAwake();
