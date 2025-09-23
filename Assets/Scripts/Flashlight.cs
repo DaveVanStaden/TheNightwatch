@@ -5,7 +5,7 @@ using UnityEngine;
 public class Flashlight : MonoBehaviour
 {
     [SerializeField] private Light flashlight;
-    FPSController player;
+    PlayerManager player;
     public bool onOrOff = false;
     public float maxIntensity;
     public bool mainLight;
@@ -15,12 +15,12 @@ public class Flashlight : MonoBehaviour
     {
         click = GetComponent<AudioSource>();
         flashlight = GetComponent<Light>();
-        player = FindObjectOfType<FPSController>();
+        player = FindObjectOfType<PlayerManager>();
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && player.canMove)
+        if (Input.GetMouseButtonDown(0))
         {
             SwitchLight();
             //Debug.Log("wawawa");
