@@ -23,8 +23,10 @@ public class PlayerManager : MonoBehaviour
 
     [Header("Camera")]
     public Transform cameraParent; // Assign this in the Inspector
+    public Camera rayCam;
     public Camera interactionCamera;
     public Transform cameraAnchor;
+    public float smoothSpeed = 20f;
 
     [HideInInspector] public bool inInteractionView = false;
     [HideInInspector] public CharacterController characterController;

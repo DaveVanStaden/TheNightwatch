@@ -21,7 +21,7 @@ public class PlayerInteraction : PlayerModule
         // Start interaction
         if (!isInteracting && inputActions.Player.Interact.triggered)
         {
-            Ray ray = manager.playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+            Ray ray = manager.rayCam.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit, manager.interactionRange))
             {
                 if (hit.collider.TryGetComponent<IInteraction>(out var interactable))
