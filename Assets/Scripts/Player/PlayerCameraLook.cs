@@ -11,10 +11,11 @@ public class PlayerCameraLook : PlayerModule
     private float yawBeforeInteraction = 0f;
     private float yawAfterInteraction = 0f;
     // Smoothing
-    private float smoothSpeed = 12f; // Higher = snappier
+    private float smoothSpeed = 0f; // Higher = snappier
 
     public PlayerCameraLook(PlayerManager manager) : base(manager)
     {
+        smoothSpeed = manager.smoothSpeed;
         inputActions = manager.inputActions; // Use shared instance
         if (manager.playerCamera != null)
         {
