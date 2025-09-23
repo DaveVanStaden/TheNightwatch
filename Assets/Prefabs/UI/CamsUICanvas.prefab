@@ -253,7 +253,7 @@ GameObject:
   - component: {fileID: 7872802488435724867}
   - component: {fileID: 7171201228441491752}
   m_Layer: 5
-  m_Name: Cursor
+  m_Name: CamsCursor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -329,6 +329,7 @@ MonoBehaviour:
   cursorSpeed: 3
   posXlimit: 120
   posYlimit: 120
+  stretchyCursor: 1
 --- !u!61 &7872802488435724867
 BoxCollider2D:
   m_ObjectHideFlags: 0
