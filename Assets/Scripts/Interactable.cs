@@ -8,6 +8,8 @@ public class Interactable : MonoBehaviour, IInteraction
     GameObject flashlight;
     public bool busy;
 
+    MonitorCursor lastCursor;
+
     AudioSource swoosh;
 
     public Camera interactionCamera; // Assign in Inspector or dynamically
@@ -100,6 +102,7 @@ public class Interactable : MonoBehaviour, IInteraction
         float elapsed = 0f;
 
         PlaySound();
+        CheckCursor(setAngles[angle].GetComponent<CamData>());
 
         while (elapsed < lerpTime)
         {
@@ -119,6 +122,7 @@ public class Interactable : MonoBehaviour, IInteraction
 
     public IEnumerator LeaveTheThing(PlayerManager playerManager)
     {
+        DisableLastCursor();
         flashlight.SetActive(true);
         busy = true;
 
@@ -176,10 +180,7 @@ public class Interactable : MonoBehaviour, IInteraction
         float pos;
         float maxTime = .15f;
 
-        if (camera.hasCursor == true && camera != null)
-        {
-            camera.cursor.GetComponent<MonitorCursor>().EnableCursorControl();
-        }
+        CheckCursor(camera);
 
         while (timePassed < maxTime)
         {
@@ -196,6 +197,26 @@ public class Interactable : MonoBehaviour, IInteraction
             yield return null;
         }
         yield return new WaitForSeconds(maxTime);
+    }
+
+    private void CheckCursor(CamData camera)
+    {
+        DisableLastCursor();
+        if (camera.hasCursor == true && camera != null)
+        {
+            //New cursor found!
+            lastCursor = camera.cursor.GetComponent<MonitorCursor>();
+            Debug.Log(lastCursor.name + " is now the last cursor");
+            //Enable cursorcontrol
+            lastCursor.EnableCursorControl();
+        }
+    }
+
+    private void DisableLastCursor()
+    {
+        // Make sure there's a cursor to disable
+        if (lastCursor != null)
+            lastCursor.DisableCursorControl();
     }
 
     public void PlaySound()
