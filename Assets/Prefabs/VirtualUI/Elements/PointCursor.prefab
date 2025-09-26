@@ -101,6 +101,10 @@ MonoBehaviour:
   shrinkSpeed: 0.05
   defaultColor: {r: 1, g: 0.2509804, b: 0.2509804, a: 1}
   clickColor: {r: 0.383, g: 0, b: 0, a: 1}
+  randomisedPitch: 0
+  pitchOverride: 1
+  audioSource: {fileID: 0}
+  sound: {fileID: 8300000, guid: 01b5fb9d38fd32f44b2d7f72431ecf91, type: 3}
 --- !u!61 &4480493794808166120
 BoxCollider2D:
   m_ObjectHideFlags: 0

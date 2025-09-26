@@ -22,6 +22,10 @@ public class CamImage : MonoBehaviour
     RectTransform rect;
     BoxCollider2D imgCollider;
 
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip expand;
+    [SerializeField] AudioClip collapse;
+
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI descText;
     void Start()
@@ -78,6 +82,8 @@ public class CamImage : MonoBehaviour
             }
             imgCollider.size = new Vector2(256, 256);
             imgCollider.offset = Vector2.zero;
+            audioSource.pitch = 1f;
+            audioSource.PlayOneShot(expand);
             yield return null;
         }
         else
@@ -91,6 +97,8 @@ public class CamImage : MonoBehaviour
             imgCollider.offset = colliderOffset;
 
             isBig = false;
+            audioSource.pitch = 1f;
+            audioSource.PlayOneShot(collapse);
             foreach (CamImage camera in FindObjectsOfType<CamImage>())
             {
                 if (camera._group == _group)

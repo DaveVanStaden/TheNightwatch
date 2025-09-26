@@ -51,7 +51,10 @@ public class Interactable : MonoBehaviour, IInteraction
         // Enable interaction camera, disable player camera
         interactionCamera.enabled = true;
         if (playerManager.playerCamera != null)
+        {
             playerManager.playerCamera.enabled = false;
+            playerManager.playerCamera.GetComponent<AudioListener>().enabled = false;
+        }
 
         flashlightRotator.canMove = false;
         PlaySound();
@@ -88,6 +91,8 @@ public class Interactable : MonoBehaviour, IInteraction
         // Stop following and lerp to angle(0)
         isInInteractionView = true;
         isFollowingPlayer = false;
+        interactionCamera.GetComponent<AudioListener>().enabled = true;
+
 
         int angle = 0;
         Vector3 startPos = interactionCamera.transform.position;
@@ -155,9 +160,16 @@ public class Interactable : MonoBehaviour, IInteraction
 
         // Enable player camera, disable interaction camera
         if (playerManager.playerCamera != null)
+        {
             playerManager.playerCamera.enabled = true;
+            playerManager.playerCamera.GetComponent<AudioListener>().enabled = true;
+
+        }
         if (interactionCamera != null)
+        {
             interactionCamera.enabled = false;
+            interactionCamera.GetComponent<AudioListener>().enabled = false;
+        }
 
         float maxTime = .2f;
         yield return new WaitForSeconds(maxTime);

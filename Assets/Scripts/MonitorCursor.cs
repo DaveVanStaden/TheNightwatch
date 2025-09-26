@@ -39,6 +39,11 @@ public class MonitorCursor : MonoBehaviour
     CamGroup selectedGroup;
     CamImage selectedCam;
 
+    [SerializeField] bool randomisedPitch;
+    [SerializeField] float pitchOverride = 1f;
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip sound;
+
     bool clickL;
     bool clickR;
     void Start()
@@ -80,18 +85,36 @@ public class MonitorCursor : MonoBehaviour
             }
 
             if (Input.GetKeyDown(KeyCode.Mouse0))
-            {
                 clickL = true;
-                if (_type == CursorType.shrink)
-                    StartCoroutine(ClickShrink());
-            }
             else clickL = false;
-            if (Input.GetKeyDown(KeyCode.Mouse1)) clickR = true;
+
+            if (Input.GetKeyDown(KeyCode.Mouse1))
+                clickR = true;
             else clickR = false;
 
             if (clickL || clickR)
             {
                 GetComponent<RawImage>().color = clickColor;
+
+                if (_type == CursorType.shrink)
+                    StartCoroutine(ClickShrink());
+
+                if (audioSource != null)
+                {
+                    if (sound != null)
+                    {
+                        if (randomisedPitch)
+                        {
+                            audioSource.pitch = Random.Range(0.95f, 1.05f);
+                            audioSource.PlayOneShot(sound);
+                        }
+                        else
+                        {
+                            audioSource.pitch = pitchOverride;
+                            audioSource.PlayOneShot(sound);
+                        }
+                    }
+                }
             }
 
             if (Input.GetKeyUp(KeyCode.Mouse0) || Input.GetKeyUp(KeyCode.Mouse1))

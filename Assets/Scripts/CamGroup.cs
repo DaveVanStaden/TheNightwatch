@@ -11,6 +11,8 @@ public class CamGroup : MonoBehaviour
     public Color hoverColor;
     public Color currentColor;
 
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip blip;
     public enum Group
     {
         A, B, C, D
@@ -45,6 +47,7 @@ public class CamGroup : MonoBehaviour
     }
     public void ReplaceCameras()
     {
+        audioSource.PlayOneShot(blip);
         GameObject[] cameraViews = GameObject.FindGameObjectsWithTag("CameraView");
          for (int i = 0; i<cameraViews.Length; i++)
         {
