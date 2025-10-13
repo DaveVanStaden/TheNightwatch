@@ -13,22 +13,34 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private int sanity;
     [SerializeField] private int tiredness;
 
+    private float sanityAccumulator = 0f;
+
     public int HP
     {
         get => hp;
-        private set => hp = Mathf.Clamp(value, 0, maxHP);
+        set
+        {
+            hp = Mathf.Clamp(value, 0, maxHP);
+        }
     }
 
     public int Sanity
     {
         get => sanity;
-        private set => sanity = Mathf.Clamp(value, 0, maxSanity);
+        set
+        {
+            sanity = Mathf.Clamp(value, 0, maxSanity);
+            Debug.Log("Sanity property set to: " + sanity);
+        }
     }
 
     public int Tiredness
     {
         get => tiredness;
-        private set => tiredness = Mathf.Clamp(value, 0, maxTiredness);
+        set
+        {
+            tiredness = Mathf.Clamp(value, 0, maxTiredness);
+        }
     }
 
     private void Awake()
@@ -41,19 +53,30 @@ public class PlayerStats : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Initialize stats
         HP = maxHP;
         Sanity = maxSanity;
         Tiredness = 0;
     }
 
-    // Methods to modify stats
-    public void ChangeHP(int amount) => HP += amount;
-    public void ChangeSanity(int amount) => Sanity += amount;
-    public void ChangeTiredness(int amount) => Tiredness += amount;
+    public void ChangeHP(int amount)
+    {
+        HP += amount;
+    }
 
-    // Optionally, add methods to reset or set stats directly
-    public void SetHP(int value) => HP = value;
-    public void SetSanity(int value) => Sanity = value;
-    public void SetTiredness(int value) => Tiredness = value;
+    public void ChangeSanity(float amount)
+    {
+        sanityAccumulator += amount;
+        int delta = Mathf.FloorToInt(sanityAccumulator);
+        if (delta != 0)
+        {
+            Sanity = Mathf.Clamp(sanity + delta, 0, maxSanity);
+            sanityAccumulator -= delta;
+            Debug.Log("Sanity changed to: " + sanity + ", delta: " + delta);
+        }
+    }
+
+    public void ChangeTiredness(int amount)
+    {
+        Tiredness += amount;
+    }
 }

@@ -105,9 +105,11 @@ public class Interactable : MonoBehaviour, IInteraction
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / lerpTime);
-            interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, t);
-            interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, t);
-            interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, t);
+            float curveT = 1f - Mathf.Pow(1f - t, 3f); // Ease-out
+
+            interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, curveT);
+            interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, curveT);
+            interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, curveT);
             yield return null;
         }
 
@@ -142,9 +144,11 @@ public class Interactable : MonoBehaviour, IInteraction
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / lerpTime);
-                interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, t);
-                interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, t);
-                interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, t);
+                float curveT = 1f - Mathf.Pow(1f - t, 3f); // Ease-out
+
+                interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, curveT);
+                interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, curveT);
+                interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, curveT);
                 yield return null;
             }
         }
