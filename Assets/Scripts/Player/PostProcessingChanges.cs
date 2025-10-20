@@ -15,7 +15,7 @@ public class PostProcessingChanges : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        pp.weight = stats.Sanity/100;
+        pp.weight = 1f - (stats.Sanity/100f);
 
     }
 }
