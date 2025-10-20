@@ -1,11 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CamImage : MonoBehaviour
 {
     bool isBig = false;
+    public enum Group
+    {
+        A, B, C, D
+    };
+    public Group _group;
+
     Vector2 currentSize;
     Vector2 currentAnchorMin;
     Vector2 currentAnchorMax;
@@ -14,6 +21,13 @@ public class CamImage : MonoBehaviour
     Vector2 colliderOffset;
     RectTransform rect;
     BoxCollider2D imgCollider;
+
+    [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioClip expand;
+    [SerializeField] AudioClip collapse;
+
+    public TextMeshProUGUI titleText;
+    public TextMeshProUGUI descText;
     void Start()
     {
         rect = GetComponent<RectTransform>();
@@ -34,10 +48,18 @@ public class CamImage : MonoBehaviour
 
             foreach (CamImage camera in FindObjectsOfType<CamImage>())
             {
-                camera.gameObject.GetComponent<RawImage>().enabled = false;
-                camera.gameObject.GetComponent<Collider2D>().enabled = false;
-                gameObject.GetComponent<RawImage>().enabled = true;
-                gameObject.GetComponent<Collider2D>().enabled = true;
+                if (camera._group == _group)
+                {
+                    camera.gameObject.GetComponent<RawImage>().enabled = false;
+                    camera.gameObject.GetComponent<Collider2D>().enabled = false;
+                    camera.titleText.enabled = false;
+                    camera.descText.enabled = false;
+
+                    gameObject.GetComponent<RawImage>().enabled = true;
+                    gameObject.GetComponent<Collider2D>().enabled = true;
+                    titleText.enabled = true;
+                    descText.enabled = true;
+                }
 
             }
             float timePassed = 0f;
@@ -52,7 +74,7 @@ public class CamImage : MonoBehaviour
                 rect.anchorMax = mid;
                 rect.pivot = mid;
 
-                rect.anchorMin = Vector2.Lerp(currentAnchorMin, mid , pos);
+                rect.anchorMin = Vector2.Lerp(currentAnchorMin, mid, pos);
                 rect.anchorMax = Vector2.Lerp(currentAnchorMax, mid, pos);
                 rect.pivot = Vector2.Lerp(currentPivot, mid, pos);
                 rect.sizeDelta = Vector2.Lerp(currentSize, new Vector2(256, 256), pos);
@@ -60,6 +82,8 @@ public class CamImage : MonoBehaviour
             }
             imgCollider.size = new Vector2(256, 256);
             imgCollider.offset = Vector2.zero;
+            audioSource.pitch = 1f;
+            audioSource.PlayOneShot(expand);
             yield return null;
         }
         else
@@ -73,10 +97,18 @@ public class CamImage : MonoBehaviour
             imgCollider.offset = colliderOffset;
 
             isBig = false;
+            audioSource.pitch = 1f;
+            audioSource.PlayOneShot(collapse);
             foreach (CamImage camera in FindObjectsOfType<CamImage>())
             {
-                camera.gameObject.GetComponent<RawImage>().enabled = true;
-                camera.gameObject.GetComponent<Collider2D>().enabled = true;
+                if (camera._group == _group)
+                {
+                    camera.gameObject.GetComponent<RawImage>().enabled = true;
+                    camera.gameObject.GetComponent<Collider2D>().enabled = true;
+
+                    camera.titleText.enabled = true;
+                    camera.descText.enabled = true;
+                }
             }
         }
     }
