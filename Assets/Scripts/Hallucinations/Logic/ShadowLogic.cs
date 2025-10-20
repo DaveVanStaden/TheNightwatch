@@ -1,6 +1,7 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections.Generic;
 
 public class ShadowLogic : MonoBehaviour
 {
@@ -16,6 +17,27 @@ public class ShadowLogic : MonoBehaviour
     [SerializeField] private float searchRadius = 20f;
     [SerializeField] private float killRange = 10f; // Set as needed
     [SerializeField] private float sanityDrainPerSecond = 5f; // Use float, not int
+    [SerializeField] private float KillSanityThresshold = 60f;
+
+    // Add these fields (place with other private fields)
+    [SerializeField, Tooltip("Sanity at which shadow is still mostly faint (upper bound)")]
+    private float alphaHighSanityThreshold = 80f;
+    [SerializeField, Tooltip("Sanity at which shadow reaches max opacity (lower bound)")]
+    private float alphaLowSanityThreshold = 20f;
+    [SerializeField, Range(0.01f, 1f), Tooltip("Alpha when player sanity is high (faint)")]
+    private float minShadowAlpha = 0.10f;
+    [SerializeField, Range(0.01f, 1f), Tooltip("Alpha when player sanity is low (visible)")]
+    private float maxShadowAlpha = 1.0f;
+
+    [Header("Movement Settings")]
+    [Tooltip("Agent speed when player sanity is high (slow)")]
+    [SerializeField] private float minMoveSpeed = 1.5f;
+    [Tooltip("Agent speed when player sanity is low (fast)")]
+    [SerializeField] private float maxMoveSpeed = 6f;
+    [Tooltip("Sanity at which movement is still slow (upper bound)")]
+    [SerializeField] private float speedHighSanityThreshold = 80f;
+    [Tooltip("Sanity at which movement reaches max speed (lower bound)")]
+    [SerializeField] private float speedLowSanityThreshold = 10f;
 
     private Vector3 peekDestination;
     private bool isVisible = false;
@@ -36,6 +58,31 @@ public class ShadowLogic : MonoBehaviour
     private float attackWindupTimer = 0f;
     private const float attackWindupDuration = 0.5f;
 
+    // Reposition / lifetime counters
+    private int repositionsDone = 0;
+    [SerializeField] private int repositionsBeforeDestroy = 4; 
+    private bool destroyScheduled = false;
+    private bool initialPeekDone = false;
+    private bool repositionPending = false;
+
+    // Add these fields with other private fields (reposition/lifetime counters)
+    [SerializeField, Tooltip("Seconds to suppress re-entering hunt after an attack/miss")]
+    private float huntSuppressDuration = 1.0f;
+    private float huntSuppressTimer = 0f;
+
+    // Flicker management
+    private readonly Dictionary<Light, Coroutine> flickerCoroutines = new Dictionary<Light, Coroutine>();
+    private readonly Dictionary<Light, float> originalIntensities = new Dictionary<Light, float>();
+
+    [Header("Light Darken Settings")]
+    [Tooltip("How dark the light becomes (0 = off, 1 = no change)")]
+    [SerializeField, Range(0f, 1f)] private float lightDarkenFactor = 0.25f;
+    [Tooltip("How long (seconds) the light fades to the darkened value")]
+    [SerializeField] private float lightFadeDuration = 0.05f;
+
+    private Renderer[] cachedRenderers;
+    private Material[] cachedMaterials;
+
     private void Awake()
     {
         if (playerTransform == null)
@@ -48,31 +95,83 @@ public class ShadowLogic : MonoBehaviour
             agent = GetComponent<NavMeshAgent>();
 
         peekDestination = transform.position;
+
+        // Randomize how many reposition attempts until this hallucination destroys itself
+        repositionsBeforeDestroy = Random.Range(4, 8);
+
+        // initial find, do not count this first placement
+        initialPeekDone = false;
         FindPeekPosition();
+        initialPeekDone = true;
 
         playerStats = Object.FindFirstObjectByType<PlayerStats>();
 
-        // Get PlayerManager from playerTransform
+        // Get PlayerManager from playerTransform; do NOT try to FindObjectOfType<PlayerCameraLook>()
         playerManager = playerTransform != null ? playerTransform.GetComponent<PlayerManager>() : null;
+        if (playerManager == null)
+        {
+            // try a scene-wide find of the PlayerManager (Unity object)
+            playerManager = FindObjectOfType<PlayerManager>();
+        }
         playerCameraLook = playerManager != null ? playerManager.cameraLookModule : null;
+
+        // Cache renderers and create instance materials to control alpha safely
+        cachedRenderers = GetComponentsInChildren<Renderer>(true);
+        if (cachedRenderers != null && cachedRenderers.Length > 0)
+        {
+            cachedMaterials = new Material[cachedRenderers.Length];
+            for (int i = 0; i < cachedRenderers.Length; i++)
+            {
+                if (cachedRenderers[i] != null)
+                    cachedMaterials[i] = cachedRenderers[i].material; // creates instance
+            }
+        }
+
+        // Validate darken settings
+        lightDarkenFactor = Mathf.Clamp01(lightDarkenFactor);
+        lightFadeDuration = Mathf.Max(0f, lightFadeDuration);
     }
 
     private void Update()
     {
-        if (playerTransform == null || agent == null || playerStats == null || playerCameraLook == null)
+        // keep essential null checks (don't block on playerCameraLook)
+        if (playerTransform == null || agent == null || playerStats == null)
             return;
+
+        // try to resolve playerManager/playerCameraLook at runtime if missing (no Unity API for PlayerCameraLook)
+        if (playerManager == null && playerTransform != null)
+            playerManager = playerTransform.GetComponent<PlayerManager>();
+        if (playerManager == null)
+            playerManager = FindObjectOfType<PlayerManager>();
+        if (playerCameraLook == null && playerManager != null)
+            playerCameraLook = playerManager.cameraLookModule;
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        // Sanity drain if player is looking at hallucination (no distance check)
-        if (IsPlayerLookingAtMe())
+        // Update shadow opacity based on current sanity every frame
+        UpdateShadowAlpha();
+
+        // --- Movement speed scaling by sanity ---
+        if (agent != null && playerStats != null)
+        {
+            // t==0 => high sanity (slow), t==1 => low sanity (fast)
+            float sanityF = (float)playerStats.Sanity;
+            float t = Mathf.InverseLerp(speedHighSanityThreshold, speedLowSanityThreshold, sanityF);
+            t = Mathf.Clamp01(t);
+            agent.speed = Mathf.Lerp(minMoveSpeed, maxMoveSpeed, t);
+        }
+
+        // Sanity drain if player is looking at hallucination AND the hallucination is visible to the player
+        // but only if the shadow is NOT currently moving
+        if (CanSeePlayer() && IsPlayerLookingAtMe() && !IsMoving())
         {
             playerStats.ChangeSanity(-sanityDrainPerSecond * Time.deltaTime);
             Debug.Log("[ShadowLogic] Draining sanity! " + playerStats.Sanity);
         }
 
-        // HUNT LOGIC: If sanity < 90, only hunt/attack, no repositioning or avoidance
-        if (playerStats.Sanity < 90)
+        // HUNT LOGIC: If sanity < threshold, only hunt/attack, no repositioning or avoidance
+        // allow relentless chase only when sanity <= 0, otherwise respect suppress timer
+        if (playerStats.Sanity < KillSanityThresshold && (playerStats.Sanity <= 0 || huntSuppressTimer <= 0f))
         {
             if (!isHunting)
             {
@@ -80,11 +179,18 @@ public class ShadowLogic : MonoBehaviour
                 Debug.Log("[ShadowLogic] HUNT MODE: Player is being hunted!");
             }
 
-            HuntPlayer(); // Keeps distance for attack, but does NOT avoid player
+            HuntPlayer(); // Move toward attack position
 
             // Attack logic
             if (distanceToPlayer <= killRange)
             {
+                // stop agent movement while winding up so it doesn't ram the player
+                if (agent != null)
+                {
+                    agent.ResetPath();
+                    agent.isStopped = true;
+                }
+
                 if (!isAttacking)
                 {
                     isAttacking = true;
@@ -100,24 +206,57 @@ public class ShadowLogic : MonoBehaviour
                         if (currentDistance <= killRange)
                         {
                             Debug.Log("player got hit and dies");
+                            // TODO: call player death / damage logic here if needed
+
+                            // After a successful hit:
+                            // - If player's sanity is <= 0, continue attacking (don't reposition).
+                            // - Otherwise, stop hunting and pick a new peek position before attacking again.
+                            isAttacking = false;
+                            attackWindupTimer = 0f;
+
+                            if (playerStats != null && playerStats.Sanity <= 0)
+                            {
+                                // keep attacking
+                                isHunting = true;
+                                // keep agent stopped so repeated attacks can happen
+                                if (agent != null) agent.isStopped = true;
+                            }
+                            else
+                            {
+                                // reposition before attacking again
+                                isHunting = false;
+                                if (agent != null) agent.isStopped = false;
+                                FindPeekPosition();
+                                // After calling FindPeekPosition(), set the suppress timer
+                                huntSuppressTimer = huntSuppressDuration;
+                            }
                         }
                         else
                         {
-                            Debug.Log("[ShadowLogic] Attack missed, player moved away!");
+                            Debug.Log("[ShadowLogic] Attack missed, player moved away! Repositioning before next attack.");
+                            // After a miss, stop hunting and force a reposition before attempting to attack again
+                            isAttacking = false;
+                            isHunting = false;
+                            attackWindupTimer = 0f;
+                            if (agent != null) agent.isStopped = false;
+                            FindPeekPosition();
+                            // After calling FindPeekPosition(), set the suppress timer
+                            huntSuppressTimer = huntSuppressDuration;
                         }
-                        isAttacking = false;
-                        attackWindupTimer = 0f;
                     }
                 }
             }
             else
             {
+                // Player moved out of attack range, cancel attack and resume movement
                 if (isAttacking)
                 {
                     Debug.Log("[ShadowLogic] Attack cancelled, player moved out of range.");
                     isAttacking = false;
                     attackWindupTimer = 0f;
                 }
+                if (agent != null)
+                    agent.isStopped = false;
             }
             EnableRenderer(); // Ensure visible while hunting
             return; // Prevent repositioning/avoidance while hunting
@@ -129,9 +268,14 @@ public class ShadowLogic : MonoBehaviour
             isHunting = false;
             isAttacking = false;
             attackWindupTimer = 0f;
+            if (agent != null)
+                agent.isStopped = false;
             Debug.Log("[ShadowLogic] Repositioning: Player sanity recovered.");
         }
         StandardAIUpdate(); // Only runs when not hunting
+
+        if (huntSuppressTimer > 0f)
+            huntSuppressTimer -= Time.deltaTime;
     }
 
     private void FindPeekPosition()
@@ -201,23 +345,39 @@ public class ShadowLogic : MonoBehaviour
 
         if (foundSafe)
         {
-            peekDestination = bestSafePosition;
+            SetPeekDestination(bestSafePosition, "FindPeekPosition safe");
             Debug.Log("[ShadowLogic] Moving to safe visible position.");
         }
         else if (foundVisible)
         {
-            peekDestination = farthestVisiblePosition;
+            SetPeekDestination(farthestVisiblePosition, "FindPeekPosition farthest visible");
             Debug.LogWarning("[ShadowLogic] No safe position found, moving to farthest visible position.");
         }
         else if (candidatesNavMesh > 0)
         {
-            peekDestination = fallbackPosition;
+            SetPeekDestination(fallbackPosition, "FindPeekPosition fallback");
             Debug.LogWarning("[ShadowLogic] No visible position found, moving to farthest possible position.");
         }
         else
         {
             Debug.LogWarning("[ShadowLogic] No valid stalk position found, staying put.");
-            peekDestination = transform.position;
+            SetPeekDestination(transform.position, "FindPeekPosition none");
+        }
+    }
+
+    // Centralized setter so we can count reposition attempts and schedule destruction
+    // Modified SetPeekDestination: stop counting here, mark pending instead
+    private void SetPeekDestination(Vector3 newDestination, string debugContext = null)
+    {
+        if (Vector3.Distance(peekDestination, newDestination) > 0.1f)
+        {
+            // Immediately restore lights when a reposition is chosen
+            RestoreLightsImmediately();
+
+            peekDestination = newDestination;
+
+            // mark that a reposition has been requested — count it when movement actually starts
+            repositionPending = initialPeekDone; // don't count the initial placement
         }
     }
 
@@ -256,8 +416,137 @@ public class ShadowLogic : MonoBehaviour
         return false;
     }
 
+    // Flicker implementation: manage coroutines per-light
     private void ManageNearbyLights()
     {
+        var lights = FindObjectsOfType<Light>();
+        var inRange = new HashSet<Light>();
+
+        foreach (var light in lights)
+        {
+            if (light == null) continue;
+            float dist = Vector3.Distance(transform.position, light.transform.position);
+            if (dist <= lightDisableRadius)
+            {
+                inRange.Add(light);
+                // record original intensity and start darken coroutine if not already
+                if (!originalIntensities.ContainsKey(light))
+                    originalIntensities[light] = light.intensity;
+
+                if (!flickerCoroutines.ContainsKey(light))
+                {
+                    var co = StartCoroutine(FlickerLight(light));
+                    flickerCoroutines.Add(light, co);
+                }
+            }
+        }
+
+        // stop darken coroutines for lights that left range, ensure restore
+        var toStop = new List<Light>();
+        foreach (var kv in flickerCoroutines)
+        {
+            var light = kv.Key;
+            if (!inRange.Contains(light))
+                toStop.Add(light);
+        }
+        foreach (var light in toStop)
+        {
+            StopFlicker(light);
+        }
+    }
+
+    // Replace FlickerLight with this coroutine that fades intensity instead of toggling enabled
+    private IEnumerator FlickerLight(Light light)
+    {
+        if (light == null) yield break;
+        if (!originalIntensities.TryGetValue(light, out var original))
+            original = light.intensity;
+
+        float dark = original * Mathf.Clamp01(lightDarkenFactor);
+
+        // Fade from current intensity to dark target
+        yield return StartCoroutine(FadeLightIntensity(light, light.intensity, dark, lightFadeDuration));
+
+        // Hold the darkened state until stopped
+        while (true)
+        {
+            if (light == null) break;
+            yield return null;
+        }
+    }
+
+    // Helper: smooth fade
+    private IEnumerator FadeLightIntensity(Light light, float from, float to, float duration)
+    {
+        if (light == null)
+            yield break;
+        if (duration <= 0f)
+        {
+            light.intensity = to;
+            yield break;
+        }
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            light.intensity = Mathf.Lerp(from, to, t);
+            yield return null;
+        }
+        light.intensity = to;
+    }
+
+    // Replace StopFlicker with this (restores intensity and clears dictionaries)
+    private void StopFlicker(Light light)
+    {
+        if (light == null) return;
+        if (flickerCoroutines.TryGetValue(light, out var co))
+        {
+            if (co != null)
+                StopCoroutine(co);
+            flickerCoroutines.Remove(light);
+        }
+
+        // restore original intensity if known
+        if (originalIntensities.TryGetValue(light, out var orig))
+        {
+            light.intensity = orig;
+            originalIntensities.Remove(light);
+        }
+        else
+        {
+            light.enabled = true; // fallback
+        }
+    }
+
+    // Replace RestoreLightsImmediately with this (stop all coroutines, restore intensities)
+    private void RestoreLightsImmediately()
+    {
+        if (flickerCoroutines.Count == 0 && originalIntensities.Count == 0)
+            return;
+
+        foreach (var kv in new List<KeyValuePair<Light, Coroutine>>(flickerCoroutines))
+        {
+            var light = kv.Key;
+            if (light == null) continue;
+            if (kv.Value != null)
+                StopCoroutine(kv.Value);
+            flickerCoroutines.Remove(light);
+        }
+
+        foreach (var kv in new List<KeyValuePair<Light, float>>(originalIntensities))
+        {
+            var light = kv.Key;
+            var orig = kv.Value;
+            if (light == null) continue;
+            light.intensity = orig;
+            originalIntensities.Remove(light);
+        }
+    }
+
+    private void ManageNearbyLights_Old()
+    {
+        // kept for reference; not used anymore
         var lights = FindObjectsOfType<Light>();
         foreach (var light in lights)
         {
@@ -281,6 +570,27 @@ public class ShadowLogic : MonoBehaviour
             }
         }
     }
+
+    private void ManageNearbyLightsWrapper()
+    {
+        // call new method
+        ManageNearbyLights();
+    }
+
+    private void EnableRenderer()
+    {
+        var meshRenderer = GetComponent<MeshRenderer>();
+        if (meshRenderer != null)
+            meshRenderer.enabled = true;
+    }
+
+    private void DisableRenderer()
+    {
+        var meshRenderer = GetComponent<MeshRenderer>();
+        if (meshRenderer != null)
+            meshRenderer.enabled = false;
+    }
+
     private bool CanSeePlayer()
     {
         if (playerTransform == null) return false;
@@ -312,39 +622,75 @@ public class ShadowLogic : MonoBehaviour
         }
         return false; // All points are blocked
     }
-    private void EnableRenderer()
-    {
-        var meshRenderer = GetComponent<MeshRenderer>();
-        if (meshRenderer != null)
-            meshRenderer.enabled = true;
-    }
-
-    private void DisableRenderer()
-    {
-        var meshRenderer = GetComponent<MeshRenderer>();
-        if (meshRenderer != null)
-            meshRenderer.enabled = false;
-    }
 
     private bool IsPlayerLookingAtMe()
     {
-        if (playerStats == null || playerCameraLook == null) return false;
-        Vector3 toHallucination = (transform.position - playerStats.transform.position).normalized;
-        Vector3 cameraForward = playerCameraLook.GetCameraForward();
+        // playerCameraLook is NOT a UnityEngine.Object — use it if available, otherwise fall back to a camera transform
+        Vector3 cameraForward;
+        Vector3 origin;
+
+        if (playerManager != null && playerManager.playerCamera != null)
+        {
+            origin = playerManager.playerCamera.transform.position;
+            cameraForward = playerManager.playerCamera.transform.forward;
+        }
+        else if (playerCameraLook != null)
+        {
+            // Use the module's camera forward (no Unity cast)
+            origin = playerTransform != null ? playerTransform.position + Vector3.up * 1.6f : Vector3.zero;
+            cameraForward = playerCameraLook.GetCameraForward();
+        }
+        else if (Camera.main != null)
+        {
+            origin = Camera.main.transform.position;
+            cameraForward = Camera.main.transform.forward;
+        }
+        else
+        {
+            return false;
+        }
+
+        Vector3 toHallucination = (transform.position - origin).normalized;
+        Debug.DrawRay(origin, toHallucination * 5f, Color.yellow, 0.05f);
         float dot = Vector3.Dot(cameraForward, toHallucination);
-        // Debug log to help you tune the threshold
         Debug.Log($"[ShadowLogic] Dot: {dot}");
-        return dot > 0.85f; // Lower threshold for easier detection
+        return dot > 0.85f;
     }
 
     private void HuntPlayer()
     {
-        Vector3 directionToPlayer = (playerTransform.position - transform.position).normalized;
-        Vector3 targetPosition = playerTransform.position - directionToPlayer * (killRange - 0.5f);
-        agent.SetDestination(targetPosition);
+        if (playerTransform == null || agent == null)
+            return;
+
+        // Move to a point at the edge of killRange (keep small buffer so it doesn't ram the player)
+        Vector3 toPlayer = playerTransform.position - transform.position;
+        float distToPlayer = toPlayer.magnitude;
+        if (distToPlayer <= 0.01f)
+        {
+            // Already overlapping; just stop moving and keep visible
+            agent.ResetPath();
+            agent.isStopped = true;
+            EnableRenderer();
+            return;
+        }
+
+        Vector3 dir = toPlayer.normalized;
+        float buffer = 0.5f;
+        float desiredDistance = Mathf.Max(killRange - buffer, 0.5f);
+        Vector3 target = playerTransform.position - dir * desiredDistance;
+
+        // Snap target to navmesh if possible
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(target, out hit, 2.0f, NavMesh.AllAreas))
+            agent.SetDestination(hit.position);
+        else
+            agent.SetDestination(target);
+
+        agent.isStopped = false; // ensure agent follows path
         EnableRenderer();
     }
 
+    // Modified StandardAIUpdate: count the reposition when agent is commanded to move
     private void StandardAIUpdate()
     {
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
@@ -393,6 +739,21 @@ public class ShadowLogic : MonoBehaviour
         // Move to peekDestination if not already there
         if (Vector3.Distance(transform.position, peekDestination) > 1.0f)
         {
+            // Only count a reposition when we actually start moving (agent.SetDestination)
+            if (repositionPending)
+            {
+                repositionPending = false;
+                Debug.Log($"[ShadowLogic] Reposition #{repositionsDone} started. (counted when movement begins)");
+                if (repositionsDone >= repositionsBeforeDestroy && !destroyScheduled)
+                {
+                    destroyScheduled = true;
+                    Debug.Log("[ShadowLogic] Reposition threshold reached — scheduling destroy.");
+                    Destroy(gameObject, 1.0f);
+                }else
+                    repositionsDone++;
+
+            }
+
             agent.SetDestination(peekDestination);
             DisableRenderer();
         }
@@ -401,5 +762,99 @@ public class ShadowLogic : MonoBehaviour
             EnableRenderer();
             ManageNearbyLights();
         }
+
+        // Update the visual alpha of the shadow based on current sanity every frame
+        UpdateShadowAlpha();
+    }
+
+    private void UpdateShadowVisibility()
+    {
+        // Sanity-based visibility:
+        // alpha = 1 - (sanity - alphaLowSanityThreshold) / (alphaHighSanityThreshold - alphaLowSanityThreshold)
+        // clamp alpha to 0.1 - 1 range
+        float sanityFactor = Mathf.InverseLerp(alphaLowSanityThreshold, alphaHighSanityThreshold, playerStats.Sanity);
+        sanityFactor = Mathf.Clamp01(sanityFactor);
+        float targetAlpha = Mathf.Lerp(maxShadowAlpha, minShadowAlpha, sanityFactor);
+
+        // Update all renderers
+        if (cachedRenderers == null || cachedRenderers.Length == 0)
+        {
+            cachedRenderers = GetComponentsInChildren<Renderer>();
+            cachedMaterials = new Material[cachedRenderers.Length];
+            for (int i = 0; i < cachedRenderers.Length; i++)
+            {
+                cachedMaterials[i] = new Material(cachedRenderers[i].material);
+                cachedRenderers[i].material = cachedMaterials[i];
+            }
+        }
+
+        foreach (var rend in cachedRenderers)
+        {
+            foreach (var mat in rend.materials)
+            {
+                // Only modify our instance materials
+                if (mat.name.Contains("ShadowMaterial"))
+                {
+                    // Smoothly interpolate the alpha value
+                    Color color = mat.color;
+                    color.a = Mathf.Lerp(color.a, targetAlpha, Time.deltaTime * 5f);
+                    mat.color = color;
+                }
+            }
+        }
+    }
+
+    // Add this helper method to compute and apply alpha from player's sanity
+    private void UpdateShadowAlpha()
+    {
+        if (cachedMaterials == null || cachedMaterials.Length == 0 || playerStats == null)
+            return;
+
+        // Normalized 0..1 where 0 => high sanity (alpha=min) and 1 => low sanity (alpha=max)
+        float t = Mathf.InverseLerp(alphaHighSanityThreshold, alphaLowSanityThreshold, playerStats.Sanity);
+        float alpha = Mathf.Lerp(minShadowAlpha, maxShadowAlpha, t);
+
+        for (int i = 0; i < cachedMaterials.Length; i++)
+        {
+            var mat = cachedMaterials[i];
+            if (mat == null) continue;
+
+            // Try common color properties. Fallback to _Color.
+            if (mat.HasProperty("_Color"))
+            {
+                Color c = mat.color;
+                c.a = alpha;
+                mat.color = c;
+            }
+            else if (mat.HasProperty("_BaseColor")) // URP / HDRP
+            {
+                Color c = mat.GetColor("_BaseColor");
+                c.a = alpha;
+                mat.SetColor("_BaseColor", c);
+            }
+            // If the shader does not use transparency, you must switch its render mode to Transparent externally.
+        }
+    }
+
+    // Add this helper near other private helpers (e.g. next to CanSeePlayer)
+    private bool IsMoving()
+    {
+        if (agent == null) return false;
+
+        // Consider the shadow moving if:
+        // - it has a path and a non-trivial velocity, or
+        // - it has remaining distance larger than a small threshold.
+        if (agent.pathPending) 
+            return true; // path is being computed -> treat as moving
+
+        if (agent.hasPath)
+        {
+            if (agent.velocity.sqrMagnitude > 0.01f) // moving by velocity
+                return true;
+            if (agent.remainingDistance > agent.stoppingDistance + 0.1f) // still en route
+                return true;
+        }
+
+        return false;
     }
 }
