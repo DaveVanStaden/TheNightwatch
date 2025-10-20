@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class ManualCameraRenderer : MonoBehaviour
 {
-    public int fps;
+    public float fps;
     float elapsed;
     Camera cam;
 

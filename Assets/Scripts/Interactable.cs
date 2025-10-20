@@ -8,6 +8,8 @@ public class Interactable : MonoBehaviour, IInteraction
     GameObject flashlight;
     public bool busy;
 
+    MonitorCursor lastCursor;
+
     AudioSource swoosh;
 
     public Camera interactionCamera; // Assign in Inspector or dynamically
@@ -49,7 +51,10 @@ public class Interactable : MonoBehaviour, IInteraction
         // Enable interaction camera, disable player camera
         interactionCamera.enabled = true;
         if (playerManager.playerCamera != null)
+        {
             playerManager.playerCamera.enabled = false;
+            playerManager.playerCamera.GetComponent<AudioListener>().enabled = false;
+        }
 
         flashlightRotator.canMove = false;
         PlaySound();
@@ -86,6 +91,8 @@ public class Interactable : MonoBehaviour, IInteraction
         // Stop following and lerp to angle(0)
         isInInteractionView = true;
         isFollowingPlayer = false;
+        interactionCamera.GetComponent<AudioListener>().enabled = true;
+
 
         int angle = 0;
         Vector3 startPos = interactionCamera.transform.position;
@@ -100,6 +107,7 @@ public class Interactable : MonoBehaviour, IInteraction
         float elapsed = 0f;
 
         PlaySound();
+        CheckCursor(setAngles[angle].GetComponent<CamData>());
 
         while (elapsed < lerpTime)
         {
@@ -121,6 +129,7 @@ public class Interactable : MonoBehaviour, IInteraction
 
     public IEnumerator LeaveTheThing(PlayerManager playerManager)
     {
+        DisableLastCursor();
         flashlight.SetActive(true);
         busy = true;
 
@@ -155,9 +164,16 @@ public class Interactable : MonoBehaviour, IInteraction
 
         // Enable player camera, disable interaction camera
         if (playerManager.playerCamera != null)
+        {
             playerManager.playerCamera.enabled = true;
+            playerManager.playerCamera.GetComponent<AudioListener>().enabled = true;
+
+        }
         if (interactionCamera != null)
+        {
             interactionCamera.enabled = false;
+            interactionCamera.GetComponent<AudioListener>().enabled = false;
+        }
 
         float maxTime = .2f;
         yield return new WaitForSeconds(maxTime);
@@ -180,10 +196,7 @@ public class Interactable : MonoBehaviour, IInteraction
         float pos;
         float maxTime = .15f;
 
-        if (camera.hasCursor == true && camera != null)
-        {
-            camera.cursor.GetComponent<MonitorCursor>().EnableCursorControl();
-        }
+        CheckCursor(camera);
 
         while (timePassed < maxTime)
         {
@@ -200,6 +213,26 @@ public class Interactable : MonoBehaviour, IInteraction
             yield return null;
         }
         yield return new WaitForSeconds(maxTime);
+    }
+
+    private void CheckCursor(CamData camera)
+    {
+        DisableLastCursor();
+        if (camera.hasCursor == true && camera != null)
+        {
+            //New cursor found!
+            lastCursor = camera.cursor.GetComponent<MonitorCursor>();
+            Debug.Log(lastCursor.name + " is now the last cursor");
+            //Enable cursorcontrol
+            lastCursor.EnableCursorControl();
+        }
+    }
+
+    private void DisableLastCursor()
+    {
+        // Make sure there's a cursor to disable
+        if (lastCursor != null)
+            lastCursor.DisableCursorControl();
     }
 
     public void PlaySound()

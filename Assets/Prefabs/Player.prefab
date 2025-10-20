@@ -629,7 +629,7 @@ CharacterController:
   m_Height: 2
   m_Radius: 0.5
   m_SlopeLimit: 45
-  m_StepOffset: 0.2
+  m_StepOffset: 1
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
@@ -645,7 +645,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
-  m_Actions: {fileID: -944628639613478452, guid: dcb8a6689cfae6a48997523fff5000f1, type: 3}
+  m_Actions: {fileID: 0}
   m_NotificationBehavior: 0
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -1010,7 +1010,7 @@ GameObject:
   - component: {fileID: 7707105703074132694}
   m_Layer: 0
   m_Name: Capsule
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1054,7 +1054,7 @@ CapsuleCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
@@ -1234,7 +1234,7 @@ MonoBehaviour:
   m_StopNaN: 0
   m_Dithering: 1
   m_ClearDepth: 1
-  m_AllowXRRendering: 1
+  m_AllowXRRendering: 0
   m_AllowHDROutput: 1
   m_UseScreenCoordOverride: 0
   m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
@@ -1271,43 +1271,43 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.036
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.295
+      value: 0.105
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7366975
+      value: 0.70707184
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.03561019
+      value: -0.007034469
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.6746195
+      value: 0.70707184
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.02995623
+      value: -0.007034469
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -0.69
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 84.995
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: -5.29
+      value: -1.14
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_ConstrainProportionsScale
