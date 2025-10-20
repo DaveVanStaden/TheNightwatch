@@ -99,4 +99,11 @@ public class PlayerCameraLook : PlayerModule
             }
         }
     }
+
+    public Vector3 GetCameraForward()
+    {
+        if (manager.playerCamera != null)
+            return manager.playerCamera.transform.forward;
+        return Vector3.forward;
+    }
 }
