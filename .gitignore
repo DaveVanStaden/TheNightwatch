@@ -53,6 +53,9 @@ ExportedObj/
 # Meta Files built by Visual Studio
 *.meta
 
+# Other meta files
+*.cs.meta
+
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta
@@ -70,6 +73,10 @@ sysinfo.txt
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 
+# Recovery files
+*_Recovery
+*_Recovery.meta
+
 # Crashlytics generated file
 crashlytics-build.properties
 
@@ -85,3 +92,4 @@ InitTestScene*.unity.meta
 InitTestScene*.unity
 
 # End of https://www.toptal.com/developers/gitignore/api/unity
+*.meta
