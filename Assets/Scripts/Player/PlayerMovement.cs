@@ -1,3 +1,4 @@
+using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,6 +7,12 @@ public class PlayerMovement : PlayerModule
     private PlayerInputManager inputActions;
     private Vector2 moveInput;
     private float velocityY;
+    private bool isSprinting;
+
+    private float footstepTimer = 0f;
+    private float headbobTimer;
+
+    private float GetCurrentOffset => isSprinting ? manager.baseStepSpeed * manager.runStepMultiplier : manager.baseStepSpeed;
 
     public PlayerMovement(PlayerManager manager) : base(manager)
     {
@@ -17,7 +24,7 @@ public class PlayerMovement : PlayerModule
         if (manager.inInteractionView) return; // Prevent movement during interaction
 
         moveInput = inputActions.Player.Move.ReadValue<Vector2>();
-        bool isSprinting = inputActions.Player.Sprint.ReadValue<float>() > 0.1f;
+        isSprinting = inputActions.Player.Sprint.ReadValue<float>() > 0.1f;
 
         // Directly calculate movement, no smoothing
         Vector3 targetMove = manager.transform.right * moveInput.x + manager.transform.forward * moveInput.y;
@@ -35,5 +42,38 @@ public class PlayerMovement : PlayerModule
 
         Vector3 finalMove = new Vector3(targetMove.x, velocityY, targetMove.z);
         manager.characterController.Move(finalMove * Time.deltaTime);
+
+        if (manager.enableFootsteps)
+        {
+            HandleFootsteps();
+        }
+        if (manager.useHeadBob)
+        {
+            HandleHeadbob();
+        }
+    }
+    private void HandleFootsteps()
+    {
+        if (!manager.characterController.isGrounded) return;
+        if (moveInput == Vector2.zero) return;
+
+        footstepTimer -= Time.deltaTime;
+        if (footstepTimer <= 0)
+        {
+            manager.footstepAudioSource.pitch = Random.Range(0.9f, 1.1f);
+            manager.footstepAudioSource.PlayOneShot(manager.footstepSound[Random.Range(0, manager.footstepSound.Length)]);
+            footstepTimer = GetCurrentOffset;
+        }
+    }
+    private void HandleHeadbob()
+    {
+        if (Mathf.Abs(moveInput.x) > 0.1f || Mathf.Abs(moveInput.y) > 0.1f)
+        {
+            headbobTimer += Time.deltaTime * (isSprinting ? manager.runBobSpeed : manager.walkBobSpeed);
+            manager.playerCamera.transform.localPosition = new Vector3(
+                manager.playerCamera.transform.localPosition.x,
+                manager.defaultYPos + Mathf.Sin(headbobTimer) * (isSprinting ? manager.runBobAmount : manager.walkBobAmount),
+                manager.playerCamera.transform.localPosition.z);
+        }
     }
 }
