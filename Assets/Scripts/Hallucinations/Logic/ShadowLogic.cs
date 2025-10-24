@@ -39,12 +39,18 @@ public class ShadowLogic : MonoBehaviour
     [Tooltip("Sanity at which movement reaches max speed (lower bound)")]
     [SerializeField] private float speedLowSanityThreshold = 10f;
 
+    // Hunt-specific speed (scales from KillSanityThresshold -> 0)
+    [Tooltip("Agent speed when hunting - minimum")]
+    [SerializeField] private float huntMinSpeed = 3f;
+    [Tooltip("Agent speed when hunting - maximum at 0 sanity")]
+    [SerializeField] private float huntMaxSpeed = 10f;
+
     private Vector3 peekDestination;
     private bool isVisible = false;
     private HashSet<Light> disabledLights = new HashSet<Light>();
 
     private float outOfSightTimer = 0f;
-    private const float outOfSightThreshold = 15f;
+    [SerializeField]private float outOfSightThreshold = 15f;
 
     private bool repositioningDueToproximity = false;
     private bool wasVisibleLastFrame = true;
@@ -154,11 +160,24 @@ public class ShadowLogic : MonoBehaviour
         // --- Movement speed scaling by sanity ---
         if (agent != null && playerStats != null)
         {
-            // t==0 => high sanity (slow), t==1 => low sanity (fast)
+            // Use the same hunting condition as the hunt branch so speed is correct even before isHunting is toggled
             float sanityF = (float)playerStats.Sanity;
-            float t = Mathf.InverseLerp(speedHighSanityThreshold, speedLowSanityThreshold, sanityF);
-            t = Mathf.Clamp01(t);
-            agent.speed = Mathf.Lerp(minMoveSpeed, maxMoveSpeed, t);
+            bool huntingThisFrame = playerStats.Sanity < KillSanityThresshold && (playerStats.Sanity <= 0 || huntSuppressTimer <= 0f);
+
+            if (huntingThisFrame)
+            {
+                // Scale hunt speed from KillSanityThresshold -> 0 (0 sanity = max hunt speed)
+                float t = Mathf.InverseLerp(KillSanityThresshold, 0f, sanityF);
+                t = Mathf.Clamp01(t);
+                agent.speed = Mathf.Lerp(huntMinSpeed, huntMaxSpeed, t);
+            }
+            else
+            {
+                // Reposition / normal movement scaling (unchanged)
+                float t = Mathf.InverseLerp(speedHighSanityThreshold, speedLowSanityThreshold, sanityF);
+                t = Mathf.Clamp01(t);
+                agent.speed = Mathf.Lerp(minMoveSpeed, maxMoveSpeed, t);
+            }
         }
 
         // Sanity drain if player is looking at hallucination AND the hallucination is visible to the player
