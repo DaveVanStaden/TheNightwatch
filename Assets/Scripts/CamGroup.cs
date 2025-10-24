@@ -70,5 +70,16 @@ public class CamGroup : MonoBehaviour
             _ = cameras[i].GetComponent<CamImage>().descText.enabled = true;
         }
         MakeSelected();
+        //ReplaceLights();
     }
+    private void ReplaceLights()
+    {
+        //work in progress code, intended for performance improvements
+        GameObject[] cameraLights = GameObject.FindGameObjectsWithTag("SecurityCam");
+        for (int i = 0; i<cameraLights.Length; i++)
+        {
+            cameraLights[i].GetComponentInChildren<Light>().enabled = false;
+        }
+    }
+
 }
