@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,16 +21,28 @@ public class CamGroup : MonoBehaviour
     public Group _group;
 
     public GameObject[] cameras;
-    public Light[] groupLights;
     void Start()
     {
+        GameObject[] cameralist = GameObject.FindGameObjectsWithTag("CameraView");
+        int j = 0;
+        for (int i = 0; i < cameralist.Length; i++)
+        {
+            if (cameralist[i].GetComponent<CamImage>()._group.ToString() == _group.ToString())
+            {
+                cameras[j] = cameralist[i];
+                j++;
+                if (j >= 4)
+                {
+                    j = 0;
+                }
+            }
+        }
         currentColor = regularColor;
         if (isStartingGroup)
         {
             ReplaceCameras();
         }
     }
-
 
     private void Update()
     {
@@ -50,7 +63,7 @@ public class CamGroup : MonoBehaviour
     {
         audioSource.PlayOneShot(blip);
         GameObject[] cameraViews = GameObject.FindGameObjectsWithTag("CameraView");
-         for (int i = 0; i<cameraViews.Length; i++)
+        for (int i = 0; i < cameraViews.Length; i++)
         {
             cameraViews[i].GetComponent<RawImage>().enabled = false;
             cameraViews[i].GetComponent<BoxCollider2D>().enabled = false;
@@ -77,15 +90,15 @@ public class CamGroup : MonoBehaviour
     {
         //work in progress code, intended for performance improvements
         GameObject[] allLights = GameObject.FindGameObjectsWithTag("SecurityCam");
-        for (int i = 0; i< allLights.Length; i++)
+        for (int i = 0; i < allLights.Length; i++)
         {
-            if (allLights[i].GetComponentInChildren<Light>() != null)
-            allLights[i].GetComponentInChildren<Light>().enabled = false;
+            if (allLights[i].GetComponent<SecurityCamera>().lights)
+                allLights[i].GetComponent<SecurityCamera>().DisableLight();
         }
-        for (int i = 0; i< groupLights.Length; i++)
+        for (int i = 0; i < cameras.Length; i++)
         {
-            if (groupLights[i].GetComponentInChildren<Light>() != null)
-                groupLights[i].GetComponentInChildren<Light>().enabled = true;
+            if (!cameras[i].GetComponent<CamImage>().originalCam.lights)
+                cameras[i].GetComponent<CamImage>().originalCam.EnableLight();
         }
 
 
