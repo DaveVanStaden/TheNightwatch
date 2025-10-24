@@ -20,6 +20,7 @@ public class CamGroup : MonoBehaviour
     public Group _group;
 
     public GameObject[] cameras;
+    public Light[] groupLights;
     void Start()
     {
         currentColor = regularColor;
@@ -70,16 +71,24 @@ public class CamGroup : MonoBehaviour
             _ = cameras[i].GetComponent<CamImage>().descText.enabled = true;
         }
         MakeSelected();
-        //ReplaceLights();
+        ReplaceLights();
     }
     private void ReplaceLights()
     {
         //work in progress code, intended for performance improvements
-        GameObject[] cameraLights = GameObject.FindGameObjectsWithTag("SecurityCam");
-        for (int i = 0; i<cameraLights.Length; i++)
+        GameObject[] allLights = GameObject.FindGameObjectsWithTag("SecurityCam");
+        for (int i = 0; i< allLights.Length; i++)
         {
-            cameraLights[i].GetComponentInChildren<Light>().enabled = false;
+            if (allLights[i].GetComponentInChildren<Light>() != null)
+            allLights[i].GetComponentInChildren<Light>().enabled = false;
         }
+        for (int i = 0; i< groupLights.Length; i++)
+        {
+            if (groupLights[i].GetComponentInChildren<Light>() != null)
+                groupLights[i].GetComponentInChildren<Light>().enabled = true;
+        }
+
+
     }
 
 }
