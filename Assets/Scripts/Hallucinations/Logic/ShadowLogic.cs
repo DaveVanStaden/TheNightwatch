@@ -763,13 +763,13 @@ public class ShadowLogic : MonoBehaviour
             {
                 repositionPending = false;
                 Debug.Log($"[ShadowLogic] Reposition #{repositionsDone} started. (counted when movement begins)");
-                if (repositionsDone >= repositionsBeforeDestroy && !destroyScheduled)
+                /*if (repositionsDone >= repositionsBeforeDestroy && !destroyScheduled)
                 {
                     destroyScheduled = true;
                     Debug.Log("[ShadowLogic] Reposition threshold reached — scheduling destroy.");
                     Destroy(gameObject, 1.0f);
                 }else
-                    repositionsDone++;
+                    repositionsDone++;*/
 
             }
 
