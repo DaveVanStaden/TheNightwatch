@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.InputSystem;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerManager : MonoBehaviour
@@ -16,10 +16,25 @@ public class PlayerManager : MonoBehaviour
     public Camera playerCamera;
     public float lookSpeed = 2f;
     public float lookXLimit = 45f;
+    public bool useHeadBob = true;
 
     [Header("Interaction Settings")]
     public float currentLayer = 0;
     public float interactionRange = 100f;
+
+    [Header("Headbob Settings")]
+    [SerializeField] public float walkBobSpeed = 14f;
+    [SerializeField] public float walkBobAmount = .2f;
+    [SerializeField] public float runBobSpeed = 20f;
+    [SerializeField] public float runBobAmount = .4f;
+    public float defaultYPos = 0f;
+
+    [Header("Footstep parameters")]
+    public bool enableFootsteps = true;
+    [SerializeField] public float baseStepSpeed = 0.5f;
+    [SerializeField] public float runStepMultiplier = 1.5f;
+    [SerializeField] public AudioSource footstepAudioSource;
+    [SerializeField] public AudioClip[] footstepSound;
 
     [Header("Camera")]
     public Transform cameraParent; // Assign this in the Inspector
@@ -51,6 +66,8 @@ public class PlayerManager : MonoBehaviour
         modules.Add(new PlayerMovement(this));
         modules.Add(new PlayerInteraction(this));
 
+        footstepAudioSource = GetComponent<AudioSource>();
+        defaultYPos = playerCamera.transform.localPosition.y;
         foreach (var m in modules) m.OnAwake();
     }
 
