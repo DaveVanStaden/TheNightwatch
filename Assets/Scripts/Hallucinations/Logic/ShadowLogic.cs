@@ -10,8 +10,12 @@ public class ShadowLogic : MonoBehaviour
     [SerializeField] private NavMeshAgent agent;
 
     [Header("Settings")]
-    [SerializeField] private float minMoveDistance = 8f;
-    [SerializeField] private float minPlayerDistance = 20f;
+    [SerializeField] private float minMoveDistance = 30f;
+    // [SerializeField] private float minPlayerDistance = 20f; // legacy - replaced by below
+    [SerializeField, Tooltip("Distance at which the AI will trigger a reposition (player proximity trigger)")]
+    private float repositionTriggerDistance = 20f;
+    [SerializeField, Tooltip("Distance the AI will try to keep from the player when choosing a peek position")]
+    private float maintainDistanceFromPlayer = 20f;
     [SerializeField] private float lightDisableRadius = 10f;
     [SerializeField] private int sampleCount = 32;
     [SerializeField] private float searchRadius = 20f;
@@ -182,7 +186,7 @@ public class ShadowLogic : MonoBehaviour
 
         // Sanity drain if player is looking at hallucination AND the hallucination is visible to the player
         // but only if the shadow is NOT currently moving
-        if (CanSeePlayer() && IsPlayerLookingAtMe() && !IsMoving())
+        if (IsPlayerLookingAtMe() && !IsMoving() && IsPlayerLineOfSightClear())
         {
             playerStats.ChangeSanity(-sanityDrainPerSecond * Time.deltaTime);
             Debug.Log("[ShadowLogic] Draining sanity! " + playerStats.Sanity);
@@ -333,7 +337,7 @@ public class ShadowLogic : MonoBehaviour
                 candidatesTested++;
                 if (canSee) candidatesVisible++;
 
-                if (canSee && playerDist >= minPlayerDistance)
+                if (canSee && playerDist >= maintainDistanceFromPlayer)
                 {
                     float score = playerDist + moveDist;
                     if (score < bestSafeScore)
@@ -676,6 +680,43 @@ public class ShadowLogic : MonoBehaviour
         return dot > 0.85f;
     }
 
+    // Add this helper (near other helpers like IsPlayerLookingAtMe)
+    private bool IsPlayerLineOfSightClear()
+    {
+        Vector3 origin;
+        if (playerManager != null && playerManager.playerCamera != null)
+        {
+            origin = playerManager.playerCamera.transform.position;
+        }
+        else if (playerCameraLook != null)
+        {
+            origin = playerTransform != null ? playerTransform.position + Vector3.up * 1.6f : Vector3.zero;
+        }
+        else if (Camera.main != null)
+        {
+            origin = Camera.main.transform.position;
+        }
+        else
+        {
+            return false;
+        }
+
+        Vector3 toHallucination = transform.position - origin;
+        float distance = toHallucination.magnitude;
+        if (distance <= 0.01f) return true;
+
+        // Only consider walls/obstacles as blocking. Adjust mask if you need additional blockers.
+        int mask = LayerMask.GetMask("Walls", "Obstacles");
+        RaycastHit hit;
+        if (Physics.Raycast(origin, toHallucination.normalized, out hit, distance, mask))
+        {
+            // Something blocking the view (wall/obstacle) before reaching the hallucination
+            return false;
+        }
+
+        return true;
+    }
+
     private void HuntPlayer()
     {
         if (playerTransform == null || agent == null)
@@ -741,10 +782,10 @@ public class ShadowLogic : MonoBehaviour
             }
         }
 
-        // 2. Reposition once if player is too close
-        if (distanceToPlayer < minPlayerDistance)
+        if (distanceToPlayer < repositionTriggerDistance)
         {
-            if (!repositioningDueToproximity)
+            float peekDestPlayerDist = Vector3.Distance(peekDestination, playerTransform.position);
+            if (!repositioningDueToproximity || peekDestPlayerDist < repositionTriggerDistance)
             {
                 FindPeekPosition();
                 repositioningDueToproximity = true;
