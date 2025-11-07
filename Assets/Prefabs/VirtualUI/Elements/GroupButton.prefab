@@ -236,7 +236,16 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   blip: {fileID: 8300000, guid: 0bb75753374a7924686323d661385afb, type: 3}
   _group: 0
-  cameras: []
+  cameras:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  groupLights:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!61 &3641078683506189670
 BoxCollider2D:
   m_ObjectHideFlags: 0

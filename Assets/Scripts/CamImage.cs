@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,6 +21,8 @@ public class CamImage : MonoBehaviour
     RectTransform rect;
     BoxCollider2D imgCollider;
 
+    public SecurityCamera originalCam;
+
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip expand;
     [SerializeField] AudioClip collapse;
@@ -38,6 +39,7 @@ public class CamImage : MonoBehaviour
         currentPivot = rect.pivot;
         currentCollider = imgCollider.size;
         colliderOffset = imgCollider.offset;
+        audioSource = GameObject.Find("MonitorViewBleeps").GetComponent<AudioSource>();
     }
 
     public IEnumerator ChangeScale()

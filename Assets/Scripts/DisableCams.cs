@@ -6,7 +6,7 @@ public class DisableCams : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        SwitchEm();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -36,24 +36,25 @@ public class DisableCams : MonoBehaviour
         if (AreCamsOn)
         {
             //Cams are on, so turn them off
-            foreach (GameObject cam in GameObject.FindGameObjectsWithTag("SecurityCam"))
+            foreach (SecurityCamera cam in FindObjectsOfType<SecurityCamera>())
             {
                 cam.GetComponent<ManualCameraRenderer>().fps = .1f;
-                if (cam.GetComponentInChildren<Light>() != null)
+                if (cam.camLight != null)
                 {
-                    cam.GetComponentInChildren<Light>().enabled = false;
+                    cam.camLight.enabled = false;
                 }
             }
         }
         else
         {
             //Cams are off, so turn them on
-            foreach (GameObject cam in GameObject.FindGameObjectsWithTag("SecurityCam"))
+            foreach (SecurityCamera cam in FindObjectsOfType<SecurityCamera>())
             {
                 cam.GetComponent<ManualCameraRenderer>().fps = 12f;
-                if (cam.GetComponentInChildren<Light>() != null)
+                if (cam.camLight != null)
                 {
-                    cam.GetComponentInChildren<Light>().enabled = true;
+                    if (cam.lights)
+                        cam.camLight.enabled = true;
                 }
             }
         }
