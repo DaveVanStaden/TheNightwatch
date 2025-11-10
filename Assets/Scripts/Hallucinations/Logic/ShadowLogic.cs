@@ -676,7 +676,7 @@ public class ShadowLogic : MonoBehaviour
         Vector3 toHallucination = (transform.position - origin).normalized;
         Debug.DrawRay(origin, toHallucination * 5f, Color.yellow, 0.05f);
         float dot = Vector3.Dot(cameraForward, toHallucination);
-        Debug.Log($"[ShadowLogic] Dot: {dot}");
+        //Debug.Log($"[ShadowLogic] Dot: {dot}");
         return dot > 0.85f;
     }
 
