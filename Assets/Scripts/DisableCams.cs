@@ -38,7 +38,8 @@ public class DisableCams : MonoBehaviour
             //Cams are on, so turn them off
             foreach (SecurityCamera cam in FindObjectsOfType<SecurityCamera>())
             {
-                cam.GetComponent<ManualCameraRenderer>().fps = .1f;
+                cam.GetComponent<ManualCameraRenderer>().enabled = false;
+
                 if (cam.camLight != null)
                 {
                     cam.camLight.enabled = false;
@@ -50,7 +51,8 @@ public class DisableCams : MonoBehaviour
             //Cams are off, so turn them on
             foreach (SecurityCamera cam in FindObjectsOfType<SecurityCamera>())
             {
-                cam.GetComponent<ManualCameraRenderer>().fps = 12f;
+
+                cam.GetComponent<ManualCameraRenderer>().enabled = true;
                 if (cam.camLight != null)
                 {
                     if (cam.lights)

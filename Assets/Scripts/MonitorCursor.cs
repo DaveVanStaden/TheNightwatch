@@ -153,24 +153,31 @@ public class MonitorCursor : MonoBehaviour
             //        camera.ReplaceCameras();
             //    }
             //}
-        }
-    }
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        //Debug.Log("Entering " + collision.name);
-
-        if (collision.CompareTag("GroupButton"))
-        {
-            CamGroup camera = collision.GetComponent<CamGroup>();
-            camera.currentColor = camera.hoverColor;
-            selectedGroup = camera;
+            if (collision.CompareTag("GroupButton"))
+            {
+                CamGroup camera = collision.GetComponent<CamGroup>();
+                camera.currentColor = camera.hoverColor;
+                selectedGroup = camera;
+            }
         }
 
-        //if (collision.CompareTag("VirtualWindow"))
-        //{
-
-        //}
     }
+    //private void OnTriggerEnter2D(Collider2D collision)
+    //{
+    //    //Debug.Log("Entering " + collision.name);
+
+    //    if (collision.CompareTag("GroupButton"))
+    //    {
+    //        CamGroup camera = collision.GetComponent<CamGroup>();
+    //        camera.currentColor = camera.hoverColor;
+    //        selectedGroup = camera;
+    //    }
+
+    //    //if (collision.CompareTag("VirtualWindow"))
+    //    //{
+
+    //    //}
+    //}
     private void OnTriggerExit2D(Collider2D collision)
     {
         //Debug.Log("Leaving " + collision.name);
