@@ -16,7 +16,7 @@ public class CamGroup : MonoBehaviour
     [SerializeField] AudioClip blip;
     public enum Group
     {
-        A, B, C, D
+        A, B, C, D, E, F
     };
     public Group _group;
 
@@ -24,6 +24,7 @@ public class CamGroup : MonoBehaviour
     public GameObject[] icons;
     void Start()
     {
+        audioSource = GameObject.Find("MonitorGroupBleeps").GetComponent<AudioSource>();
         GameObject[] cameralist = GameObject.FindGameObjectsWithTag("CameraView");
         int j = 0;
         for (int i = 0; i < cameralist.Length; i++)
