@@ -21,6 +21,7 @@ public class CamGroup : MonoBehaviour
     public Group _group;
 
     public GameObject[] cameras;
+    public GameObject[] icons;
     void Start()
     {
         GameObject[] cameralist = GameObject.FindGameObjectsWithTag("CameraView");
@@ -34,6 +35,20 @@ public class CamGroup : MonoBehaviour
                 if (j >= 4)
                 {
                     j = 0;
+                }
+            }
+        }
+        GameObject[] iconList = GameObject.FindGameObjectsWithTag("CamIcon");
+        int k = 0;
+        for (int i = 0; i < iconList.Length; i++)
+        {
+            if (iconList[i].GetComponent<CamIcon>()._group.ToString() == _group.ToString())
+            {
+                icons[k] = iconList[i];
+                k++;
+                if (k >= 4)
+                {
+                    k = 0;
                 }
             }
         }
@@ -62,6 +77,8 @@ public class CamGroup : MonoBehaviour
     public void ReplaceCameras()
     {
         audioSource.PlayOneShot(blip);
+        //Disable everything, just for a moment
+        //First disable the camera's views
         GameObject[] cameraViews = GameObject.FindGameObjectsWithTag("CameraView");
         for (int i = 0; i < cameraViews.Length; i++)
         {
@@ -70,12 +87,15 @@ public class CamGroup : MonoBehaviour
             cameraViews[i].GetComponent<CamImage>().titleText.enabled = false;
             cameraViews[i].GetComponent<CamImage>().descText.enabled = false;
         }
+        //Then deselect the other buttons
         GameObject[] groupButtons = GameObject.FindGameObjectsWithTag("GroupButton");
         for (int i = 0; i < groupButtons.Length; i++)
         {
             groupButtons[i].GetComponent<CamGroup>().Deselect();
         }
 
+
+        //Now that everything is deselected, re-enable all the cameras that are part of our group
         for (int i = 0; i < cameras.Length; i++)
         {
             _ = cameras[i].GetComponent<RawImage>().enabled = true;
@@ -83,12 +103,14 @@ public class CamGroup : MonoBehaviour
             _ = cameras[i].GetComponent<CamImage>().titleText.enabled = true;
             _ = cameras[i].GetComponent<CamImage>().descText.enabled = true;
         }
+
         MakeSelected();
         ReplaceLights();
+        ReplaceIcons();
     }
     private void ReplaceLights()
     {
-        //work in progress code, intended for performance improvements
+        //Improve performance by turning off the lights when the camera attatched to those lights is not looking
         GameObject[] allLights = GameObject.FindGameObjectsWithTag("SecurityCam");
         for (int i = 0; i < allLights.Length; i++)
         {
@@ -102,6 +124,20 @@ public class CamGroup : MonoBehaviour
         }
 
 
+    }
+    private void ReplaceIcons()
+    {
+        //Deselect all camIcons
+        GameObject[] allIcons = GameObject.FindGameObjectsWithTag("CamIcon");
+        for (int i = 0; i < allIcons.Length; i++)
+        {
+            allIcons[i].GetComponent<CamIcon>().Deselect();
+        }
+        //Then re-enable the icons that are part of the group
+        for (int i = 0; i < icons.Length; i++)
+        {
+            icons[i].GetComponent<CamIcon>().Select();
+        }
     }
 
 }

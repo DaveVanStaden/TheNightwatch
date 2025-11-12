@@ -77,7 +77,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_UiScaleMode: 0
   m_ReferencePixelsPerUnit: 100
-  m_ScaleFactor: 1
+  m_ScaleFactor: 2
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
@@ -285,6 +285,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7544051277837449626}
     m_Modifications:
+    - target: {fileID: 5050923765410256864, guid: 7574de11f11f30d4d86b5fc23542520c, type: 3}
+      propertyPath: pitchOverride
+      value: 1.1
+      objectReference: {fileID: 0}
     - target: {fileID: 7708528368426902891, guid: 7574de11f11f30d4d86b5fc23542520c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
