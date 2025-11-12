@@ -144,6 +144,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 0}
   feedbackColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 0}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 0}
+  groupOffMaterial: {fileID: 0}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
@@ -166,8 +171,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00068992976, y: 0.001225416, z: 0.00068992993}
-  m_Center: {x: 0.0014335529, y: 0.00026774284, z: -0.0000004773737}
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6787766
 GameObject:
   m_ObjectHideFlags: 0
@@ -6041,6 +6046,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1396920940}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1396920941}
     - targetCorrespondingSourceObject: {fileID: -5425686079792332890, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1940709162}
@@ -11954,6 +11962,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 0}
   feedbackColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 0}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 0}
+  groupOffMaterial: {fileID: 0}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
@@ -11976,8 +11989,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00068992976, y: 0.001225416, z: 0.00068993046}
-  m_Center: {x: 0.002866986, y: 0.00026774374, z: 0.0031101888}
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &665178064
 GameObject:
   m_ObjectHideFlags: 0
@@ -16014,6 +16027,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 0}
   feedbackColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 0}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 0}
+  groupOffMaterial: {fileID: 0}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
@@ -16036,8 +16054,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00068992976, y: 0.001225416, z: 0.00068993046}
-  m_Center: {x: 0.0028669862, y: 0.0002677433, z: -0.00000047634146}
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!64 &866807692
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -21710,6 +21728,26 @@ MonoBehaviour:
   debugRayDuration: 2
   swoosh: {fileID: 0}
   flashlightRoot: {fileID: 17085990}
+--- !u!114 &1396920941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1396920934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede83c91fbcf3f44c808ee87fcec5b95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElectricityLogic
+  startPowerLevel: 100
+  fullDrainSecondsWhenAllActive: 330
+  onPowerOut:
+    m_PersistentCalls:
+      m_Calls: []
+  onPowerRestored:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1399276832
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24228,6 +24266,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 0}
   feedbackColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 0}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 0}
+  groupOffMaterial: {fileID: 0}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
@@ -24250,8 +24293,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00068992976, y: 0.001225416, z: 0.00068993046}
-  m_Center: {x: -0.000000118505405, y: 0.00026774328, z: 0.003110189}
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &1513940813 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7917050242637936088, guid: a88787d5847ce114a9cf86fa8438a061, type: 3}
@@ -25790,6 +25833,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 0}
   feedbackColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 0}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 0}
+  groupOffMaterial: {fileID: 0}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
@@ -25812,8 +25860,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.0006899293, y: 0.001225416, z: 0.0006899301}
-  m_Center: {x: 0.0043006577, y: 0.0002677433, z: -0.00000047609498}
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1597119970
 GameObject:
   m_ObjectHideFlags: 0
@@ -26399,6 +26447,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 0}
   feedbackColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 0}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 0}
+  groupOffMaterial: {fileID: 0}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
@@ -26421,8 +26474,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.0006899297, y: 0.001225416, z: 0.00068993034}
-  m_Center: {x: -0.00000011903467, y: 0.00026774284, z: -0.00000047683434}
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1633431505 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -653771663636001070, guid: 5ad2f2e34e0a77f4886ee14b48cce52f, type: 3}
@@ -28221,6 +28274,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 0}
   feedbackColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 0}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 0}
+  groupOffMaterial: {fileID: 0}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
@@ -28243,8 +28301,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00068992976, y: 0.001225416, z: 0.0006899309}
-  m_Center: {x: 0.0014335528, y: 0.00026774328, z: 0.0031101892}
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &1824993134 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5ad2f2e34e0a77f4886ee14b48cce52f, type: 3}
@@ -29241,6 +29299,11 @@ MonoBehaviour:
   feedbackRenderer: {fileID: 689292865}
   feedbackColor: {r: 1, g: 0, b: 0.015686275, a: 1}
   feedbackColorTime: 0.12
+  groupLight: {fileID: 0}
+  groupLightRenderer: {fileID: 689292865}
+  groupColorTransitionTime: 0.12
+  groupOnMaterial: {fileID: 2100000, guid: 330edd380d8c20e4883ddd6450559d75, type: 2}
+  groupOffMaterial: {fileID: 2100000, guid: 0dd5cdfc3ffb4614e9ba32b64cd7de98, type: 2}
   onToggled:
     m_PersistentCalls:
       m_Calls: []
