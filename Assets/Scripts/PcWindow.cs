@@ -42,7 +42,6 @@ public class PcWindow : MonoBehaviour
         }
         if (collision.GetComponent<PcWindow>())
         {
-            Debug.Log("Colliding with" + collision.name);
             overlappedWindow = collision.GetComponent<PcWindow>();
         }
     }
