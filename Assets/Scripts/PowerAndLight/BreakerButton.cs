@@ -21,21 +21,39 @@ public class BreakerButton : MonoBehaviour
     [SerializeField] private Color feedbackColor = Color.yellow;
     [SerializeField] private float feedbackColorTime = 0.12f;
 
+    [Header("PowerGroup Light")]
+    [Tooltip("Optional Unity Light that indicates the PowerGroup state (enabled = powered)")]
+    [SerializeField] private Light groupLight;
+    [Tooltip("Optional Renderer (e.g. a mesh with emissive material) that indicates the PowerGroup state")]
+    [SerializeField] private Renderer groupLightRenderer;
+    [Tooltip("Time to transition the group indicator color (unused when using materials)")]
+    [SerializeField] private float groupColorTransitionTime = 0.12f;
+
+    [Header("PowerGroup Materials (optional)")]
+    [Tooltip("Material to use when the PowerGroup is powered")]
+    [SerializeField] private Material groupOnMaterial;
+    [Tooltip("Material to use when the PowerGroup is unpowered")]
+    [SerializeField] private Material groupOffMaterial;
+
     [Header("Events")]
     public UnityEvent<bool> onToggled; // bool = new state
 
     public bool isOn { get; private set; }
 
-    // cached original values
+    // cached original values for feedbackRenderer
     private Vector3 originalScale;
     private Color[] originalColors;
     private Material[] instanceMaterials;
+
+    // cached instance materials for groupLightRenderer
+    private Material[] groupInstanceMaterials;
 
     private void Awake()
     {
         originalScale = transform.localScale;
         isOn = startsOn;
         CacheAndInstanceMaterials();
+        CacheAndInstanceGroupMaterials();
         ApplyState(initial: true);
     }
 
@@ -51,6 +69,18 @@ public class BreakerButton : MonoBehaviour
             originalColors[i] = instanceMaterials[i].HasProperty("_Color") ? instanceMaterials[i].color : Color.white;
         }
         feedbackRenderer.materials = instanceMaterials;
+    }
+
+    private void CacheAndInstanceGroupMaterials()
+    {
+        if (groupLightRenderer == null) return;
+        var mats = groupLightRenderer.materials;
+        groupInstanceMaterials = new Material[mats.Length];
+        for (int i = 0; i < mats.Length; i++)
+        {
+            groupInstanceMaterials[i] = new Material(mats[i]);
+        }
+        groupLightRenderer.materials = groupInstanceMaterials;
     }
 
     private void OnValidate()
@@ -78,6 +108,12 @@ public class BreakerButton : MonoBehaviour
             else
                 powerGroup.TurnOffLights();
         }
+
+        // Determine group active state. Prefer querying PowerGroups, fallback to local toggle.
+        bool groupActive = powerGroup != null ? powerGroup.AnyLightOn() : isOn;
+
+        // Update indicator (prefer material swap; fallback changes Light.enabled)
+        UpdateGroupLightState(groupActive, instantly: initial);
 
         // If the mapped gameobjects are lights, also toggle Light.enabled (safer if you used Light components)
         // The PowerGroups may already set GameObject active; this just ensures Light.enabled is also set where appropriate.
@@ -186,6 +222,39 @@ public class BreakerButton : MonoBehaviour
         {
             if (instanceMaterials[i].HasProperty("_Color"))
                 instanceMaterials[i].color = originalColors[i];
+        }
+    }
+
+    // Update the group indicator (Renderer material swap preferred; fallback toggles Light.enabled).
+    private void UpdateGroupLightState(bool on, bool instantly = false)
+    {
+        // 1) If a Material pair is provided, prefer swapping materials on the renderer.
+        if (groupLightRenderer != null && groupOnMaterial != null && groupOffMaterial != null)
+        {
+            Material src = on ? groupOnMaterial : groupOffMaterial;
+            // replace all material slots with the selected material (create instances so runtime edits won't change the asset)
+            var newMats = new Material[groupLightRenderer.sharedMaterials.Length];
+            for (int i = 0; i < newMats.Length; i++)
+                newMats[i] = new Material(src);
+            groupLightRenderer.materials = newMats;
+
+            // update cached instances reference
+            groupInstanceMaterials = groupLightRenderer.materials;
+        }
+        else
+        {
+            // No materials set — fallback behavior is to enable/disable the Unity Light to indicate state.
+            if (groupLight != null)
+            {
+                groupLight.enabled = on;
+            }
+        }
+
+        // Also ensure Light reflects state if present and materials were used only for renderer.
+        if (groupLight != null && (groupLightRenderer == null || (groupOnMaterial != null && groupOffMaterial != null)))
+        {
+            // If materials are used for the renderer we still keep the Light enabled/disabled to match the state.
+            groupLight.enabled = on;
         }
     }
 
