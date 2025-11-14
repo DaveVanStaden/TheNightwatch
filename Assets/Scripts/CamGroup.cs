@@ -22,6 +22,24 @@ public class CamGroup : MonoBehaviour
 
     public GameObject[] cameras;
     public GameObject[] icons;
+
+    private void Awake()
+    {
+        GameObject[] iconList = GameObject.FindGameObjectsWithTag("CamIcon");
+        int k = 0;
+        for (int i = 0; i < iconList.Length; i++)
+        {
+            if (iconList[i].GetComponent<CamIcon>()._group.ToString() == _group.ToString())
+            {
+                icons[k] = iconList[i];
+                k++;
+                if (k >= 4)
+                {
+                    k = 0;
+                }
+            }
+        }
+    }
     void Start()
     {
         audioSource = GameObject.Find("MonitorGroupBleeps").GetComponent<AudioSource>();
@@ -36,20 +54,6 @@ public class CamGroup : MonoBehaviour
                 if (j >= 4)
                 {
                     j = 0;
-                }
-            }
-        }
-        GameObject[] iconList = GameObject.FindGameObjectsWithTag("CamIcon");
-        int k = 0;
-        for (int i = 0; i < iconList.Length; i++)
-        {
-            if (iconList[i].GetComponent<CamIcon>()._group.ToString() == _group.ToString())
-            {
-                icons[k] = iconList[i];
-                k++;
-                if (k >= 4)
-                {
-                    k = 0;
                 }
             }
         }

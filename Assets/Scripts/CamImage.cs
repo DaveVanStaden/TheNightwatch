@@ -24,7 +24,7 @@ public class CamImage : MonoBehaviour
     public SecurityCamera originalCam;
 
     [SerializeField] AudioSource audioSource;
-    [SerializeField] AudioClip expand;
+    //[SerializeField] AudioClip expand;
     [SerializeField] AudioClip collapse;
 
     public TextMeshProUGUI titleText;
@@ -84,8 +84,8 @@ public class CamImage : MonoBehaviour
             }
             imgCollider.size = new Vector2(256, 256);
             imgCollider.offset = Vector2.zero;
-            audioSource.pitch = 1f;
-            audioSource.PlayOneShot(expand);
+            //audioSource.pitch = 1f;
+            //audioSource.PlayOneShot(expand);
             yield return null;
         }
         else
