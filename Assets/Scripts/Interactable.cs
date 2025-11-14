@@ -22,8 +22,13 @@ public class Interactable : MonoBehaviour, IInteraction
     private void Start()
     {
         flashlightRotator = FindObjectOfType<FlashlightRotator>();
-        flashlight = flashlightRotator.gameObject;
+        flashlight = flashlightRotator != null ? flashlightRotator.gameObject : null;
         swoosh = GetComponent<AudioSource>();
+    }
+
+    private void LateUpdate()
+    {
+        // Intentionally empty � Interactable is driven by PlayerInteraction / coroutines.
     }
 
     // IInteraction implementation
@@ -48,18 +53,22 @@ public class Interactable : MonoBehaviour, IInteraction
         if (playerManager.playerCamera != null)
         {
             playerManager.playerCamera.enabled = false;
-            playerManager.playerCamera.GetComponent<AudioListener>().enabled = false;
+            var al = playerManager.playerCamera.GetComponent<AudioListener>();
+            if (al != null) al.enabled = false;
         }
 
-        flashlightRotator.canMove = false;
+        if (flashlightRotator != null)
+            flashlightRotator.canMove = false;
+
         PlaySound();
 
-        // Start following the player
+        // Start following the player (used while moving into the view)
         currentPlayerManager = playerManager;
         isFollowingPlayer = true;
         isInInteractionView = false;
 
-        flashlight.SetActive(false);
+        if (flashlight != null)
+            flashlight.SetActive(false);
 
         // Start the transition to interaction view
         StartCoroutine(MoveToInteractionView());
@@ -67,6 +76,7 @@ public class Interactable : MonoBehaviour, IInteraction
 
     public void UpdateInteraction(PlayerManager playerManager)
     {
+        // Default: while following the player prior to settling into interaction view, copy camera
         if (isFollowingPlayer && !isInInteractionView && currentPlayerManager != null && currentPlayerManager.playerCamera != null && interactionCamera != null)
         {
             interactionCamera.transform.SetPositionAndRotation(currentPlayerManager.playerCamera.transform.position, currentPlayerManager.playerCamera.transform.rotation);
@@ -76,17 +86,19 @@ public class Interactable : MonoBehaviour, IInteraction
 
     public void LeaveInteraction(PlayerManager playerManager)
     {
-        StartCoroutine(LeaveTheThing(playerManager));
+        // Leave is handled asynchronously by the manager via LeaveTheThing coroutine.
+        // Keep this method empty so PlayerInteraction/manager controls the exit flow.
     }
-
 
     private IEnumerator MoveToInteractionView()
     {
         // Stop following and lerp to angle(0)
         isInInteractionView = true;
         isFollowingPlayer = false;
-        interactionCamera.GetComponent<AudioListener>().enabled = true;
 
+        var audioListener = interactionCamera.GetComponent<AudioListener>();
+        if (audioListener != null)
+            audioListener.enabled = true;
 
         int angle = 0;
         interactionCamera.transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
@@ -117,6 +129,8 @@ public class Interactable : MonoBehaviour, IInteraction
         // Snap to final position
         interactionCamera.transform.SetPositionAndRotation(endPos, endRot);
         interactionCamera.fieldOfView = endFOV;
+
+        yield break;
     }
 
     public IEnumerator LeaveTheThing(PlayerManager playerManager)
@@ -126,7 +140,9 @@ public class Interactable : MonoBehaviour, IInteraction
         else if (lastPhysicalCursor != null)
             DisableLastPhysicalCursor();
 
-        flashlight.SetActive(true);
+        if (flashlight != null)
+            flashlight.SetActive(true);
+
         busy = true;
 
         // Lerp from interaction view back to player camera
@@ -159,20 +175,21 @@ public class Interactable : MonoBehaviour, IInteraction
         if (playerManager.playerCamera != null)
         {
             playerManager.playerCamera.enabled = true;
-            playerManager.playerCamera.GetComponent<AudioListener>().enabled = true;
-
+            var al = playerManager.playerCamera.GetComponent<AudioListener>();
+            if (al != null) al.enabled = true;
         }
         if (interactionCamera != null)
         {
             interactionCamera.enabled = false;
-            interactionCamera.GetComponent<AudioListener>().enabled = false;
+            var ia = interactionCamera.GetComponent<AudioListener>();
+            if (ia != null) ia.enabled = false;
         }
 
         float maxTime = .2f;
         yield return new WaitForSeconds(maxTime);
+
         busy = false;
-        flashlightRotator.canMove = true;
-        flashlight.SetActive(true);
+        if (flashlightRotator != null) flashlightRotator.canMove = true;
         currentPlayerManager = null;
         isFollowingPlayer = false;
         isInInteractionView = false;
@@ -213,21 +230,16 @@ public class Interactable : MonoBehaviour, IInteraction
         DisableLastCursor();
         DisableLastPhysicalCursor();
 
-        if (angle.hasCursor == true && angle != null)
+        if (angle != null && angle.hasCursor)
         {
-            if (angle.cursor.GetComponent<MonitorCursor>() != null)
+            if (angle.cursor != null && angle.cursor.GetComponent<MonitorCursor>() != null)
             {
-                //New cursor found!
                 lastCursor = angle.cursor.GetComponent<MonitorCursor>();
-
-                //Enable cursorcontrol
                 lastCursor.EnableCursorControl();
             }
-            else if (angle.realCursor.GetComponent<PhysicalCursor>() != null)
+            else if (angle.realCursor != null && angle.realCursor.GetComponent<PhysicalCursor>() != null)
             {
                 lastPhysicalCursor = angle.realCursor.GetComponent<PhysicalCursor>();
-
-                //Enable cursorcontrol
                 lastPhysicalCursor.EnableCursorControl();
             }
         }
@@ -235,19 +247,20 @@ public class Interactable : MonoBehaviour, IInteraction
 
     private void DisableLastCursor()
     {
-        // Make sure there's a cursor to disable
         if (lastCursor != null)
             lastCursor.DisableCursorControl();
     }
+
     private void DisableLastPhysicalCursor()
     {
-        // Make sure there's a cursor to disable
         if (lastPhysicalCursor != null)
             lastPhysicalCursor.DisableCursorControl();
     }
 
     public void PlaySound()
     {
+        if (swoosh == null) swoosh = GetComponent<AudioSource>();
+        if (swoosh == null) return;
         swoosh.pitch = Random.Range(.20f, .30f);
         swoosh.PlayOneShot(swoosh.clip);
     }
