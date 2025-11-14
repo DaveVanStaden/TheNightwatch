@@ -103,6 +103,16 @@ public class PlayerInteraction : PlayerModule
                 return;
             }
 
+            // If an interaction requested an external leave (e.g. BreakerBox detected S),
+            // honor it here so PlayerInteraction can run the proper leave flow / cleanup.
+            if (manager.externalLeaveRequested)
+            {
+                manager.externalLeaveRequested = false;
+                manager.StopAllCoroutines();
+                StartLeaveInteraction();
+                return;
+            }
+
             // DEBUG: show we are about to call UpdateInteraction and what instance it is
             string actType = activeInteraction.GetType().Name;
             string mbName = (activeInteraction is MonoBehaviour mb) ? mb.gameObject.name : "n/a";

@@ -8,6 +8,8 @@ public class BreakerBox : MonoBehaviour, IInteraction
     [Header("Camera / Zoom")]
     [SerializeField] private Camera interactionCamera;
     [SerializeField] private Transform zoomTarget;
+    [SerializeField] private Transform leftZoomTarget;
+    [SerializeField] private Transform rightZoomTarget;
     [SerializeField] private float zoomFOV = 40f;
     [SerializeField] private float transitionTime = 0.15f;
 
@@ -42,67 +44,9 @@ public class BreakerBox : MonoBehaviour, IInteraction
     private bool isZoomed;
     private bool busy;
 
-    // runtime debug line renderer
-    private GameObject debugLineGO;
-    private LineRenderer debugLine;
-    private Coroutine debugRayCoroutine;
+    // camera angle state: 0 = left, 1 = center, 2 = right
+    private int currentAngleIndex = 1;
 
-    private void Awake()
-    {
-        CreateDebugLineRenderer();
-        if (animator != null)
-        {
-            doorOpen = false;
-            ToggleOpen();
-        }
-    }
-
-    private void CreateDebugLineRenderer()
-    {
-        if (debugLineGO != null) return;
-
-        debugLineGO = new GameObject($"{name}_DebugRay");
-        debugLineGO.transform.SetParent(transform, worldPositionStays: true);
-        debugLine = debugLineGO.AddComponent<LineRenderer>();
-        var mat = new Material(Shader.Find("Hidden/Internal-Colored")) { hideFlags = HideFlags.HideAndDontSave };
-        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        mat.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-        mat.SetInt("_ZWrite", 0);
-        debugLine.material = mat;
-        debugLine.positionCount = 2;
-        debugLine.useWorldSpace = true;
-        debugLine.widthMultiplier = Mathf.Max(0.0001f, debugRayWidth);
-        debugLine.numCapVertices = 6;
-        debugLine.numCornerVertices = 6;
-        debugLine.loop = false;
-        debugLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        debugLine.receiveShadows = false;
-        debugLine.enabled = false;
-        debugLineGO.layer = gameObject.layer;
-    }
-
-    private IEnumerator ShowDebugRay(Vector3 start, Vector3 end, float duration)
-    {
-        if (debugLine == null) yield break;
-        debugLine.SetPosition(0, start);
-        debugLine.SetPosition(1, end);
-        if (debugLine.material != null && debugLine.material.HasProperty("_Color"))
-            debugLine.material.SetColor("_Color", debugRayColor);
-        debugLine.enabled = true;
-
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        if (debugLine != null)
-            debugLine.enabled = false;
-    }
-
-    // Replace EnterInteraction method with this (caches Flashlight component and its on/off state, then disables)
     public void EnterInteraction(PlayerManager playerManager)
     {
         Debug.Log("[BreakerBox] EnterInteraction called on " + name + " by " + (playerManager != null ? playerManager.name : "null"));
@@ -181,7 +125,10 @@ public class BreakerBox : MonoBehaviour, IInteraction
             Debug.Log($"[BreakerBox] Disabled {disabledCount} Flashlight GameObject(s) for interaction (fallback).");
         }
 
-        // Start camera move coroutine on this BreakerBox
+        // ensure we start centered
+        currentAngleIndex = 1;
+
+        // Start camera move coroutine on this BreakerBox (moves to center/zoomTarget)
         StartCoroutine(MoveToZoom());
     }
 
@@ -190,19 +137,60 @@ public class BreakerBox : MonoBehaviour, IInteraction
         // quick guard
         if (interactionCamera == null) return;
 
-        // show a persistent forward debug ray in Game view
-        //if (debugLine == null) CreateDebugLineRenderer();
-        //if (debugLine != null)
-        //{
-        //    Vector3 o = interactionCamera.transform.position;
-        //    debugLine.SetPosition(0, o);
-        //    debugLine.SetPosition(1, o + interactionCamera.transform.forward * 10f);
-        //    debugLine.enabled = true;
-        //}
-
         if (!isZoomed || busy) return;
 
-        // read input (Input System preferred)
+        // --- WASD navigation handling (S to leave, A/D to switch camera angles) ---
+        bool pressedA = false;
+        bool pressedD = false;
+        bool pressedS = false;
+
+        if (Keyboard.current != null)
+        {
+            pressedA = Keyboard.current.aKey.wasPressedThisFrame;
+            pressedD = Keyboard.current.dKey.wasPressedThisFrame;
+            pressedS = Keyboard.current.sKey.wasPressedThisFrame;
+        }
+        else
+        {
+            pressedA = Input.GetKeyDown(KeyCode.A);
+            pressedD = Input.GetKeyDown(KeyCode.D);
+            pressedS = Input.GetKeyDown(KeyCode.S);
+        }
+
+        if (pressedS)
+        {
+            // Request the player to leave interaction via PlayerInteraction so it handles cleanup
+            // (prevents the player from remaining "stuck" in interaction state).
+            if (currentPlayer != null)
+                currentPlayer.externalLeaveRequested = true;
+            return;
+        }
+
+        if (pressedA || pressedD)
+        {
+            // rotate between three camera angles: left(0), center(1), right(2)
+            int delta = pressedA ? -1 : +1;
+            int newIndex = (currentAngleIndex + delta + 3) % 3;
+
+            // determine target transform for the index
+            Transform target = GetTransformForAngleIndex(newIndex);
+            if (target != null)
+            {
+                // Use same movement curve as entering (fast start, slower near end)
+                StartCoroutine(TransitionToAngle(target, zoomFOV));
+                currentAngleIndex = newIndex;
+                PlaySwoosh();
+            }
+            else
+            {
+                Debug.Log("[BreakerBox] Requested camera angle target is not assigned.");
+            }
+
+            // input consumed - don't process clicks this frame
+            return;
+        }
+
+        // read input (Input System preferred) for clicking
         bool click = false;
         Vector2 mousePos = Vector2.zero;
         if (Mouse.current != null)
@@ -232,7 +220,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
         Rect camRect = interactionCamera.pixelRect;
         Vector2 viewportPoint;
 
-        // If using a RenderTexture, mouse is in screen space — map via Screen size.
+        // If using a RenderTexture, mouse is in screen space ï¿½ map via Screen size.
         // Otherwise map mouse into the camera's pixelRect.
         if (interactionCamera.targetTexture != null)
         {
@@ -256,38 +244,42 @@ public class BreakerBox : MonoBehaviour, IInteraction
         // Print ray info for debugging
         Debug.Log($"[BreakerBox] Click ray (viewport): origin={ray.origin}, dir={ray.direction}, mouse={mousePos}, viewport={viewportPoint}");
 
-        // Scene view debug
+        // Scene view debug (keeps simple editor debug line; renderer visual removed)
         Debug.DrawRay(ray.origin, ray.direction * 50f, debugRayColor, 2f);
 
-        if (debugRayCoroutine != null) StopCoroutine(debugRayCoroutine);
-        debugRayCoroutine = StartCoroutine(ShowDebugRay(ray.origin, ray.origin + ray.direction * 100f, debugRayDuration));
-
-        // Replace the raycast hit handling inside UpdateInteraction with this precise check (ONLY exact collider with BreakerButton toggles)
+        // Raycast handling (no runtime debug line renderer used)
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, interactableMask, QueryTriggerInteraction.Collide))
         {
             Debug.Log($"[BreakerBox] Click ray hit: {hit.collider.name}");
-            if (debugRayCoroutine != null)
-            {
-                StopCoroutine(debugRayCoroutine);
-                debugRayCoroutine = StartCoroutine(ShowDebugRay(ray.origin, hit.point, debugRayDuration));
-            }
 
             // ONLY toggle if the exact collider hit has a BreakerButton component (no parent/child fallbacks)
             var hitColliderGO = hit.collider.gameObject;
             var btn = hitColliderGO.GetComponent<BreakerButton>();
             if (btn != null)
             {
-                Debug.Log($"[BreakerBox] Hit exact BreakerButton on '{btn.gameObject.name}' — calling Toggle()");
+                Debug.Log($"[BreakerBox] Hit exact BreakerButton on '{btn.gameObject.name}' ï¿½ calling Toggle()");
                 btn.Toggle();
                 return;
             }
 
-            // Do not toggle all groups for arbitrary hits anymore — ignore other hits
-            Debug.Log("[BreakerBox] Click hit something else — no action taken.");
+            // Do not toggle all groups for arbitrary hits anymore ï¿½ ignore other hits
+            Debug.Log("[BreakerBox] Click hit something else ï¿½ no action taken.");
         }
         else
         {
             Debug.Log($"[BreakerBox] Click raycast missed at screen {mousePos}");
+        }
+    }
+
+    private Transform GetTransformForAngleIndex(int index)
+    {
+        // 0 = left, 1 = center, 2 = right
+        switch (index)
+        {
+            case 0: return leftZoomTarget != null ? leftZoomTarget : zoomTarget;
+            case 1: return zoomTarget;
+            case 2: return rightZoomTarget != null ? rightZoomTarget : zoomTarget;
+            default: return zoomTarget;
         }
     }
 
@@ -321,7 +313,40 @@ public class BreakerBox : MonoBehaviour, IInteraction
         interactionCamera.fieldOfView = endFOV;
         busy = false;
 
-        Debug.Log("[BreakerBox] MoveToZoom finished — interaction is now active and clickable.");
+        Debug.Log("[BreakerBox] MoveToZoom finished ï¿½ interaction is now active and clickable.");
+    }
+
+    private IEnumerator TransitionToAngle(Transform target, float targetFOV)
+    {
+        if (target == null) yield break;
+
+        busy = true;
+
+        Vector3 startPos = interactionCamera.transform.position;
+        Quaternion startRot = interactionCamera.transform.rotation;
+        float startFOV = interactionCamera.fieldOfView;
+
+        Vector3 endPos = target.position;
+        Quaternion endRot = target.rotation;
+        float endFOV = targetFOV;
+
+        float elapsed = 0f;
+        while (elapsed < transitionTime)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / transitionTime);
+            float curve = 1f - Mathf.Pow(1f - t, 3f);
+            interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, curve);
+            interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, curve);
+            interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, curve);
+            yield return null;
+        }
+
+        interactionCamera.transform.position = endPos;
+        interactionCamera.transform.rotation = endRot;
+        interactionCamera.fieldOfView = endFOV;
+
+        busy = false;
     }
 
     private void ToggleAllPowerGroups()
@@ -425,6 +450,9 @@ public class BreakerBox : MonoBehaviour, IInteraction
             Debug.Log($"[BreakerBox] Re-enabled {cachedFlashlightGOs.Count} Flashlight GameObject(s) after interaction.");
             cachedFlashlightGOs.Clear();
         }
+
+        // Always reset angle index so next EnterInteraction starts centered
+        currentAngleIndex = 1;
 
         busy = false;
         isZoomed = false;
