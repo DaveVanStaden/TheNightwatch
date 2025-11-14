@@ -24,6 +24,13 @@ public class BreakerBox : MonoBehaviour, IInteraction
 
     [Header("Audio")]
     [SerializeField] private AudioSource swoosh;
+    [SerializeField] private AudioSource squeak;
+    [SerializeField] private AudioClip open;
+    [SerializeField] private AudioClip close;
+
+    [Header("Animator")]
+    [SerializeField] private Animator animator;
+    private bool doorOpen;
 
     // Replace single cachedFlashlightGO with a list to track all flashlight GameObjects we disable
     [Header("Flashlight")]
@@ -43,6 +50,11 @@ public class BreakerBox : MonoBehaviour, IInteraction
     private void Awake()
     {
         CreateDebugLineRenderer();
+        if (animator != null)
+        {
+            doorOpen = false;
+            ToggleOpen();
+        }
     }
 
     private void CreateDebugLineRenderer()
@@ -106,8 +118,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
 
         if (playerCamera != null)
         {
-            interactionCamera.transform.position = playerCamera.transform.position;
-            interactionCamera.transform.rotation = playerCamera.transform.rotation;
+            interactionCamera.transform.SetPositionAndRotation(playerCamera.transform.position, playerCamera.transform.rotation);
             interactionCamera.fieldOfView = playerCamera.fieldOfView;
         }
 
@@ -127,6 +138,12 @@ public class BreakerBox : MonoBehaviour, IInteraction
             flashlightRotator.canMove = false;
 
         PlaySwoosh();
+        if (animator != null)
+        {
+            doorOpen = true;
+            ToggleOpen();
+        }
+        else Debug.LogError("[BreakerBox] No animator assigned in inspector");
 
         // Cache & disable flashlight GameObjects:
         // - if flashlightRoot assigned: disable that root (and remember it) so it can be re-enabled later.
@@ -174,14 +191,14 @@ public class BreakerBox : MonoBehaviour, IInteraction
         if (interactionCamera == null) return;
 
         // show a persistent forward debug ray in Game view
-        if (debugLine == null) CreateDebugLineRenderer();
-        if (debugLine != null)
-        {
-            Vector3 o = interactionCamera.transform.position;
-            debugLine.SetPosition(0, o);
-            debugLine.SetPosition(1, o + interactionCamera.transform.forward * 10f);
-            debugLine.enabled = true;
-        }
+        //if (debugLine == null) CreateDebugLineRenderer();
+        //if (debugLine != null)
+        //{
+        //    Vector3 o = interactionCamera.transform.position;
+        //    debugLine.SetPosition(0, o);
+        //    debugLine.SetPosition(1, o + interactionCamera.transform.forward * 10f);
+        //    debugLine.enabled = true;
+        //}
 
         if (!isZoomed || busy) return;
 
@@ -389,7 +406,12 @@ public class BreakerBox : MonoBehaviour, IInteraction
             flashlightRotator.canMove = true;
 
         PlaySwoosh();
-
+        if (animator != null)
+        {
+            doorOpen = false;
+            ToggleOpen();
+        }
+        else Debug.LogError("[BreakerBox] No animator assigned in inspector");
         // Re-enable flashlight GameObject if we disabled it on EnterInteraction
         if (cachedFlashlightGOs != null && cachedFlashlightGOs.Count > 0)
         {
@@ -415,5 +437,20 @@ public class BreakerBox : MonoBehaviour, IInteraction
         if (swoosh == null) return;
         swoosh.pitch = Random.Range(.20f, .30f);
         swoosh.PlayOneShot(swoosh.clip);
+        PlaySqueak();
+    }
+
+    private void ToggleOpen()
+    {
+        animator.SetBool("Door", doorOpen);
+    }
+    private void PlaySqueak()
+    {
+        if (squeak == null) return;
+        if (!doorOpen)
+        {
+            squeak.PlayOneShot(open);
+        }
+        else squeak.PlayOneShot(close); 
     }
 }
