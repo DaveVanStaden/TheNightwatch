@@ -82,6 +82,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
             flashlightRotator.canMove = false;
 
         PlaySwoosh();
+        PlaySqueak();
         if (animator != null)
         {
             doorOpen = true;
@@ -388,6 +389,19 @@ public class BreakerBox : MonoBehaviour, IInteraction
     private IEnumerator LeaveRoutine()
     {
         busy = true;
+        // Re-enable flashlight GameObject if we disabled it on EnterInteraction
+        if (cachedFlashlightGOs != null && cachedFlashlightGOs.Count > 0)
+        {
+            foreach (var go in cachedFlashlightGOs)
+            {
+                if (go != null)
+                {
+                    go.SetActive(true);
+                }
+            }
+            Debug.Log($"[BreakerBox] Re-enabled {cachedFlashlightGOs.Count} Flashlight GameObject(s) after interaction.");
+            cachedFlashlightGOs.Clear();
+        }
 
         if (currentPlayer != null && currentPlayer.playerCamera != null)
         {
@@ -405,8 +419,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / transitionTime);
                 float curve = 1f - Mathf.Pow(1f - t, 3f);
-                interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, curve);
-                interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, curve);
+                interactionCamera.transform.SetPositionAndRotation(Vector3.Lerp(startPos, endPos, curve), Quaternion.Lerp(startRot, endRot, curve));
                 interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, curve);
                 yield return null;
             }
@@ -431,25 +444,13 @@ public class BreakerBox : MonoBehaviour, IInteraction
             flashlightRotator.canMove = true;
 
         PlaySwoosh();
+        PlaySqueak();
         if (animator != null)
         {
             doorOpen = false;
             ToggleOpen();
         }
         else Debug.LogError("[BreakerBox] No animator assigned in inspector");
-        // Re-enable flashlight GameObject if we disabled it on EnterInteraction
-        if (cachedFlashlightGOs != null && cachedFlashlightGOs.Count > 0)
-        {
-            foreach (var go in cachedFlashlightGOs)
-            {
-                if (go != null)
-                {
-                    go.SetActive(true);
-                }
-            }
-            Debug.Log($"[BreakerBox] Re-enabled {cachedFlashlightGOs.Count} Flashlight GameObject(s) after interaction.");
-            cachedFlashlightGOs.Clear();
-        }
 
         // Always reset angle index so next EnterInteraction starts centered
         currentAngleIndex = 1;
@@ -465,7 +466,6 @@ public class BreakerBox : MonoBehaviour, IInteraction
         if (swoosh == null) return;
         swoosh.pitch = Random.Range(.20f, .30f);
         swoosh.PlayOneShot(swoosh.clip);
-        PlaySqueak();
     }
 
     private void ToggleOpen()

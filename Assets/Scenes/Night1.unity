@@ -23131,7 +23131,7 @@ AudioSource:
   MinDistance: 1
   MaxDistance: 20
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -29972,6 +29972,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BreakerBox
   interactionCamera: {fileID: 3072781819977794517}
   zoomTarget: {fileID: 1043029456}
+  leftZoomTarget: {fileID: 788813233}
+  rightZoomTarget: {fileID: 607757509}
   zoomFOV: 30
   transitionTime: 0.15
   buttons:

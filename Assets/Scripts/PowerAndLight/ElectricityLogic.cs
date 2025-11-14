@@ -38,7 +38,7 @@ public class ElectricityLogic : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(PowerLevel);
+        //Debug.Log(PowerLevel);
         if (IsPowerOut)
             return; 
 
