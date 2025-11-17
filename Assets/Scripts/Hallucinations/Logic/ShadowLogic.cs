@@ -121,7 +121,7 @@ public class ShadowLogic : MonoBehaviour
         if (playerManager == null)
         {
             // try a scene-wide find of the PlayerManager (Unity object)
-            playerManager = FindObjectOfType<PlayerManager>();
+            playerManager = FindAnyObjectByType<PlayerManager>();
         }
         playerCameraLook = playerManager != null ? playerManager.cameraLookModule : null;
 
@@ -152,7 +152,7 @@ public class ShadowLogic : MonoBehaviour
         if (playerManager == null && playerTransform != null)
             playerManager = playerTransform.GetComponent<PlayerManager>();
         if (playerManager == null)
-            playerManager = FindObjectOfType<PlayerManager>();
+            playerManager = FindAnyObjectByType<PlayerManager>();
         if (playerCameraLook == null && playerManager != null)
             playerCameraLook = playerManager.cameraLookModule;
 
@@ -442,7 +442,7 @@ public class ShadowLogic : MonoBehaviour
     // Flicker implementation: manage coroutines per-light
     private void ManageNearbyLights()
     {
-        var lights = FindObjectsOfType<Light>();
+        var lights = FindObjectsByType<Light>(FindObjectsSortMode.None);
         var inRange = new HashSet<Light>();
 
         foreach (var light in lights)
@@ -570,7 +570,7 @@ public class ShadowLogic : MonoBehaviour
     private void ManageNearbyLights_Old()
     {
         // kept for reference; not used anymore
-        var lights = FindObjectsOfType<Light>();
+        var lights = FindObjectsByType<Light>(FindObjectsSortMode.None);
         foreach (var light in lights)
         {
             float dist = Vector3.Distance(transform.position, light.transform.position);

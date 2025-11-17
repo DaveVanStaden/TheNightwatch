@@ -46,7 +46,7 @@ public class MonitorCursor : MonoBehaviour
     bool clickR;
     void Start()
     {
-        player = FindObjectOfType<PlayerManager>();
+        player = FindAnyObjectByType<PlayerManager>();
     }
 
     void Update()

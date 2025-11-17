@@ -18,7 +18,7 @@ public class Flashlight : MonoBehaviour
     {
         click = GetComponent<AudioSource>();
         flashlight = GetComponent<Light>();
-        player = FindObjectOfType<PlayerManager>();
+        player = FindAnyObjectByType<PlayerManager>();
     }
 
     void Update()

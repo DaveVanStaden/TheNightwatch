@@ -7,7 +7,7 @@ public class DisableCams : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        cams = FindObjectsOfType<SecurityCamera>();
+        cams = FindObjectsByType<SecurityCamera>(FindObjectsSortMode.None);
         SwitchEm();
     }
 
@@ -51,12 +51,13 @@ public class DisableCams : MonoBehaviour
             //Cams are off, so turn them on
             foreach (SecurityCamera cam in cams)
             {
-
-                cam.GetComponent<ManualCameraRenderer>().enabled = true;
-                if (cam.camLight != null)
+                if (cam.lights)
                 {
-                    if (cam.lights)
+                    cam.GetComponent<ManualCameraRenderer>().enabled = true;
+                    if (cam.camLight != null)
+                    {
                         cam.camLight.enabled = true;
+                    }
                 }
             }
         }

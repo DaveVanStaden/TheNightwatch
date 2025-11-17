@@ -9,7 +9,7 @@ public class Interactable : MonoBehaviour, IInteraction
     public bool busy;
 
     MonitorCursor lastCursor;
-    PhysicalCursor lastPhysicalCursor;
+    CamData previousAngle;
 
     AudioSource swoosh;
 
@@ -21,7 +21,7 @@ public class Interactable : MonoBehaviour, IInteraction
 
     private void Start()
     {
-        flashlightRotator = FindObjectOfType<FlashlightRotator>();
+        flashlightRotator = FindAnyObjectByType<FlashlightRotator>();
         flashlight = flashlightRotator != null ? flashlightRotator.gameObject : null;
         swoosh = GetComponent<AudioSource>();
     }
@@ -137,8 +137,6 @@ public class Interactable : MonoBehaviour, IInteraction
     {
         if (lastCursor != null)
             DisableLastCursor();
-        else if (lastPhysicalCursor != null)
-            DisableLastPhysicalCursor();
 
         if (flashlight != null)
             flashlight.SetActive(true);
@@ -198,6 +196,12 @@ public class Interactable : MonoBehaviour, IInteraction
 
     public IEnumerator SetAngle(int angle)
     {
+        //Disable rendering on previous angle if applicable
+        if (previousAngle != null)
+        {
+            previousAngle.DisableRendering();
+            print(previousAngle.name);
+        }
         if (interactionCamera == null) yield break;
 
         CamData camera = setAngles[angle].GetComponent<CamData>();
@@ -207,7 +211,8 @@ public class Interactable : MonoBehaviour, IInteraction
         float maxTime = .15f;
 
         CheckCursor(camera);
-
+        previousAngle = camera;
+        previousAngle.EnableRendering();
         while (timePassed < maxTime)
         {
             timePassed += Time.deltaTime;
@@ -228,19 +233,12 @@ public class Interactable : MonoBehaviour, IInteraction
     private void CheckCursor(CamData angle)
     {
         DisableLastCursor();
-        DisableLastPhysicalCursor();
-
         if (angle != null && angle.hasCursor)
         {
             if (angle.cursor != null && angle.cursor.GetComponent<MonitorCursor>() != null)
             {
                 lastCursor = angle.cursor.GetComponent<MonitorCursor>();
                 lastCursor.EnableCursorControl();
-            }
-            else if (angle.realCursor != null && angle.realCursor.GetComponent<PhysicalCursor>() != null)
-            {
-                lastPhysicalCursor = angle.realCursor.GetComponent<PhysicalCursor>();
-                lastPhysicalCursor.EnableCursorControl();
             }
         }
     }
@@ -249,12 +247,6 @@ public class Interactable : MonoBehaviour, IInteraction
     {
         if (lastCursor != null)
             lastCursor.DisableCursorControl();
-    }
-
-    private void DisableLastPhysicalCursor()
-    {
-        if (lastPhysicalCursor != null)
-            lastPhysicalCursor.DisableCursorControl();
     }
 
     public void PlaySound()

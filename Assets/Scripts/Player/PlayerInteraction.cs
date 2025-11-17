@@ -96,7 +96,7 @@ public class PlayerInteraction : PlayerModule
         if (isInteracting && activeInteraction != null)
         {
             // Allow global Escape to leave and ensure PlayerInteraction state is cleaned up
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (Input.GetKey(KeyCode.LeftShift) && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 manager.StopAllCoroutines();
                 StartLeaveInteraction();
@@ -205,7 +205,7 @@ public class PlayerInteraction : PlayerModule
         manager.inInteractionView = false;
 
         // Re-enable flashlight input when leaving interaction
-        var fl = Object.FindObjectOfType<Flashlight>();
+        var fl = Object.FindAnyObjectByType<Flashlight>();
         if (fl != null)
         {
             fl.EnableInput();
