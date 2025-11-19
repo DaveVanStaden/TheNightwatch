@@ -26,6 +26,13 @@ public class BreakerBox : MonoBehaviour, IInteraction
 
     [Header("Audio")]
     [SerializeField] private AudioSource swoosh;
+    [SerializeField] private AudioSource squeak;
+    [SerializeField] private AudioClip open;
+    [SerializeField] private AudioClip close;
+
+    [Header("Animator")]
+    [SerializeField] private Animator animator;
+    private bool doorOpen;
 
     // Replace single cachedFlashlightGO with a list to track all flashlight GameObjects we disable
     [Header("Flashlight")]
@@ -55,8 +62,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
 
         if (playerCamera != null)
         {
-            interactionCamera.transform.position = playerCamera.transform.position;
-            interactionCamera.transform.rotation = playerCamera.transform.rotation;
+            interactionCamera.transform.SetPositionAndRotation(playerCamera.transform.position, playerCamera.transform.rotation);
             interactionCamera.fieldOfView = playerCamera.fieldOfView;
         }
 
@@ -76,6 +82,13 @@ public class BreakerBox : MonoBehaviour, IInteraction
             flashlightRotator.canMove = false;
 
         PlaySwoosh();
+        PlaySqueak();
+        if (animator != null)
+        {
+            doorOpen = true;
+            ToggleOpen();
+        }
+        else Debug.LogError("[BreakerBox] No animator assigned in inspector");
 
         // Cache & disable flashlight GameObjects:
         // - if flashlightRoot assigned: disable that root (and remember it) so it can be re-enabled later.
@@ -208,7 +221,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
         Rect camRect = interactionCamera.pixelRect;
         Vector2 viewportPoint;
 
-        // If using a RenderTexture, mouse is in screen space — map via Screen size.
+        // If using a RenderTexture, mouse is in screen space ï¿½ map via Screen size.
         // Otherwise map mouse into the camera's pixelRect.
         if (interactionCamera.targetTexture != null)
         {
@@ -245,13 +258,13 @@ public class BreakerBox : MonoBehaviour, IInteraction
             var btn = hitColliderGO.GetComponent<BreakerButton>();
             if (btn != null)
             {
-                Debug.Log($"[BreakerBox] Hit exact BreakerButton on '{btn.gameObject.name}' — calling Toggle()");
+                Debug.Log($"[BreakerBox] Hit exact BreakerButton on '{btn.gameObject.name}' ï¿½ calling Toggle()");
                 btn.Toggle();
                 return;
             }
 
-            // Do not toggle all groups for arbitrary hits anymore — ignore other hits
-            Debug.Log("[BreakerBox] Click hit something else — no action taken.");
+            // Do not toggle all groups for arbitrary hits anymore ï¿½ ignore other hits
+            Debug.Log("[BreakerBox] Click hit something else ï¿½ no action taken.");
         }
         else
         {
@@ -301,7 +314,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
         interactionCamera.fieldOfView = endFOV;
         busy = false;
 
-        Debug.Log("[BreakerBox] MoveToZoom finished — interaction is now active and clickable.");
+        Debug.Log("[BreakerBox] MoveToZoom finished ï¿½ interaction is now active and clickable.");
     }
 
     private IEnumerator TransitionToAngle(Transform target, float targetFOV)
@@ -376,6 +389,19 @@ public class BreakerBox : MonoBehaviour, IInteraction
     private IEnumerator LeaveRoutine()
     {
         busy = true;
+        // Re-enable flashlight GameObject if we disabled it on EnterInteraction
+        if (cachedFlashlightGOs != null && cachedFlashlightGOs.Count > 0)
+        {
+            foreach (var go in cachedFlashlightGOs)
+            {
+                if (go != null)
+                {
+                    go.SetActive(true);
+                }
+            }
+            Debug.Log($"[BreakerBox] Re-enabled {cachedFlashlightGOs.Count} Flashlight GameObject(s) after interaction.");
+            cachedFlashlightGOs.Clear();
+        }
 
         if (currentPlayer != null && currentPlayer.playerCamera != null)
         {
@@ -393,8 +419,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / transitionTime);
                 float curve = 1f - Mathf.Pow(1f - t, 3f);
-                interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, curve);
-                interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, curve);
+                interactionCamera.transform.SetPositionAndRotation(Vector3.Lerp(startPos, endPos, curve), Quaternion.Lerp(startRot, endRot, curve));
                 interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, curve);
                 yield return null;
             }
@@ -419,20 +444,13 @@ public class BreakerBox : MonoBehaviour, IInteraction
             flashlightRotator.canMove = true;
 
         PlaySwoosh();
-
-        // Re-enable flashlight GameObject if we disabled it on EnterInteraction
-        if (cachedFlashlightGOs != null && cachedFlashlightGOs.Count > 0)
+        PlaySqueak();
+        if (animator != null)
         {
-            foreach (var go in cachedFlashlightGOs)
-            {
-                if (go != null)
-                {
-                    go.SetActive(true);
-                }
-            }
-            Debug.Log($"[BreakerBox] Re-enabled {cachedFlashlightGOs.Count} Flashlight GameObject(s) after interaction.");
-            cachedFlashlightGOs.Clear();
+            doorOpen = false;
+            ToggleOpen();
         }
+        else Debug.LogError("[BreakerBox] No animator assigned in inspector");
 
         // Always reset angle index so next EnterInteraction starts centered
         currentAngleIndex = 1;
@@ -448,5 +466,19 @@ public class BreakerBox : MonoBehaviour, IInteraction
         if (swoosh == null) return;
         swoosh.pitch = Random.Range(.20f, .30f);
         swoosh.PlayOneShot(swoosh.clip);
+    }
+
+    private void ToggleOpen()
+    {
+        animator.SetBool("Door", doorOpen);
+    }
+    private void PlaySqueak()
+    {
+        if (squeak == null) return;
+        if (!doorOpen)
+        {
+            squeak.PlayOneShot(open);
+        }
+        else squeak.PlayOneShot(close); 
     }
 }

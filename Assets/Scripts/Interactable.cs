@@ -28,7 +28,7 @@ public class Interactable : MonoBehaviour, IInteraction
 
     private void LateUpdate()
     {
-        // Intentionally empty — Interactable is driven by PlayerInteraction / coroutines.
+        // Intentionally empty ï¿½ Interactable is driven by PlayerInteraction / coroutines.
     }
 
     // IInteraction implementation
@@ -44,8 +44,7 @@ public class Interactable : MonoBehaviour, IInteraction
         // Snap to player camera immediately
         if (playerManager.playerCamera != null)
         {
-            interactionCamera.transform.position = playerManager.playerCamera.transform.position;
-            interactionCamera.transform.rotation = playerManager.playerCamera.transform.rotation;
+            interactionCamera.transform.SetPositionAndRotation(playerManager.playerCamera.transform.position, playerManager.playerCamera.transform.rotation);
             interactionCamera.fieldOfView = playerManager.playerCamera.fieldOfView;
         }
 
@@ -80,8 +79,7 @@ public class Interactable : MonoBehaviour, IInteraction
         // Default: while following the player prior to settling into interaction view, copy camera
         if (isFollowingPlayer && !isInInteractionView && currentPlayerManager != null && currentPlayerManager.playerCamera != null && interactionCamera != null)
         {
-            interactionCamera.transform.position = currentPlayerManager.playerCamera.transform.position;
-            interactionCamera.transform.rotation = currentPlayerManager.playerCamera.transform.rotation;
+            interactionCamera.transform.SetPositionAndRotation(currentPlayerManager.playerCamera.transform.position, currentPlayerManager.playerCamera.transform.rotation);
             interactionCamera.fieldOfView = currentPlayerManager.playerCamera.fieldOfView;
         }
     }
@@ -103,8 +101,7 @@ public class Interactable : MonoBehaviour, IInteraction
             audioListener.enabled = true;
 
         int angle = 0;
-        Vector3 startPos = interactionCamera.transform.position;
-        Quaternion startRot = interactionCamera.transform.rotation;
+        interactionCamera.transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
         float startFOV = interactionCamera.fieldOfView;
 
         Vector3 endPos = setAngles[angle].transform.position;
@@ -130,8 +127,7 @@ public class Interactable : MonoBehaviour, IInteraction
         }
 
         // Snap to final position
-        interactionCamera.transform.position = endPos;
-        interactionCamera.transform.rotation = endRot;
+        interactionCamera.transform.SetPositionAndRotation(endPos, endRot);
         interactionCamera.fieldOfView = endFOV;
 
         yield break;
@@ -152,12 +148,10 @@ public class Interactable : MonoBehaviour, IInteraction
         // Lerp from interaction view back to player camera
         if (interactionCamera != null && playerManager.playerCamera != null)
         {
-            Vector3 startPos = interactionCamera.transform.position;
-            Quaternion startRot = interactionCamera.transform.rotation;
+            interactionCamera.transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
             float startFOV = interactionCamera.fieldOfView;
 
-            Vector3 endPos = playerManager.playerCamera.transform.position;
-            Quaternion endRot = playerManager.playerCamera.transform.rotation;
+            playerManager.playerCamera.transform.GetPositionAndRotation(out Vector3 endPos, out Quaternion endRot);
             float endFOV = playerManager.playerCamera.fieldOfView;
 
             float lerpTime = 0.15f;
@@ -171,8 +165,7 @@ public class Interactable : MonoBehaviour, IInteraction
                 float t = Mathf.Clamp01(elapsed / lerpTime);
                 float curveT = 1f - Mathf.Pow(1f - t, 3f); // Ease-out
 
-                interactionCamera.transform.position = Vector3.Lerp(startPos, endPos, curveT);
-                interactionCamera.transform.rotation = Quaternion.Lerp(startRot, endRot, curveT);
+                interactionCamera.transform.SetPositionAndRotation(Vector3.Lerp(startPos, endPos, curveT), Quaternion.Lerp(startRot, endRot, curveT));
                 interactionCamera.fieldOfView = Mathf.Lerp(startFOV, endFOV, curveT);
                 yield return null;
             }

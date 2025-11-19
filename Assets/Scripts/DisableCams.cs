@@ -3,9 +3,11 @@ using UnityEngine;
 public class DisableCams : MonoBehaviour
 {
     bool AreCamsOn = true;
+    private SecurityCamera[] cams;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        cams = FindObjectsOfType<SecurityCamera>();
         SwitchEm();
     }
 
@@ -13,7 +15,6 @@ public class DisableCams : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Entering cams range");
             // Cams must be off, so it's set to false to make sure it switches them correctly
             AreCamsOn = false;
             SwitchEm();
@@ -24,7 +25,6 @@ public class DisableCams : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Exiting cams range");
             // Cams must be on, so it's set to true to make sure it switches them correctly
             AreCamsOn = true;
             SwitchEm();
@@ -36,9 +36,10 @@ public class DisableCams : MonoBehaviour
         if (AreCamsOn)
         {
             //Cams are on, so turn them off
-            foreach (SecurityCamera cam in FindObjectsOfType<SecurityCamera>())
+            foreach (SecurityCamera cam in cams)
             {
-                cam.GetComponent<ManualCameraRenderer>().fps = .1f;
+                cam.GetComponent<ManualCameraRenderer>().enabled = false;
+
                 if (cam.camLight != null)
                 {
                     cam.camLight.enabled = false;
@@ -48,9 +49,10 @@ public class DisableCams : MonoBehaviour
         else
         {
             //Cams are off, so turn them on
-            foreach (SecurityCamera cam in FindObjectsOfType<SecurityCamera>())
+            foreach (SecurityCamera cam in cams)
             {
-                cam.GetComponent<ManualCameraRenderer>().fps = 12f;
+
+                cam.GetComponent<ManualCameraRenderer>().enabled = true;
                 if (cam.camLight != null)
                 {
                     if (cam.lights)

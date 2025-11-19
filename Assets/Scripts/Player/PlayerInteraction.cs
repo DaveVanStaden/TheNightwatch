@@ -73,8 +73,8 @@ public class PlayerInteraction : PlayerModule
                     manager.inInteractionView = true;
 
                     // Unlock and show the mouse so the player can click buttons while in interaction
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
+                    //Cursor.lockState = CursorLockMode.None;
+                    //Cursor.visible = true;
 
                     activeInteraction = interactable;
                     activeInteraction.EnterInteraction(manager);

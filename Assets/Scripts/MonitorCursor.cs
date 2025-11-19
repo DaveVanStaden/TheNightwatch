@@ -49,7 +49,6 @@ public class MonitorCursor : MonoBehaviour
         player = FindObjectOfType<PlayerManager>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (beingControlled == true)
@@ -145,36 +144,34 @@ public class MonitorCursor : MonoBehaviour
         {
             if (collision.CompareTag("CameraView"))
                 selectedCam = collision.GetComponent<CamImage>();
-            //if (collision.CompareTag("GroupButton"))
-            //{
-            //    if (clickL || clickR)
-            //    {
-            //        CamGroup camera = collision.GetComponent<CamGroup>();
-            //        camera.ReplaceCameras();
-            //    }
-            //}
-        }
-    }
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        //Debug.Log("Entering " + collision.name);
 
-        if (collision.CompareTag("GroupButton"))
-        {
-            CamGroup camera = collision.GetComponent<CamGroup>();
-            camera.currentColor = camera.hoverColor;
-            selectedGroup = camera;
+            if (collision.CompareTag("GroupButton"))
+            {
+                CamGroup camera = collision.GetComponent<CamGroup>();
+                camera.currentColor = camera.hoverColor;
+                selectedGroup = camera;
+            }
         }
 
-        //if (collision.CompareTag("VirtualWindow"))
-        //{
-
-        //}
     }
+    //private void OnTriggerEnter2D(Collider2D collision)
+    //{
+    //    //Debug.Log("Entering " + collision.name);
+
+    //    if (collision.CompareTag("GroupButton"))
+    //    {
+    //        CamGroup camera = collision.GetComponent<CamGroup>();
+    //        camera.currentColor = camera.hoverColor;
+    //        selectedGroup = camera;
+    //    }
+
+    //    //if (collision.CompareTag("VirtualWindow"))
+    //    //{
+
+    //    //}
+    //}
     private void OnTriggerExit2D(Collider2D collision)
     {
-        //Debug.Log("Leaving " + collision.name);
-
         if (collision.CompareTag("GroupButton"))
         {
             selectedGroup = null;
@@ -194,7 +191,6 @@ public class MonitorCursor : MonoBehaviour
     }
     public void DisableCursorControl()
     {
-        Debug.Log("Disabling: " + name);
         beingControlled = false;
     }
     IEnumerator ClickShrink()

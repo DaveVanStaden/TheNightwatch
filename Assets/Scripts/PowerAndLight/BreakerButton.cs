@@ -10,8 +10,10 @@ public class BreakerButton : MonoBehaviour
     [SerializeField] private bool startsOn = true;
 
     [Header("Feedback")]
-    [Tooltip("Optional AudioSource to play when toggled")]
+    [Tooltip("Optional audio settings to play when toggled")]
     [SerializeField] private AudioSource clickAudio;
+    [SerializeField] private AudioClip onSound;
+    [SerializeField] private AudioClip offSound;
     [Tooltip("Scale when pressed (local scale multiplier)")]
     [SerializeField] private float pressScale = 0.85f;
     [Tooltip("Time for press / release animation")]
@@ -34,6 +36,10 @@ public class BreakerButton : MonoBehaviour
     [SerializeField] private Material groupOnMaterial;
     [Tooltip("Material to use when the PowerGroup is unpowered")]
     [SerializeField] private Material groupOffMaterial;
+
+    [Header("Animator")]
+    [Tooltip("Animator to use when toggling the switch")]
+    [SerializeField] Animator animator;
 
     [Header("Events")]
     public UnityEvent<bool> onToggled; // bool = new state
@@ -147,7 +153,12 @@ public class BreakerButton : MonoBehaviour
 
         // Play audio
         if (clickAudio != null)
-            clickAudio.Play();
+        {
+            if (!isOn) clickAudio.clip = offSound;
+            else clickAudio.clip = onSound;
+            clickAudio.pitch = Random.Range(0.95f, 1.05f);
+            clickAudio.PlayOneShot(clickAudio.clip);
+        }
 
         // Start visual feedback
         StopAllCoroutines();
@@ -157,6 +168,7 @@ public class BreakerButton : MonoBehaviour
 
         // Invoke inspector-event
         onToggled?.Invoke(isOn);
+        ToggleAnimation();
     }
 
     private IEnumerator PressAnimation()
@@ -287,5 +299,9 @@ public class BreakerButton : MonoBehaviour
                 instanceMaterials[i].color = color;
             }
         }
+    }
+    public void ToggleAnimation()
+    {
+        animator.SetBool(name, isOn);
     }
 }
