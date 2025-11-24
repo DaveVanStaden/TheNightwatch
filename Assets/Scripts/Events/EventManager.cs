@@ -34,7 +34,7 @@ public class EventManager : MonoBehaviour
 
     [Header("Debug")]
     [Tooltip("Enable verbose painting event logs to help debug why paintings don't change.")]
-    public bool debugPaintings = false;
+    public bool debugPaintings = true;
 
     [Header("ShadowSpawning")]
     [Tooltip("Shadow prefab to spawn (must contain ShadowLogic).")]
@@ -52,6 +52,14 @@ public class EventManager : MonoBehaviour
     [Tooltip("Radius from player (units) where the shadow will be spawned (attempted).")]
     public float shadowSpawnRadius = 12f;
 
+    [Header("Statues")]
+    [Tooltip("Assign all statue objects (Statue component) that the module may affect.")]
+    public List<Statue> statues = new List<Statue>();
+    [Tooltip("Sanity threshold below which statue heads will follow the player.")]
+    public float statueFollowSanityThreshold = 50f;
+    [Tooltip("If true, statue heads only move when the player is NOT looking (visibility check).")]
+    public bool statueRequireNotSeen = false;
+
     // internal
     private List<IEventModule> modules = new List<IEventModule>();
 
@@ -63,6 +71,12 @@ public class EventManager : MonoBehaviour
         // create modules here. Keep EventManager minimal by delegating logic into modules.
         modules.Add(new PaintingEventModule(this));
         modules.Add(new ShadowSpawnEventModule(this));
+        modules.Add(new StatueEventModule(this));
+
+        // debug: list modules created
+        var names = new System.Collections.Generic.List<string>();
+        foreach (var m in modules) names.Add(m != null ? m.GetType().Name : "null");
+        Debug.Log($"[EventManager] Awake - created modules: {string.Join(", ", names.ToArray())}");
 
         // initialize modules
         foreach (var m in modules) m.OnAwake();
