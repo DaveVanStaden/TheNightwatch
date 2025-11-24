@@ -12,6 +12,9 @@ public class Interactable : MonoBehaviour, IInteraction
     CamData previousAngle;
 
     AudioSource swoosh;
+    public bool tutorialActive;
+    private TutorialManager tutMan;
+
 
     public Camera interactionCamera; // Assign in Inspector or dynamically
 
@@ -24,6 +27,10 @@ public class Interactable : MonoBehaviour, IInteraction
         flashlightRotator = FindAnyObjectByType<FlashlightRotator>();
         flashlight = flashlightRotator != null ? flashlightRotator.gameObject : null;
         swoosh = GetComponent<AudioSource>();
+        if (tutorialActive)
+        {
+            tutMan = FindAnyObjectByType<TutorialManager>();
+        }
     }
 
     private void LateUpdate()
@@ -200,7 +207,6 @@ public class Interactable : MonoBehaviour, IInteraction
         if (previousAngle != null)
         {
             previousAngle.DisableRendering();
-            print(previousAngle.name);
         }
         if (interactionCamera == null) yield break;
 
@@ -228,6 +234,8 @@ public class Interactable : MonoBehaviour, IInteraction
             yield return null;
         }
         yield return new WaitForSeconds(maxTime);
+        if (camera.tutorialOverlay != null && !tutMan.tutorialCompleted)
+            StartCoroutine(camera.RemoveTutorial());
     }
 
     private void CheckCursor(CamData angle)
@@ -256,4 +264,5 @@ public class Interactable : MonoBehaviour, IInteraction
         swoosh.pitch = Random.Range(.20f, .30f);
         swoosh.PlayOneShot(swoosh.clip);
     }
+
 }

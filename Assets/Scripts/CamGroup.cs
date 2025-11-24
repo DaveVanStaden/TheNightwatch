@@ -151,5 +151,6 @@ public class CamGroup : MonoBehaviour
     {
         yield return new WaitForSeconds(.2f);
         ReplaceCameras();
+        FindAnyObjectByType<DisableCams>().SwitchEm();
     }
 }

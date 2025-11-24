@@ -8,7 +8,6 @@ public class DisableCams : MonoBehaviour
     void Start()
     {
         cams = FindObjectsByType<SecurityCamera>(FindObjectsSortMode.None);
-        SwitchEm();
     }
 
     private void OnTriggerEnter(Collider other)
