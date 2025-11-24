@@ -566,7 +566,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 2, y: 2, z: 2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4506018260160925711
 GameObject:
@@ -707,6 +707,7 @@ MonoBehaviour:
   smoothSpeed: 20
   inInteractionView: 0
   characterController: {fileID: 0}
+  externalLeaveRequested: 0
 --- !u!114 &393543864603616387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1128,7 +1129,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 2, y: 2, z: 2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7291050886282294014
 GameObject:

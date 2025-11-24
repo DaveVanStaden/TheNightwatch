@@ -10750,8 +10750,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 30, y: 5, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 30, y: 1.1808167, z: 1}
+  m_Center: {x: 0, y: -1.9095917, z: 0}
 --- !u!1 &574137895 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4344291174264107020, guid: e79d819b5ad83f44597ade94682b5852, type: 3}
@@ -10928,7 +10928,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &575702643
 Transform:
   m_ObjectHideFlags: 0
@@ -28853,6 +28853,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   objectToSpawn: {fileID: 575702642}
   objectSpawnTransform: {fileID: 0}
+  sanityThreshold: 100
   _type: 1
 --- !u!65 &1613337291
 BoxCollider:
