@@ -70,10 +70,22 @@ public class ShadowLogic : MonoBehaviour
 
     // Reposition / lifetime counters
     private int repositionsDone = 0;
-    [SerializeField] private int repositionsBeforeDestroy = 4; 
+    [SerializeField, Tooltip("Maximum number of reposition attempts before this shadow despawns.")]
+    private int repositionsBeforeDestroy = 4;
     private bool destroyScheduled = false;
     private bool initialPeekDone = false;
     private bool repositionPending = false;
+
+    [Header("Reposition / Hunt")]
+    [SerializeField, Tooltip("Seconds to wait before performing a reposition after being triggered (shadow disappears during this time).")]
+    private float repositionCooldownSeconds = 15f;
+    private bool repositionScheduled = false;
+    private float repositionTimer = 0f;
+    private bool repositionLocked = false;
+
+    [SerializeField, Tooltip("Maximum time (seconds) the shadow will hunt the player before despawning.")]
+    private float huntMaxDurationSeconds = 30f;
+    private float huntTimer = 0f;
 
     // Add these fields with other private fields (reposition/lifetime counters)
     [SerializeField, Tooltip("Seconds to suppress re-entering hunt after an attack/miss")]
@@ -106,9 +118,6 @@ public class ShadowLogic : MonoBehaviour
 
         peekDestination = transform.position;
 
-        // Randomize how many reposition attempts until this hallucination destroys itself
-        repositionsBeforeDestroy = Random.Range(4, 8);
-
         // initial find, do not count this first placement
         initialPeekDone = false;
         FindPeekPosition();
@@ -121,7 +130,7 @@ public class ShadowLogic : MonoBehaviour
         if (playerManager == null)
         {
             // try a scene-wide find of the PlayerManager (Unity object)
-            playerManager = FindAnyObjectByType<PlayerManager>();
+            playerManager = FindObjectOfType<PlayerManager>();
         }
         playerCameraLook = playerManager != null ? playerManager.cameraLookModule : null;
 
@@ -152,7 +161,7 @@ public class ShadowLogic : MonoBehaviour
         if (playerManager == null && playerTransform != null)
             playerManager = playerTransform.GetComponent<PlayerManager>();
         if (playerManager == null)
-            playerManager = FindAnyObjectByType<PlayerManager>();
+            playerManager = FindObjectOfType<PlayerManager>();
         if (playerCameraLook == null && playerManager != null)
             playerCameraLook = playerManager.cameraLookModule;
 
@@ -160,6 +169,30 @@ public class ShadowLogic : MonoBehaviour
 
         // Update shadow opacity based on current sanity every frame
         UpdateShadowAlpha();
+        // Process scheduled reposition timer (shadow disappears immediately when scheduled,
+        // then after timer expires it will choose a new peek position and move)
+        if (repositionScheduled)
+        {
+            repositionTimer -= Time.deltaTime;
+            if (repositionTimer <= 0f)
+            {
+                repositionScheduled = false;
+                repositionLocked = false; // allow movement to start once the cooldown expired
+                FindPeekPosition();
+            }
+        }
+
+        // If currently hunting, track hunt duration and despawn if exceeded
+        if (isHunting)
+        {
+            huntTimer += Time.deltaTime;
+            if (huntTimer >= huntMaxDurationSeconds)
+            {
+                Debug.Log("[ShadowLogic] Hunt max duration exceeded — despawning shadow.");
+                Destroy(gameObject);
+                return;
+            }
+        }
 
         // --- Movement speed scaling by sanity ---
         if (agent != null && playerStats != null)
@@ -186,7 +219,8 @@ public class ShadowLogic : MonoBehaviour
 
         // Sanity drain if player is looking at hallucination AND the hallucination is visible to the player
         // but only if the shadow is NOT currently moving
-        if (IsPlayerLookingAtMe() && !IsMoving() && IsPlayerLineOfSightClear())
+        // Replace the existing sanity-drain block with this guarded check
+        if (!repositionScheduled && !repositionLocked && IsPlayerLookingAtMe() && !IsMoving() && IsPlayerLineOfSightClear())
         {
             playerStats.ChangeSanity(-sanityDrainPerSecond * Time.deltaTime);
             Debug.Log("[ShadowLogic] Draining sanity! " + playerStats.Sanity);
@@ -199,6 +233,7 @@ public class ShadowLogic : MonoBehaviour
             if (!isHunting)
             {
                 isHunting = true;
+                huntTimer = 0f; // start tracking hunt duration
                 Debug.Log("[ShadowLogic] HUNT MODE: Player is being hunted!");
             }
 
@@ -299,92 +334,86 @@ public class ShadowLogic : MonoBehaviour
 
         if (huntSuppressTimer > 0f)
             huntSuppressTimer -= Time.deltaTime;
+
+
     }
 
+    /// <summary>
+    /// Rewritten FindPeekPosition:
+    /// - Samples positions around the PLAYER (not around the shadow) to ensure the hallucination moves to stalk the player.
+    /// - Prefers positions on the NavMesh that can see the player and are approximately at maintainDistanceFromPlayer.
+    /// - Avoids using the old candidate = transform.position + dir * Random.Range(minMoveDistance, searchRadius) which could send it far away.
+    /// </summary>
     private void FindPeekPosition()
     {
-        Vector3 bestSafePosition = transform.position;
-        float bestSafeScore = float.MaxValue;
-        bool foundSafe = false;
+        if (playerTransform == null)
+        {
+            Debug.LogWarning("[ShadowLogic] FindPeekPosition: playerTransform is null.");
+            return;
+        }
 
-        Vector3 farthestVisiblePosition = transform.position;
-        float farthestPlayerDist = 0f;
-        bool foundVisible = false;
+        Vector3 bestCandidate = transform.position;
+        float bestScore = float.MaxValue;
+        bool foundAny = false;
 
-        Vector3 fallbackPosition = transform.position;
-        float maxPlayerDist = 0f;
-
-        int candidatesTested = 0;
-        int candidatesVisible = 0;
-        int candidatesNavMesh = 0;
+        // Desired ring radius from player
+        float desiredRadius = Mathf.Max(0.1f, maintainDistanceFromPlayer);
+        float jitterRadius = Mathf.Max(0f, searchRadius);
 
         for (int i = 0; i < sampleCount; i++)
         {
-            float angle = i * (360f / sampleCount);
-            Vector3 dir = Quaternion.Euler(0, angle, 0) * Vector3.forward;
-            Vector3 candidate = transform.position + dir * Random.Range(minMoveDistance, searchRadius);
+            // sample around the player (not around the shadow)
+            Vector2 unit = Random.insideUnitCircle.normalized;
+            // place mostly on the ring at desiredRadius with some jitter
+            float r = desiredRadius + Random.Range(-jitterRadius * 0.5f, jitterRadius * 0.5f);
+            r = Mathf.Max(1f, r);
+            Vector3 candidate = playerTransform.position + new Vector3(unit.x * r, 0f, unit.y * r);
 
-            float moveDist = Vector3.Distance(candidate, transform.position);
-            float playerDist = Vector3.Distance(candidate, playerTransform.position);
-
-            if (moveDist < minMoveDistance) continue;
-
+            // sample navmesh near candidate
             NavMeshHit hit;
-            if (NavMesh.SamplePosition(candidate, out hit, 2.0f, NavMesh.AllAreas))
-            {
-                candidatesNavMesh++;
-                bool canSee = CanSeePlayerFromPosition(hit.position);
-                candidatesTested++;
-                if (canSee) candidatesVisible++;
+            if (!NavMesh.SamplePosition(candidate, out hit, 4.0f, NavMesh.AllAreas))
+                continue;
 
-                if (canSee && playerDist >= maintainDistanceFromPlayer)
-                {
-                    float score = playerDist + moveDist;
-                    if (score < bestSafeScore)
-                    {
-                        bestSafeScore = score;
-                        bestSafePosition = hit.position;
-                        foundSafe = true;
-                    }
-                }
-                else if (canSee)
-                {
-                    if (playerDist > farthestPlayerDist)
-                    {
-                        farthestPlayerDist = playerDist;
-                        farthestVisiblePosition = hit.position;
-                        foundVisible = true;
-                    }
-                }
-                if (playerDist > maxPlayerDist)
-                {
-                    maxPlayerDist = playerDist;
-                    fallbackPosition = hit.position;
-                }
+            // reject positions that are too close to the player (avoid overlap) or inside obstacles
+            float playerDist = Vector3.Distance(hit.position, playerTransform.position);
+            if (playerDist < 1.0f) continue;
+
+            // Prefer positions that have line-of-sight to the player (stalking / peeking)
+            bool canSee = CanSeePlayerFromPosition(hit.position);
+
+            // Score: prefer positions that are reachable, canSee==true, and close to desiredRadius.
+            float score = Mathf.Abs(playerDist - desiredRadius);
+            if (!canSee) score += 1000f; // penalize positions that cannot see the player
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestCandidate = hit.position;
+                foundAny = true;
             }
         }
 
-        Debug.Log($"[ShadowLogic] Candidates tested: {candidatesTested}, NavMesh: {candidatesNavMesh}, Visible: {candidatesVisible}");
-
-        if (foundSafe)
+        if (foundAny)
         {
-            SetPeekDestination(bestSafePosition, "FindPeekPosition safe");
-            Debug.Log("[ShadowLogic] Moving to safe visible position.");
-        }
-        else if (foundVisible)
-        {
-            SetPeekDestination(farthestVisiblePosition, "FindPeekPosition farthest visible");
-            Debug.LogWarning("[ShadowLogic] No safe position found, moving to farthest visible position.");
-        }
-        else if (candidatesNavMesh > 0)
-        {
-            SetPeekDestination(fallbackPosition, "FindPeekPosition fallback");
-            Debug.LogWarning("[ShadowLogic] No visible position found, moving to farthest possible position.");
+            SetPeekDestination(bestCandidate, "FindPeekPosition (around player)");
+            Debug.Log("[ShadowLogic] Moving to peek position near player at " + bestCandidate);
         }
         else
         {
-            Debug.LogWarning("[ShadowLogic] No valid stalk position found, staying put.");
-            SetPeekDestination(transform.position, "FindPeekPosition none");
+            // Fallback: sample directly near the player (larger radius) to avoid going to the other side of the map.
+            NavMeshHit fallbackHit;
+            Vector3 fallbackTry = playerTransform.position + (playerTransform.forward * -desiredRadius); // behind player
+            if (NavMesh.SamplePosition(fallbackTry, out fallbackHit, Mathf.Max(4f, jitterRadius + 2f), NavMesh.AllAreas))
+            {
+                SetPeekDestination(fallbackHit.position, "FindPeekPosition fallback behind player");
+                Debug.LogWarning("[ShadowLogic] No ideal peek found; using fallback behind player.");
+            }
+            else
+            {
+                // last resort: stay close to current position
+                SetPeekDestination(transform.position, "FindPeekPosition none");
+                Debug.LogWarning("[ShadowLogic] No valid stalk position found near player, staying put.");
+            }
         }
     }
 
@@ -404,7 +433,7 @@ public class ShadowLogic : MonoBehaviour
         }
     }
 
-    // Helper: checks if player is visible from a given position
+    //checks if player is visible from a given position
     private bool CanSeePlayerFromPosition(Vector3 fromPosition)
     {
         if (playerTransform == null) return false;
@@ -442,7 +471,7 @@ public class ShadowLogic : MonoBehaviour
     // Flicker implementation: manage coroutines per-light
     private void ManageNearbyLights()
     {
-        var lights = FindObjectsByType<Light>(FindObjectsSortMode.None);
+        var lights = FindObjectsOfType<Light>();
         var inRange = new HashSet<Light>();
 
         foreach (var light in lights)
@@ -565,39 +594,6 @@ public class ShadowLogic : MonoBehaviour
             light.intensity = orig;
             originalIntensities.Remove(light);
         }
-    }
-
-    private void ManageNearbyLights_Old()
-    {
-        // kept for reference; not used anymore
-        var lights = FindObjectsByType<Light>(FindObjectsSortMode.None);
-        foreach (var light in lights)
-        {
-            float dist = Vector3.Distance(transform.position, light.transform.position);
-
-            if (dist <= lightDisableRadius)
-            {
-                if (light.enabled)
-                {
-                    light.enabled = false;
-                    disabledLights.Add(light);
-                }
-            }
-            else
-            {
-                if (disabledLights.Contains(light))
-                {
-                    light.enabled = true;
-                    disabledLights.Remove(light);
-                }
-            }
-        }
-    }
-
-    private void ManageNearbyLightsWrapper()
-    {
-        // call new method
-        ManageNearbyLights();
     }
 
     private void EnableRenderer()
@@ -775,7 +771,7 @@ public class ShadowLogic : MonoBehaviour
                 outOfSightTimer += Time.deltaTime;
                 if (outOfSightTimer >= outOfSightThreshold)
                 {
-                    FindPeekPosition();
+                    ScheduleReposition();
                     outOfSightTimer = 0f;
                     repositioningDueToproximity = false;
                 }
@@ -787,7 +783,7 @@ public class ShadowLogic : MonoBehaviour
             float peekDestPlayerDist = Vector3.Distance(peekDestination, playerTransform.position);
             if (!repositioningDueToproximity || peekDestPlayerDist < repositionTriggerDistance)
             {
-                FindPeekPosition();
+                ScheduleReposition();
                 repositioningDueToproximity = true;
             }
         }
@@ -803,24 +799,41 @@ public class ShadowLogic : MonoBehaviour
             if (repositionPending)
             {
                 repositionPending = false;
-                Debug.Log($"[ShadowLogic] Reposition #{repositionsDone} started. (counted when movement begins)");
-                /*if (repositionsDone >= repositionsBeforeDestroy && !destroyScheduled)
-                {
-                    destroyScheduled = true;
-                    Debug.Log("[ShadowLogic] Reposition threshold reached — scheduling destroy.");
-                    Destroy(gameObject, 1.0f);
-                }else
-                    repositionsDone++;*/
+                repositionsDone++;
+                Debug.Log($"[ShadowLogic] Reposition #{repositionsDone} started.");
 
+                if (repositionsDone > repositionsBeforeDestroy)
+                {
+                    Debug.Log("[ShadowLogic] Max repositions exceeded — despawning shadow before moving.");
+                    Destroy(gameObject);
+                    return;
+                }
             }
 
-            agent.SetDestination(peekDestination);
-            DisableRenderer();
+            // If a reposition is scheduled (cooldown active), stay hidden and do not set destination yet.
+            if (!repositionScheduled && !repositionLocked)
+            {
+                agent.SetDestination(peekDestination);
+                DisableRenderer();
+            }
+            else
+            {
+                // keep hidden until cooldown expires
+                DisableRenderer();
+            }
         }
         else
         {
-            EnableRenderer();
-            ManageNearbyLights();
+            // only show and manage lights when not en route and not scheduled to hide
+            if (!repositionScheduled)
+            {
+                EnableRenderer();
+                ManageNearbyLights();
+            }
+            else
+            {
+                DisableRenderer();
+            }
         }
 
         // Update the visual alpha of the shadow based on current sanity every frame
@@ -916,5 +929,27 @@ public class ShadowLogic : MonoBehaviour
         }
 
         return false;
+    }
+
+    // --- New helper: ScheduleReposition() ---
+    // Add this method near other private helpers:
+
+    private void ScheduleReposition()
+    {
+        if (repositionScheduled) return;
+
+        // hide now, then pick new position after cooldown
+        repositionScheduled = true;
+        repositionLocked = true; // prevent SetDestination until cooldown ends
+        repositionTimer = Mathf.Max(0.01f, repositionCooldownSeconds);
+
+        // immediate visual disappearance
+        DisableRenderer();
+
+        // Restore lights immediately so lighting state isn't left dark while hidden
+        RestoreLightsImmediately();
+
+        if (playerStats != null)
+            Debug.Log($"[ShadowLogic] Reposition scheduled in {repositionTimer:F1}s (repositionsDone={repositionsDone}/{repositionsBeforeDestroy}).");
     }
 }
