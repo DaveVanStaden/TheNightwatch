@@ -18,9 +18,10 @@ public class TrashTask : ITask
         if (manager.trashPrefab == null) return false;
         if (manager.trashSpawnPoints == null || manager.trashSpawnPoints.Length == 0) return false;
         if (spawnedTrash != null) return false;
-        if (completed) return false;
         if (player == null) return false;
 
+        // Note: do NOT block activation permanently based on the previous 'completed' value.
+        // The task instance is reused by TaskManager, so completed is only a per-run flag.
         foreach (var sp in manager.trashSpawnPoints)
         {
             if (sp == null) continue;
@@ -33,6 +34,9 @@ public class TrashTask : ITask
 
     public override void Activate(Transform player)
     {
+        // reset per-run completion flag
+        completed = false;
+
         if (manager == null || manager.trashPrefab == null || manager.trashSpawnPoints == null) { completed = true; return; }
 
         // filter spawn points that are not in the player's current room
@@ -79,11 +83,13 @@ public class TrashTask : ITask
 
     public override void Deactivate()
     {
+        // ensure any spawned object is cleaned up and reset per-run state so task can be reused
         if (spawnedTrash != null)
         {
             Object.Destroy(spawnedTrash);
             spawnedTrash = null;
         }
+        completed = false;
     }
 
     public override bool IsCompleted => completed;

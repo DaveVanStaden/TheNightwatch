@@ -41,6 +41,8 @@ public class TaskManager : MonoBehaviour
     // runtime
     private List<ITask> tasks = new List<ITask>();
     private ITask activeTask = null;
+    private int activeTaskIndex = -1;         // index of the currently active task in `tasks`
+    private int lastActivatedTaskIndex = -1;  // index of the last completed task; skip it once
     private float nextTaskTimer = 0f;
 
     // simple tracking
@@ -94,8 +96,13 @@ public class TaskManager : MonoBehaviour
             if (activeTask.IsCompleted)
             {
                 completedTasks.Add(activeTask.TaskName);
+
+                // remember which task just finished so it won't be picked immediately next time
+                lastActivatedTaskIndex = activeTaskIndex;
+
                 activeTask.Deactivate();
                 activeTask = null;
+                activeTaskIndex = -1;
                 ScheduleNextTask();
             }
 
@@ -116,7 +123,7 @@ public class TaskManager : MonoBehaviour
             return;
         }
 
-        // randomize order
+        // randomize order (we store actual task indices so we can compare easily)
         var indices = new List<int>(tasks.Count);
         for (int i = 0; i < tasks.Count; i++) indices.Add(i);
         for (int i = 0; i < indices.Count; i++)
@@ -129,12 +136,24 @@ public class TaskManager : MonoBehaviour
 
         foreach (int idx in indices)
         {
+            // skip invalid entries
+            if (idx < 0 || idx >= tasks.Count) continue;
             var t = tasks[idx];
             if (t == null) continue;
+
+            // do not pick the same task that just finished
+            if (idx == lastActivatedTaskIndex) continue;
+
             if (t.CanActivate(playerTransform))
             {
+                activeTaskIndex = idx;
                 activeTask = t;
                 activeTask.Activate(playerTransform);
+
+                // once we successfully started a different task, clear the "skip once" marker
+                // so the previously completed task can appear again later
+                lastActivatedTaskIndex = -1;
+
                 // wait until complete to schedule next
                 return;
             }

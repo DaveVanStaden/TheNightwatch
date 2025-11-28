@@ -4397,6 +4397,9 @@ MonoBehaviour:
   shadowMaxChance: 0.5
   shadowTimeToMax: 10
   shadowSpawnRadius: 30
+  statues: []
+  statueFollowSanityThreshold: 50
+  statueRequireNotSeen: 0
 --- !u!1 &138457668
 GameObject:
   m_ObjectHideFlags: 0
@@ -4948,10 +4951,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 850570682}
     m_Modifications:
-    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
-      propertyPath: _group
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: -9127561607767440349, guid: ea041820a7cf5b14ea007291948c8b6b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -5056,6 +5055,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e0b9ed7aeeef1c24fb376100facf44b5, type: 2}
+    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
+      propertyPath: _group
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -24896,10 +24899,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 850570682}
     m_Modifications:
-    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
-      propertyPath: _group
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: -9127561607767440349, guid: ea041820a7cf5b14ea007291948c8b6b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -25008,6 +25007,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e0b9ed7aeeef1c24fb376100facf44b5, type: 2}
+    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
+      propertyPath: _group
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -29818,8 +29821,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab9b85220dec52645826b00f98c9de4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TaskManager
-  minTimeToNextTask: 5
-  maxTimeToNextTask: 10
+  minTimeToNextTask: 2
+  maxTimeToNextTask: 6
   playerTransform: {fileID: 460481664}
   playerManager: {fileID: 2068836945279242157}
   paintingTargets:
@@ -32545,6 +32548,14 @@ PrefabInstance:
     - target: {fileID: 1358445075250949774, guid: d79744c98e1584141bd2b16070696553, type: 3}
       propertyPath: m_Layer
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1499578299235084759, guid: d79744c98e1584141bd2b16070696553, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1499578299235084759, guid: d79744c98e1584141bd2b16070696553, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.189
       objectReference: {fileID: 0}
     - target: {fileID: 1608540690976121446, guid: d79744c98e1584141bd2b16070696553, type: 3}
       propertyPath: smoothSpeed
