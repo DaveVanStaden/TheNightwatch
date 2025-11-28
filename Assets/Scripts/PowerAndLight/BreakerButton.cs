@@ -100,7 +100,7 @@ public class BreakerButton : MonoBehaviour
         if (powerGroup == null)
         {
             // not an error, but remind
-            Debug.Log($"BreakerButton '{name}' has no PowerGroups assigned. Assign in inspector to control lights.", this);
+            //Debug.Log($"BreakerButton '{name}' has no PowerGroups assigned. Assign in inspector to control lights.", this);
         }
     }
 

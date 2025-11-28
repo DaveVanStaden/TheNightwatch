@@ -11,9 +11,13 @@ public class PaintingEventModule : IEventModule
     private class PaintingState
     {
         public Painting p;
-        public float applyAccum;            // accumulation time while waiting to apply distortion
+        public float applyAccum;             // accumulation time while waiting to apply distortion
         public float protectedTimeRemaining; // time remaining where painting must stay distorted (positive)
-        public float resetAttemptAccum;     // accumulation time while attempting to reset after protection
+        public float resetAttemptAccum;      // accumulation time while attempting to reset after protection
+
+        // New runtime flags:
+        public bool seenWhileDistorted;      // set when player has looked at the painting while it was distorted
+        public bool wasLookingLastFrame;     // previous-frame looking state used to detect "look away" transitions
 
         public PaintingState(Painting p)
         {
@@ -21,6 +25,8 @@ public class PaintingEventModule : IEventModule
             applyAccum = 0f;
             protectedTimeRemaining = 0f;
             resetAttemptAccum = 0f;
+            seenWhileDistorted = false;
+            wasLookingLastFrame = false;
         }
     }
 
@@ -99,14 +105,21 @@ public class PaintingEventModule : IEventModule
                             Debug.Log($"[PaintingEventModule] '{p.gameObject.name}' applyAccum={st.applyAccum:F2} timeRatio={timeRatio:F2} sanityFactor={sanityFactor:F2} effChance/s={effectiveChancePerSecond:F4} roll={roll:F6}");
                         }
 
+                        // Replace the block that handles a successful ApplyDistortion roll so we also reset the new flags
                         if (Random.value < roll)
                         {
                             float duration = Random.Range(manager.resetMinSeconds, manager.resetMaxSeconds);
                             if (manager.debugPaintings) Debug.Log($"[PaintingEventModule] Distorting '{p.gameObject.name}' for {duration:F1}s");
                             p.ApplyDistortion();
+
+                            // set protected time and reset accumulators / flags
                             st.protectedTimeRemaining = duration; // positive protected time remaining
                             st.applyAccum = 0f;
                             st.resetAttemptAccum = 0f;
+
+                            // New: reset the "seen while distorted" and looking-tracking flags so we can detect a subsequent look+look-away
+                            st.seenWhileDistorted = false;
+                            st.wasLookingLastFrame = false;
                         }
                     }
                     else
@@ -122,6 +135,7 @@ public class PaintingEventModule : IEventModule
                     st.applyAccum = Mathf.Max(0f, st.applyAccum - dt * 0.5f);
                 }
             }
+            // Replace the "Painting is distorted." branch with this updated logic (handles auto-revert at sanity>=75)
             else
             {
                 // Painting is distorted.
@@ -131,38 +145,78 @@ public class PaintingEventModule : IEventModule
                     st.protectedTimeRemaining = Mathf.Max(0f, st.protectedTimeRemaining - dt);
                     if (manager.debugPaintings)
                         Debug.Log($"[PaintingEventModule] '{p.gameObject.name}' protected for {st.protectedTimeRemaining:F1}s more");
+
+                    // update looking flag while protected so we don't lose sight-tracking
+                    bool lookingNowDuringProtected = p.IsPlayerLooking(cam, manager.paintingLookAngle);
+                    st.wasLookingLastFrame = lookingNowDuringProtected;
+                    if (lookingNowDuringProtected)
+                        st.seenWhileDistorted = true;
+
                     continue; // cannot reset yet
                 }
 
-                // now allowed to attempt reset (only when not being looked at)
-                bool looking = p.IsPlayerLooking(cam, manager.paintingLookAngle);
-                if (!looking)
+                // Replace the sanity check that triggers immediate revert with a dual-scale check (handles 0-1 or 0-100 sanity)
+                if (manager.playerSanity >= 75f)
                 {
-                    st.resetAttemptAccum += dt;
+                    if (manager.debugPaintings) Debug.Log($"[PaintingEventModule] Sanity >=75 — reverting '{p.gameObject.name}' immediately.");
+                    p.RevertToOriginal();
+                    st.applyAccum = 0f;
+                    st.resetAttemptAccum = 0f;
+                    st.protectedTimeRemaining = 0f;
+                    st.seenWhileDistorted = false;
+                    st.wasLookingLastFrame = false;
+                    continue;
+                }
 
-                    float sanityFactor = Mathf.Clamp01(sanity / 100f); // assume sanity 0-100
-                    float timeRatio = Mathf.Clamp01(st.resetAttemptAccum / Mathf.Max(0.0001f, manager.timeToMaxChance));
-                    float effectiveChancePerSecond = manager.baseChancePerSecond * (1f + sanityFactor) * (0.01f + timeRatio);
-                    float roll = effectiveChancePerSecond * dt;
+                // now allowed to attempt reset (only when not being looked at)
+                bool lookingNow = p.IsPlayerLooking(cam, manager.paintingLookAngle);
 
-                    if (manager.debugPaintings)
-                    {
-                        Debug.Log($"[PaintingEventModule] '{p.gameObject.name}' resetAccum={st.resetAttemptAccum:F2} timeRatio={timeRatio:F2} sanityFactor={sanityFactor:F2} effChance/s={effectiveChancePerSecond:F4} roll={roll:F6}");
-                    }
+                // Record when player looks while distorted so we can trigger a reset attempt on the next look-away
+                if (lookingNow)
+                {
+                    st.seenWhileDistorted = true;
+                    // pause reset attempts while player is looking
+                    if (manager.debugPaintings) Debug.Log($"[PaintingEventModule] '{p.gameObject.name}' is being watched - pausing reset attempts.");
+                    st.wasLookingLastFrame = true;
+                    continue;
+                }
 
-                    if (Random.value < roll)
-                    {
-                        if (manager.debugPaintings) Debug.Log($"[PaintingEventModule] Reverting '{p.gameObject.name}' to original.");
-                        p.RevertToOriginal();
-                        st.applyAccum = 0f;
-                        st.resetAttemptAccum = 0f;
-                        st.protectedTimeRemaining = 0f;
-                    }
+                // If player just looked away (was looking last frame), and they've seen it while distorted,
+                // seed an immediate attempt by bumping resetAttemptAccum to max.
+                if (st.wasLookingLastFrame && st.seenWhileDistorted)
+                {
+                    st.resetAttemptAccum = Mathf.Max(st.resetAttemptAccum, manager.timeToMaxChance);
+                }
+
+                // accumulate reset attempt time while not looking
+                st.resetAttemptAccum += dt;
+
+                // Higher sanity reduces reset chance (so resets build up slower at high sanity)
+                float sanityFactor = 1f - Mathf.Clamp01(manager.playerSanity / 100f);
+
+                float timeRatio = Mathf.Clamp01(st.resetAttemptAccum / Mathf.Max(0.0001f, manager.timeToMaxChance));
+                float effectiveChancePerSecond = manager.baseChancePerSecond * (1f + sanityFactor) * (0.01f + timeRatio);
+                float roll = effectiveChancePerSecond * dt;
+
+                if (manager.debugPaintings)
+                {
+                    Debug.Log($"[PaintingEventModule] '{p.gameObject.name}' resetAccum={st.resetAttemptAccum:F2} timeRatio={timeRatio:F2} sanityFactor={sanityFactor:F2} effChance/s={effectiveChancePerSecond:F4} roll={roll:F6}");
+                }
+
+                if (Random.value < roll)
+                {
+                    if (manager.debugPaintings) Debug.Log($"[PaintingEventModule] Reverting '{p.gameObject.name}' to original.");
+                    p.RevertToOriginal();
+                    st.applyAccum = 0f;
+                    st.resetAttemptAccum = 0f;
+                    st.protectedTimeRemaining = 0f;
+                    st.seenWhileDistorted = false;
+                    st.wasLookingLastFrame = false;
                 }
                 else
                 {
-                    // player is looking -> pause reset attempts (do not accumulate)
-                    if (manager.debugPaintings) Debug.Log($"[PaintingEventModule] '{p.gameObject.name}' is being watched - pausing reset attempts.");
+                    // update last-looking flag for next frame
+                    st.wasLookingLastFrame = false;
                 }
             }
         }
