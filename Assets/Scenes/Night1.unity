@@ -1120,6 +1120,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1841161454008125402, guid: c796176523a0ff440a269b797238d2c6, type: 3}
+      propertyPath: m_Name
+      value: MainHallZone
+      objectReference: {fileID: 0}
     - target: {fileID: 2215728952542756224, guid: c796176523a0ff440a269b797238d2c6, type: 3}
       propertyPath: m_Name
       value: Reverb zones
@@ -1163,6 +1167,18 @@ PrefabInstance:
     - target: {fileID: 6527480919712815666, guid: c796176523a0ff440a269b797238d2c6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6654347769807125338, guid: c796176523a0ff440a269b797238d2c6, type: 3}
+      propertyPath: m_Name
+      value: CarpettedRoom (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7441797937530123774, guid: c796176523a0ff440a269b797238d2c6, type: 3}
+      propertyPath: m_Name
+      value: CarpettedRoom (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8085555320816984440, guid: c796176523a0ff440a269b797238d2c6, type: 3}
+      propertyPath: m_Name
+      value: CarpettedRoom
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

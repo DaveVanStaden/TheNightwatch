@@ -27,10 +27,7 @@ public class Interactable : MonoBehaviour, IInteraction
         flashlightRotator = FindAnyObjectByType<FlashlightRotator>();
         flashlight = flashlightRotator != null ? flashlightRotator.gameObject : null;
         swoosh = GetComponent<AudioSource>();
-        if (tutorialActive)
-        {
-            tutMan = FindAnyObjectByType<TutorialManager>();
-        }
+        tutMan = FindAnyObjectByType<TutorialManager>();
     }
 
     private void LateUpdate()
