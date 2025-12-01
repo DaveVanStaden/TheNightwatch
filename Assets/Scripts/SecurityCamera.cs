@@ -4,7 +4,7 @@ public class SecurityCamera : MonoBehaviour
 {
     public enum Group
     {
-        A, B, C, D
+        A, B, C, D, E, F
     };
     public Group _group;
     public Light camLight;

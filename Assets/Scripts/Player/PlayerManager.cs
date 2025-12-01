@@ -46,6 +46,9 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector] public bool inInteractionView = false;
     [HideInInspector] public CharacterController characterController;
     [HideInInspector] public PlayerInputManager inputActions;
+    // Set by interactions (like BreakerBox) when the interaction wants the player to leave.
+    // PlayerInteraction will observe this flag and clean up interaction state properly.
+    [HideInInspector] public bool externalLeaveRequested = false;
 
     private List<PlayerModule> modules = new();
 

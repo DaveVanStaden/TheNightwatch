@@ -16,28 +16,15 @@ public class CamGroup : MonoBehaviour
     [SerializeField] AudioClip blip;
     public enum Group
     {
-        A, B, C, D
+        A, B, C, D, E, F
     };
     public Group _group;
 
     public GameObject[] cameras;
     public GameObject[] icons;
-    void Start()
+
+    private void Awake()
     {
-        GameObject[] cameralist = GameObject.FindGameObjectsWithTag("CameraView");
-        int j = 0;
-        for (int i = 0; i < cameralist.Length; i++)
-        {
-            if (cameralist[i].GetComponent<CamImage>()._group.ToString() == _group.ToString())
-            {
-                cameras[j] = cameralist[i];
-                j++;
-                if (j >= 4)
-                {
-                    j = 0;
-                }
-            }
-        }
         GameObject[] iconList = GameObject.FindGameObjectsWithTag("CamIcon");
         int k = 0;
         for (int i = 0; i < iconList.Length; i++)
@@ -49,6 +36,24 @@ public class CamGroup : MonoBehaviour
                 if (k >= 4)
                 {
                     k = 0;
+                }
+            }
+        }
+    }
+    void Start()
+    {
+        audioSource = GameObject.Find("MonitorGroupBleeps").GetComponent<AudioSource>();
+        GameObject[] cameralist = GameObject.FindGameObjectsWithTag("CameraView");
+        int j = 0;
+        for (int i = 0; i < cameralist.Length; i++)
+        {
+            if (cameralist[i].GetComponent<CamImage>()._group.ToString() == _group.ToString())
+            {
+                cameras[j] = cameralist[i];
+                j++;
+                if (j >= 4)
+                {
+                    j = 0;
                 }
             }
         }
