@@ -411,9 +411,9 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: b82b01ec3ec0a99499ad582558e8d7f6, type: 3}
+  m_Resource: {fileID: 8300000, guid: dfbf5a9c03aa7b24f86a977ce7c2d76a, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.2
+  m_Volume: 0.1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -566,7 +566,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 2, y: 2, z: 2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4506018260160925711
 GameObject:
@@ -683,7 +683,7 @@ MonoBehaviour:
   gravity: 10
   playerCamera: {fileID: 1216032707678942655}
   lookSpeed: 0.2
-  lookXLimit: 45
+  lookXLimit: 65
   useHeadBob: 1
   currentLayer: 0
   interactionRange: 100
@@ -707,6 +707,7 @@ MonoBehaviour:
   smoothSpeed: 20
   inInteractionView: 0
   characterController: {fileID: 0}
+  externalLeaveRequested: 0
 --- !u!114 &393543864603616387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -881,8 +882,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canMove: 1
-  overshootFactor: 3
-  interpolationSpeed: 7
+  overshootFactor: 9
+  interpolationSpeed: 4
   lookSpeed: 5
 --- !u!1 &5626061735135618401
 GameObject:
@@ -1128,7 +1129,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 2, y: 2, z: 2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7291050886282294014
 GameObject:
@@ -1383,7 +1384,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 55
+    m_Bits: 1079
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 03da689a905bd384cb6abd43fd1e7c17, type: 2}
   m_TargetDisplay: 0

@@ -9,7 +9,6 @@ public class PlayerCameraLook : PlayerModule
     private float currentYaw = 0f;
     private float currentPitch = 0f;
     private float yawBeforeInteraction = 0f;
-    private float yawAfterInteraction = 0f;
     // Smoothing
     private float smoothSpeed = 0f; // Higher = snappier
 
