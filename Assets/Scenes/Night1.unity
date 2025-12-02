@@ -135,6 +135,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22e7658c6b3bdaa4f8474624db62b9ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakerButton
+--- !u!82 &61076559 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 5969664815811171667, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
 --- !u!82 &100140429 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 6597396595863629296, guid: 924eed004a024234582db290b2c4c814, type: 3}
@@ -2250,6 +2255,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7592952799728662270, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 61076559}
     - target: {fileID: 8252081889438369963, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
       propertyPath: audioSource
       value: 
