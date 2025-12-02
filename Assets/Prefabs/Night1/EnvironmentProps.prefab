@@ -6034,7 +6034,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5881876386412986149, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
       propertyPath: m_CastShadows
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -5881876386412986149, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
       propertyPath: m_ScaleInLightmap
@@ -7453,6 +7453,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -2919193388145846397, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 671781003193174684}
+    - targetCorrespondingSourceObject: {fileID: -5574317894656922737, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4441720857075812420}
     - targetCorrespondingSourceObject: {fileID: 6921435856705928827, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1547983763585357272}
@@ -7754,6 +7757,32 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 9123250977245873283, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
+--- !u!1 &2019014763695888829 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -5574317894656922737, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
+  m_PrefabInstance: {fileID: 3359949558565188146}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &4441720857075812420
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019014763695888829}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.13078308, y: 8.537182, z: 24.207695}
+  m_Center: {x: -4.04751, y: -0.7086654, z: -1.867162}
 --- !u!1 &2259173024908714796 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5621968189365284578, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
