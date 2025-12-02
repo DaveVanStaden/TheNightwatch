@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6743302559774294647}
   - component: {fileID: 5254745571826690440}
   - component: {fileID: 5478164811973656018}
+  - component: {fileID: 5971128773448282910}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -66,3 +67,20 @@ MonoBehaviour:
   requirePlayerNotInRoom: 1
   playerCamera: {fileID: 0}
   debug: 0
+--- !u!114 &5971128773448282910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4826251618115385339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 909f2175be223ea448aac4f0d805ddb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StaffElectronics
+  screenOffMat: {fileID: 2100000, guid: ed0d0aaf1e664494d96abe817d785ee0, type: 2}
+  lightOffMat: {fileID: 2100000, guid: f40adbfc9f670fc4aa491c86f1304f37, type: 2}
+  monitors: []
+  PC: {fileID: 0}
+  audioSources: []

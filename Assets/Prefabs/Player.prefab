@@ -727,7 +727,7 @@ GameObject:
   - component: {fileID: 393543864603616387}
   - component: {fileID: 8311922647742088351}
   - component: {fileID: 4407590714494755772}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -791,7 +791,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
-  m_Actions: {fileID: 0}
+  m_Actions: {fileID: -944628639613478452, guid: dcb8a6689cfae6a48997523fff5000f1, type: 3}
   m_NotificationBehavior: 0
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -806,7 +806,7 @@ MonoBehaviour:
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: 
+  m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
 --- !u!114 &1608540690976121446
@@ -848,7 +848,7 @@ MonoBehaviour:
   rayCam: {fileID: 6165258326058820521}
   interactionCamera: {fileID: 0}
   cameraAnchor: {fileID: 3701745406507522177}
-  smoothSpeed: 20
+  smoothSpeed: 18
   inInteractionView: 0
   characterController: {fileID: 0}
   externalLeaveRequested: 0
@@ -1255,7 +1255,7 @@ Light:
   m_InnerSpotAngle: 20.17921
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 0.9
