@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 5254745571826690440}
   - component: {fileID: 5478164811973656018}
   - component: {fileID: 5971128773448282910}
+  - component: {fileID: 7767526375770893696}
+  - component: {fileID: 3701113217424796448}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -84,3 +86,65 @@ MonoBehaviour:
   monitors: []
   PC: {fileID: 0}
   audioSources: []
+  lights: []
+--- !u!114 &7767526375770893696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4826251618115385339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ac05970714ac234482cd5cfbe8fd198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EventManager
+  paintings:
+  - {fileID: 0}
+  playerManager: {fileID: 0}
+  sanityThreshold: 90
+  baseChancePerSecond: 5
+  timeToMaxChance: 10
+  resetMinSeconds: 20
+  resetMaxSeconds: 30
+  paintingLookAngle: 40
+  playerSanity: 100
+  debugPaintings: 0
+  shadowPrefab: {fileID: 5446037415456941590, guid: 9b644f1de166e984c958c58ba700b558, type: 3}
+  shadowSpawnSanityThreshold: 70
+  shadowMaxActive: 2
+  shadowSpawnCooldownSeconds: 120
+  shadowMaxChance: 0.5
+  shadowTimeToMax: 10
+  shadowSpawnRadius: 30
+  statues: []
+  statueFollowSanityThreshold: 50
+  statueRequireNotSeen: 1
+--- !u!114 &3701113217424796448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4826251618115385339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab9b85220dec52645826b00f98c9de4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TaskManager
+  minTimeToNextTask: 2
+  maxTimeToNextTask: 6
+  playerTransform: {fileID: 0}
+  playerManager: {fileID: 0}
+  paintingTargets:
+  - {fileID: 0}
+  paintingRequiredPlayerDistanceToFall: 8
+  paintingInteractionDistance: 10
+  trashPrefab: {fileID: 5235622300661026600, guid: 966a8145bb1dedd4b86c174aa5346f21, type: 3}
+  trashSpawnPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  trashInteractionDistance: 7
+  completedTasks: []

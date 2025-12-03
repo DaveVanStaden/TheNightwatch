@@ -23,18 +23,21 @@ public class PlayerManager : MonoBehaviour
     public float interactionRange = 100f;
 
     [Header("Headbob Settings")]
-    [SerializeField] public float walkBobSpeed = 14f;
-    [SerializeField] public float walkBobAmount = .2f;
-    [SerializeField] public float runBobSpeed = 20f;
-    [SerializeField] public float runBobAmount = .4f;
+    public float walkBobSpeed = 14f;
+    public float walkBobAmount = .2f;
+    public float runBobSpeed = 20f;
+    public float runBobAmount = .4f;
     public float defaultYPos = 0f;
+    public float bobStartupSpeed = 1f;
+    public float bobRecoverySpeed = 1f;
+    public float bobSprintRecoverySpeed = 1f;
 
     [Header("Footstep parameters")]
     public bool enableFootsteps = true;
-    [SerializeField] public float baseStepSpeed = 0.5f;
-    [SerializeField] public float runStepMultiplier = 1.5f;
-    [SerializeField] public AudioSource footstepAudioSource;
-    [SerializeField] public AudioClip[] footstepSound;
+    public float baseStepSpeed = 0.5f;
+    public float runStepMultiplier = 1.5f;
+    public AudioSource footstepAudioSource;
+    public AudioClip[] footstepSound;
 
     [Header("Camera")]
     public Transform cameraParent; // Assign this in the Inspector
