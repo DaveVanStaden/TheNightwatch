@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,6 +7,7 @@ public class CamIcon : MonoBehaviour
     private Image currentIcon;
     public Sprite selectedIcon;
     public Sprite deselectedIcon;
+    TextMeshProUGUI text;
 
     public enum Group
     {
@@ -19,6 +21,7 @@ public class CamIcon : MonoBehaviour
     void Awake()
     {
         currentIcon = GetComponent<Image>();
+        text = GetComponentInChildren<TextMeshProUGUI>();
         Deselect();
     }
 
@@ -26,10 +29,12 @@ public class CamIcon : MonoBehaviour
     {
         transform.localScale = new Vector3(selectedSize, selectedSize, 1f);
         currentIcon.sprite = selectedIcon;
+        text.color = Color.black;
     }
     public void Deselect()
     {
         transform.localScale = new Vector3(deselectedSize, deselectedSize, 1f);
         currentIcon.sprite = deselectedIcon;
+        text.color = Color.grey;
     }
 }

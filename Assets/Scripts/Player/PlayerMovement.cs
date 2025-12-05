@@ -11,6 +11,7 @@ public class PlayerMovement : PlayerModule
 
     private float footstepTimer = 0f;
     private float headbobTimer;
+    float bobIntensity = 0f;
 
     private float GetCurrentOffset => isSprinting ? manager.baseStepSpeed * manager.runStepMultiplier : manager.baseStepSpeed;
 
@@ -67,13 +68,20 @@ public class PlayerMovement : PlayerModule
     }
     private void HandleHeadbob()
     {
+        headbobTimer += Time.deltaTime * (isSprinting ? manager.runBobSpeed : manager.walkBobSpeed);
         if (Mathf.Abs(moveInput.x) > 0.1f || Mathf.Abs(moveInput.y) > 0.1f)
         {
-            headbobTimer += Time.deltaTime * (isSprinting ? manager.runBobSpeed : manager.walkBobSpeed);
-            manager.playerCamera.transform.localPosition = new Vector3(
-                manager.playerCamera.transform.localPosition.x,
-                manager.defaultYPos + Mathf.Sin(headbobTimer) * (isSprinting ? manager.runBobAmount : manager.walkBobAmount),
-                manager.playerCamera.transform.localPosition.z);
+            bobIntensity += manager.bobStartupSpeed * Time.deltaTime;
         }
+        else
+        {
+            bobIntensity -= (isSprinting ? manager.bobSprintRecoverySpeed : manager.bobRecoverySpeed) * Time.deltaTime;
+        }
+
+        bobIntensity = Mathf.Clamp(bobIntensity, 0f, 1f);
+        manager.playerCamera.transform.localPosition = new Vector3(
+            manager.playerCamera.transform.localPosition.x,
+            manager.defaultYPos + Mathf.Sin(headbobTimer) * (isSprinting ? manager.runBobAmount : manager.walkBobAmount) * bobIntensity,
+            manager.playerCamera.transform.localPosition.z);
     }
 }

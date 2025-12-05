@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -57,10 +58,11 @@ public class CamGroup : MonoBehaviour
                 }
             }
         }
+
         currentColor = regularColor;
         if (isStartingGroup)
         {
-            ReplaceCameras();
+            StartCoroutine(StartSetUp());
         }
     }
 
@@ -145,4 +147,10 @@ public class CamGroup : MonoBehaviour
         }
     }
 
+    IEnumerator StartSetUp()
+    {
+        yield return new WaitForSeconds(.2f);
+        ReplaceCameras();
+        FindAnyObjectByType<DisableCams>().SwitchEm();
+    }
 }

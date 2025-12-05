@@ -39,7 +39,7 @@ public class TaskManager : MonoBehaviour
     public float trashInteractionDistance = 2.5f;
 
     // runtime
-    private List<ITask> tasks = new List<ITask>();
+    public  List<ITask> tasks = new();
     private ITask activeTask = null;
     private int activeTaskIndex = -1;         // index of the currently active task in `tasks`
     private int lastActivatedTaskIndex = -1;  // index of the last completed task; skip it once
@@ -84,6 +84,7 @@ public class TaskManager : MonoBehaviour
     private void ScheduleNextTask()
     {
         nextTaskTimer = Random.Range(minTimeToNextTask, maxTimeToNextTask);
+        FindAnyObjectByType<TaskChecker>().CheckTaskList();
     }
 
     private void Update()
@@ -96,7 +97,7 @@ public class TaskManager : MonoBehaviour
             if (activeTask.IsCompleted)
             {
                 completedTasks.Add(activeTask.TaskName);
-
+                FindAnyObjectByType<TaskChecker>().CheckCompletedTasks();
                 // remember which task just finished so it won't be picked immediately next time
                 lastActivatedTaskIndex = activeTaskIndex;
 

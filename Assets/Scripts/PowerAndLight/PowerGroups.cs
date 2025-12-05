@@ -23,7 +23,7 @@ public class PowerGroups : MonoBehaviour
             var lt = light.GetComponent<Light>();
             if (lt != null)
                 lt.enabled = on;
-            else
+            
                 light.SetActive(on);
         }
     }

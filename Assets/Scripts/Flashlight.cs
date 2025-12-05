@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Flashlight : MonoBehaviour
@@ -18,7 +16,7 @@ public class Flashlight : MonoBehaviour
     {
         click = GetComponent<AudioSource>();
         flashlight = GetComponent<Light>();
-        player = FindObjectOfType<PlayerManager>();
+        player = FindAnyObjectByType<PlayerManager>();
     }
 
     void Update()
