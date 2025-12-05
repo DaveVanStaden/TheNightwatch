@@ -38,6 +38,12 @@ public class TaskManager : MonoBehaviour
     [Tooltip("Distance player must be to interact with trash.")]
     public float trashInteractionDistance = 2.5f;
 
+    [Header("Task names")]
+    [Tooltip("Human readable name used for the Painting task (logged/completed list).")]
+    public string PaintingTaskName = "PaintingTask";
+    [Tooltip("Human readable name used for the Trash task (logged/completed list).")]
+    public string TrashTaskName = "TrashTask";
+
     // runtime
     public  List<ITask> tasks = new();
     private ITask activeTask = null;
@@ -67,6 +73,10 @@ public class TaskManager : MonoBehaviour
                 if (p != null) playerTransform = p.transform;
             }
         }
+
+        // ensure task name defaults (allows inspector override; guarantees non-empty names)
+        if (string.IsNullOrWhiteSpace(PaintingTaskName)) PaintingTaskName = "PaintingTask";
+        if (string.IsNullOrWhiteSpace(TrashTaskName)) TrashTaskName = "TrashTask";
 
         // create task instances and initialize them
         var paintingTask = new PaintingTask();

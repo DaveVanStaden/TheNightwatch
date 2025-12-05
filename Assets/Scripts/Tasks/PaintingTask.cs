@@ -7,9 +7,10 @@ using UnityEngine;
 /// </summary>
 public class PaintingTask : ITask
 {
-    public override string TaskName => "PaintingTask";
+    private string taskName = "PaintingTask";
+    public override string TaskName => taskName;
 
-    // defaults (used when PaintingFallConfig is absent)
+    // defaults (used when PaintingFallConfig is absent or specific transforms are not set)
     private const float DefaultFallDepth = 1.4f;
     private const float DefaultFallForward = 0.5f;
     private const float DefaultFallRotationX = 90f;
@@ -33,6 +34,16 @@ public class PaintingTask : ITask
 
     private float fallDurationLocal;
     private float returnDurationLocal;
+
+    public override void Initialize(TaskManager manager)
+    {
+        // store manager reference and pick up configured task name
+        this.manager = manager;
+        if (manager != null && !string.IsNullOrWhiteSpace(manager.PaintingTaskName))
+            taskName = manager.PaintingTaskName;
+        else
+            taskName = "PaintingTask";
+    }
 
     public override bool CanActivate(Transform player)
     {
@@ -76,16 +87,32 @@ public class PaintingTask : ITask
         // read per-painting override if present
         var cfg = targetPainting.GetComponent<PaintingFallConfig>();
 
-        float depth = cfg != null ? cfg.fallDepth : DefaultFallDepth;
-        float forward = cfg != null ? cfg.fallForward : DefaultFallForward;
-        float rotX = cfg != null ? cfg.fallRotationX : DefaultFallRotationX;
+        // compute fallen position:
+        // - Use local-space Vector3 offset from PaintingFallConfig converted to world via Transform.TransformVector.
+        // - Otherwise, fallback to previous scalar defaults (forward along painting.forward and down).
+        Vector3 offsetWorld;
+        if (cfg != null)
+        {
+            offsetWorld = targetPainting.TransformVector(cfg.fallOffset);
+        }
+        else
+        {
+            offsetWorld = targetPainting.forward * DefaultFallForward + Vector3.down * DefaultFallDepth;
+        }
 
-        // compute fallen position: forward (local) + down
-        Vector3 forwardOffset = targetPainting.forward * forward;
-        fallenPosition = originalPosition + forwardOffset + Vector3.down * depth;
+        fallenPosition = originalPosition + offsetWorld;
 
-        // compute fallen rotation (rotate around local X so it falls face-first)
-        fallenRotation = originalRotation * Quaternion.Euler(rotX, 0f, 0f);
+        // compute fallen rotation
+        if (cfg != null)
+        {
+            // apply local Euler rotation relative to the painting's original rotation
+            fallenRotation = originalRotation * Quaternion.Euler(cfg.fallRotationEuler);
+        }
+        else
+        {
+            // fallback: rotate around local X by default angle so it falls face-first
+            fallenRotation = originalRotation * Quaternion.Euler(DefaultFallRotationX, 0f, 0f);
+        }
 
         // durations (allow per-painting override if > 0)
         fallDurationLocal = (cfg != null && cfg.fallDuration > 0f) ? cfg.fallDuration : DefaultFallDuration;

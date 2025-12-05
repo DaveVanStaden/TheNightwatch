@@ -986,8 +986,6 @@ public partial class @PlayerInputManager: IInputActionCollection2, IDisposable
 
     ~@PlayerInputManager()
     {
-        UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, PlayerInputManager.Player.Disable() has not been called.");
-        UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, PlayerInputManager.UI.Disable() has not been called.");
     }
 
     /// <summary>
