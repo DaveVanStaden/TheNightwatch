@@ -23,10 +23,10 @@ public class PlayerCameraLook : PlayerModule
         if (manager.playerCamera != null)
         {
             rotationX = manager.playerCamera.transform.localEulerAngles.x;
-            currentPitch = rotationX;
+            currentPitch = SignedAngleFrom0To180(rotationX);
             // initialize yaw/pitch from camera so first frames don't snap
-            currentYaw = manager.playerCamera.transform.eulerAngles.y;
-            currentPitch = manager.playerCamera.transform.localEulerAngles.x;
+            currentYaw = SignedAngleFrom0To360(manager.playerCamera.transform.eulerAngles.y);
+            currentPitch = SignedAngleFrom0To180(manager.playerCamera.transform.localEulerAngles.x);
         }
     }
 
@@ -68,7 +68,7 @@ public class PlayerCameraLook : PlayerModule
         if (manager.playerCamera != null)
         {
             // Use the world Y rotation of the camera's transform
-            currentYaw = manager.playerCamera.transform.eulerAngles.y;
+            currentYaw = SignedAngleFrom0To360(manager.playerCamera.transform.eulerAngles.y);
         }
     }
 
@@ -76,7 +76,7 @@ public class PlayerCameraLook : PlayerModule
     public void StoreYawBeforeInteraction()
     {
         if (manager.playerCamera != null)
-            yawBeforeInteraction = manager.playerCamera.transform.eulerAngles.y;
+            yawBeforeInteraction = SignedAngleFrom0To360(manager.playerCamera.transform.eulerAngles.y);
     }
 
     public void RestoreYawAfterInteraction()
@@ -95,7 +95,7 @@ public class PlayerCameraLook : PlayerModule
     {
         if (manager.playerCamera != null)
         {
-            float yaw = manager.playerCamera.transform.eulerAngles.y;
+            float yaw = SignedAngleFrom0To360(manager.playerCamera.transform.eulerAngles.y);
             currentYaw = yaw;
             // Immediately align player transform to avoid snap when resuming
             manager.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
@@ -105,8 +105,10 @@ public class PlayerCameraLook : PlayerModule
                 manager.cameraParent.rotation = Quaternion.Euler(parentEuler.x, yaw, parentEuler.z);
             }
 
-            // also sync pitch so camera doesn't snap vertically
-            currentPitch = manager.playerCamera.transform.localEulerAngles.x;
+            // also sync pitch so camera doesn't snap vertically (normalize to signed -180..180 then clamp)
+            float rawLocalPitch = manager.playerCamera.transform.localEulerAngles.x;
+            float signedPitch = SignedAngleFrom0To180(rawLocalPitch);
+            currentPitch = Mathf.Clamp(signedPitch, -manager.lookXLimit, manager.lookXLimit);
         }
     }
 
@@ -163,5 +165,22 @@ public class PlayerCameraLook : PlayerModule
         if (manager.playerCamera != null)
             return manager.playerCamera.transform.forward;
         return Vector3.forward;
+    }
+
+    // Helpers: convert Unity's 0..360 euler to signed angle ranges
+    private static float SignedAngleFrom0To360(float angle)
+    {
+        // return angle as signed -180..+180 but for yaw we want 0..360 mapped to -180..180 space
+        float a = angle;
+        if (a > 180f) a -= 360f;
+        return a;
+    }
+
+    private static float SignedAngleFrom0To180(float angle)
+    {
+        // local euler.x is 0..360; convert to -180..180 where forward/down semantics make sense for pitch
+        float a = angle;
+        if (a > 180f) a -= 360f;
+        return a;
     }
 }
