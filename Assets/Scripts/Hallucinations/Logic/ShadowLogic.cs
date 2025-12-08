@@ -813,7 +813,40 @@ public class ShadowLogic : MonoBehaviour
             // If a reposition is scheduled (cooldown active), stay hidden and do not set destination yet.
             if (!repositionScheduled && !repositionLocked)
             {
-                agent.SetDestination(peekDestination);
+                // Diagnostics: log agent state before issuing destination so we can see why it may not move.
+                if (agent == null)
+                {
+                    Debug.LogWarning("[ShadowLogic] Agent is null when trying to SetDestination.");
+                }
+                else
+                {
+                    bool onNavMesh = true;
+#if UNITY_2020_1_OR_NEWER
+                        onNavMesh = agent.isOnNavMesh;
+#endif
+                    Debug.Log($"[ShadowLogic] Attempting SetDestination. enabled={agent.enabled}, onNavMesh={onNavMesh}, isStopped={agent.isStopped}, hasPath={agent.hasPath}, pathPending={agent.pathPending}, speed={agent.speed}, updatePosition={agent.updatePosition}");
+
+                    // Safety: ensure agent is allowed to move
+                    agent.isStopped = false;
+                    agent.updatePosition = true;
+
+                    // Prefer snapping target to NavMesh before setting destination
+                    NavMeshHit hit;
+                    if (NavMesh.SamplePosition(peekDestination, out hit, 2.0f, NavMesh.AllAreas))
+                    {
+                        agent.SetDestination(hit.position);
+                        Debug.Log($"[ShadowLogic] SetDestination -> navHit at {hit.position}");
+                    }
+                    else
+                    {
+                        agent.SetDestination(peekDestination);
+                        Debug.Log($"[ShadowLogic] SetDestination -> raw peekDestination {peekDestination} (NavMesh.SamplePosition failed)");
+                    }
+
+                    // Log result of attempting to set destination
+                    Debug.Log($"[ShadowLogic] After SetDestination: hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}");
+                }
+
                 DisableRenderer();
             }
             else
