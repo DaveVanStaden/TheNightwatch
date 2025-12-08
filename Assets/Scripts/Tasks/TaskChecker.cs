@@ -13,11 +13,20 @@ public class TaskChecker : MonoBehaviour
         tm = FindAnyObjectByType<TaskManager>();
         text = GetComponent<TextMeshProUGUI>();
         text.text = "<u>Tasks: </u>";
+
+        if (tm == null)
+        {
+            Debug.LogWarning("[TaskChecker] No TaskManager found in Awake. Task list UI will update once a TaskManager exists.");
+            return;
+        }
+
         CheckTaskList();
     }
 
     public void CheckCompletedTasks()
     {
+        if (tm == null) return;
+
         completedText.text = "Completed tasks: ";
         foreach (string task in tm.completedTasks)
         {
@@ -27,6 +36,13 @@ public class TaskChecker : MonoBehaviour
     }
     public void CheckTaskList()
     {
+        if (tm == null)
+        {
+            if (text != null)
+                text.text = "<u>Tasks: </u>\n(no TaskManager)";
+            return;
+        }
+
         text.text = "<u>Tasks: </u>";
         foreach (var task in tm.tasks)
         {
