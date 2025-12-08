@@ -534,6 +534,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7473594579667371609, guid: d79744c98e1584141bd2b16070696553, type: 3}
   m_PrefabInstance: {fileID: 2068836945279242156}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &469071817 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3860675167552431889, guid: 34bcbcc43a57b1447bbabb5c3d0da137, type: 3}
+  m_PrefabInstance: {fileID: 8778711743123655171}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &470518133 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7535454230949913054, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
@@ -634,10 +639,6 @@ PrefabInstance:
       value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 5179369496440153313, guid: 9b644f1de166e984c958c58ba700b558, type: 3}
-      propertyPath: repositionsBeforeDestroy
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 5179369496440153313, guid: 9b644f1de166e984c958c58ba700b558, type: 3}
       propertyPath: repositionTriggerDistance
       value: 10
       objectReference: {fileID: 0}
@@ -651,7 +652,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5446037415456941590, guid: 9b644f1de166e984c958c58ba700b558, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6169832367636329839, guid: 9b644f1de166e984c958c58ba700b558, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2052,6 +2053,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7397186432879180287, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: finishedScreen
+      value: 
+      objectReference: {fileID: 469071817}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: playerManager
       value: 
@@ -3677,6 +3682,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1211711738341847788, guid: 34bcbcc43a57b1447bbabb5c3d0da137, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3810580814935890375, guid: 34bcbcc43a57b1447bbabb5c3d0da137, type: 3}
+      propertyPath: m_hasFontAssetChanged
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6510187531573807381, guid: 34bcbcc43a57b1447bbabb5c3d0da137, type: 3}
