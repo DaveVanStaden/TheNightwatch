@@ -454,7 +454,32 @@ public class ShadowLogic : MonoBehaviour
             // mark that a reposition has been requested — count it when movement actually starts
             repositionPending = initialPeekDone; // don't count the initial placement
 
-            Debug.Log($"[ShadowLogic] SetPeekDestination: {debugContext ?? "none"} -> peekDestination={peekDestination} (repositionPending={repositionPending})");
+            Debug.Log($"[ShadowLogic] SetPeekDestination: {debugContext ?? "none"} -> peekDestination={peekDestination} (repositionPending={repositionPending}, repositionScheduled={repositionScheduled}, repositionLocked={repositionLocked})");
+
+            // Try to start movement immediately if cooldown is not active and agent available.
+            // This helps cases where timing/order differences on other machines prevented the StandardAIUpdate path
+            // from starting the TrySetDestinationCoroutine.
+            if (!repositionScheduled && !repositionLocked && agent != null && Vector3.Distance(transform.position, peekDestination) > 1.0f)
+            {
+                // stop any existing recovery coroutine and start a fresh attempt now
+                if (moveRecoveryCoroutine != null)
+                    StopCoroutine(moveRecoveryCoroutine);
+
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(peekDestination, out hit, 2.0f, NavMesh.AllAreas))
+                {
+                    moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(hit.position));
+                    Debug.Log($"[ShadowLogic] Immediate TrySetDestinationCoroutine -> navHit at {hit.position}");
+                }
+                else
+                {
+                    moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(peekDestination));
+                    Debug.Log($"[ShadowLogic] Immediate TrySetDestinationCoroutine -> raw peekDestination {peekDestination} (NavMesh.SamplePosition failed)");
+                }
+
+                // Ensure we're visually hidden while moving
+                DisableRenderer();
+            }
         }
     }
 
