@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5971128773448282910}
   - component: {fileID: 7767526375770893696}
   - component: {fileID: 3701113217424796448}
+  - component: {fileID: 7397186432879180287}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -150,3 +151,17 @@ MonoBehaviour:
   PaintingTaskName: PaintingTask
   TrashTaskName: TrashTask
   completedTasks: []
+--- !u!114 &7397186432879180287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4826251618115385339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b96d0c3232e71964293d47dc637cff21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NightCycle
+  nightDurationSeconds: 360
+  finishedScreen: {fileID: 0}
