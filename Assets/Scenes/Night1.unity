@@ -1163,6 +1163,11 @@ AudioSource:
   m_CorrespondingSourceObject: {fileID: 1802098934462289474, guid: 924eed004a024234582db290b2c4c814, type: 3}
   m_PrefabInstance: {fileID: 8355554499927841920}
   m_PrefabAsset: {fileID: 0}
+--- !u!82 &1807229978 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 4796490191473504494, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1814795969 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7375233834482466411, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
@@ -1911,6 +1916,10 @@ PrefabInstance:
       propertyPath: onPowerOut.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 543787962}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: onPowerOut.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1807229978}
     - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
       propertyPath: onPowerRestored.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
