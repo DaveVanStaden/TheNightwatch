@@ -4032,11 +4032,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
-  fallDepth: 10
-  fallForward: 7
-  fallRotationX: 90
-  fallDuration: 1
-  returnDuration: 1.5
+  fallOffset: {x: 0, y: -5.1, z: 5.48}
+  fallRotationEuler: {x: 90, y: 0, z: 0}
+  fallDuration: 0.5
+  returnDuration: 0.75
   roomBounds: {fileID: 0}
 --- !u!4 &5383287401810554770 stripped
 Transform:
@@ -4409,11 +4408,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
-  fallDepth: 4.2
-  fallForward: 7
-  fallRotationX: 90
-  fallDuration: 1
-  returnDuration: 1.5
+  fallOffset: {x: 0, y: -1.4, z: 1.332}
+  fallRotationEuler: {x: 90, y: 0, z: 0}
+  fallDuration: 0.5
+  returnDuration: 0.75
   roomBounds: {fileID: 0}
 --- !u!4 &8841367774268475932 stripped
 Transform:
@@ -9315,11 +9313,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
-  fallDepth: 4.7
-  fallForward: 7
-  fallRotationX: 90
-  fallDuration: 1
-  returnDuration: 1.5
+  fallOffset: {x: 0, y: -3.6, z: 2}
+  fallRotationEuler: {x: 90, y: 0, z: 0}
+  fallDuration: 0.5
+  returnDuration: 0.75
   roomBounds: {fileID: 0}
 --- !u!4 &7731590437736254224 stripped
 Transform:
@@ -16427,11 +16424,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
-  fallDepth: 4.7
-  fallForward: 7
-  fallRotationX: 90
-  fallDuration: 1
-  returnDuration: 1.5
+  fallOffset: {x: 2.746, y: 0, z: 2.746}
+  fallRotationEuler: {x: 0, y: 90, z: 0}
+  fallDuration: 0.5
+  returnDuration: 0.75
   roomBounds: {fileID: 0}
 --- !u!4 &2113112565697210443 stripped
 Transform:
