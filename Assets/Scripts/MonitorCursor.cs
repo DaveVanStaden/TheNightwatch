@@ -229,4 +229,20 @@ public class MonitorCursor : MonoBehaviour
         }
         yield return new WaitForSeconds(maxTime);
     }
+    public void Delay()
+    {
+        StartCoroutine(delayStart());
+    }
+    public void DisableCursor()
+    {
+        beingControlled = false;
+    }
+    private IEnumerator delayStart()
+    {
+        beingControlled = false;
+        yield return new WaitForSeconds(0.1f);
+        beingControlled = true;
+        yield return null;
+    }
+
 }

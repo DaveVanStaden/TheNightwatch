@@ -214,10 +214,10 @@ MonoBehaviour:
     m_Value: 0.81
   aperture:
     m_OverrideState: 1
-    m_Value: 12
+    m_Value: 11.9
   focalLength:
     m_OverrideState: 1
-    m_Value: 47
+    m_Value: 64
   bladeCount:
     m_OverrideState: 0
     m_Value: 5
@@ -314,10 +314,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb60a22f311433c4c962b888d1393f88, type: 3}
   m_Name: PaniniProjection
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.PaniniProjection
-  active: 0
+  active: 1
   distance:
     m_OverrideState: 1
-    m_Value: 0.39
+    m_Value: 0.2
   cropToFit:
     m_OverrideState: 1
     m_Value: 1
@@ -602,10 +602,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5e1dc532bcb41949b58bc4f2abfbb7e, type: 3}
   m_Name: LensDistortion
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.LensDistortion
-  active: 1
+  active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.17
+    m_Value: 0.23
   xMultiplier:
     m_OverrideState: 0
     m_Value: 1
