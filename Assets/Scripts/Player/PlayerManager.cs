@@ -75,6 +75,7 @@ public class PlayerManager : MonoBehaviour
         footstepAudioSource = GetComponent<AudioSource>();
         defaultYPos = playerCamera.transform.localPosition.y;
         foreach (var m in modules) m.OnAwake();
+        DisableCameraForSeconds(0.1f); // avoid snap on start
     }
 
     void Start()
@@ -85,5 +86,59 @@ public class PlayerManager : MonoBehaviour
     void Update()
     {
         foreach (var m in modules) m.OnUpdate();
+    }
+
+    /// <summary>
+    /// Pause camera movement (for menus / pause). Safe no-op if module missing.
+    /// Also unlocks cursor for UI interaction.
+    /// </summary>
+    public void PauseCamera()
+    {
+        if (cameraLookModule == null)
+        {
+            Debug.LogWarning("[PlayerManager] PauseCamera called but cameraLookModule is null.");
+            return;
+        }
+
+        cameraLookModule.PauseCamera();
+        // show cursor so UI can be used while paused
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        Debug.Log("[PlayerManager] Camera paused.");
+    }
+
+    /// <summary>
+    /// Resume camera movement. Syncs yaw/pitch to camera to avoid snapping.
+    /// Also locks and hides the cursor.
+    /// </summary>
+    public void ResumeCamera()
+    {
+        if (cameraLookModule == null)
+        {
+            Debug.LogWarning("[PlayerManager] ResumeCamera called but cameraLookModule is null.");
+            return;
+        }
+
+        cameraLookModule.ResumeCamera();
+        // restore cursor state for gameplay
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        Debug.Log("[PlayerManager] Camera resumed.");
+    }
+
+    /// <summary>
+    /// Temporarily disable camera input for the given seconds (default 0.1s).
+    /// Useful on startup or when closing menus to avoid snap.
+    /// </summary>
+    public void DisableCameraForSeconds(float seconds = 0.1f)
+    {
+        if (cameraLookModule == null)
+        {
+            Debug.LogWarning("[PlayerManager] DisableCameraForSeconds called but cameraLookModule is null.");
+            return;
+        }
+
+        cameraLookModule.DisableForSeconds(seconds);
+        Debug.Log($"[PlayerManager] Camera disabled for {seconds} seconds.");
     }
 }

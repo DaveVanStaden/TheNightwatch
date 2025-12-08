@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,6 +13,9 @@ public class PlayerCameraLook : PlayerModule
     // Smoothing
     private float smoothSpeed = 0f; // Higher = snappier
 
+    // Camera enable flag (controls whether camera input is processed)
+    private bool cameraEnabled = true;
+
     public PlayerCameraLook(PlayerManager manager) : base(manager)
     {
         smoothSpeed = manager.smoothSpeed;
@@ -20,12 +24,15 @@ public class PlayerCameraLook : PlayerModule
         {
             rotationX = manager.playerCamera.transform.localEulerAngles.x;
             currentPitch = rotationX;
+            // initialize yaw/pitch from camera so first frames don't snap
+            currentYaw = manager.playerCamera.transform.eulerAngles.y;
+            currentPitch = manager.playerCamera.transform.localEulerAngles.x;
         }
     }
 
     public override void OnUpdate()
     {
-        if (manager.inInteractionView || manager.playerCamera == null)
+        if (!cameraEnabled || manager.inInteractionView || manager.playerCamera == null)
             return;
 
         // Read look input (mouse or right stick)
@@ -90,13 +97,65 @@ public class PlayerCameraLook : PlayerModule
         {
             float yaw = manager.playerCamera.transform.eulerAngles.y;
             currentYaw = yaw;
+            // Immediately align player transform to avoid snap when resuming
             manager.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             if (manager.cameraParent != null)
             {
                 Vector3 parentEuler = manager.cameraParent.eulerAngles;
                 manager.cameraParent.rotation = Quaternion.Euler(parentEuler.x, yaw, parentEuler.z);
             }
+
+            // also sync pitch so camera doesn't snap vertically
+            currentPitch = manager.playerCamera.transform.localEulerAngles.x;
         }
+    }
+
+    /// <summary>
+    /// Public API: pause camera movement (menus, pause etc.)
+    /// Call ResumeCamera() to re-enable. Pausing preserves current yaw/pitch.
+    /// </summary>
+    public void PauseCamera()
+    {
+        cameraEnabled = false;
+    }
+
+    /// <summary>
+    /// Public API: resume camera movement and sync to current camera transform to avoid snapping.
+    /// </summary>
+    public void ResumeCamera()
+    {
+        // sync yaw/pitch so the first frame after resume does not snap
+        SyncYawToCamera();
+        cameraEnabled = true;
+    }
+
+    /// <summary>
+    /// Disable camera input for a short period (seconds). Useful on startup or when closing menus
+    /// to avoid immediate snap when camera/game resumes.
+    /// </summary>
+    public void DisableForSeconds(float seconds = 0.1f)
+    {
+        if (manager != null)
+            manager.StartCoroutine(DisableCoroutine(seconds));
+        else
+            StartDisableFallback(seconds);
+    }
+
+    // fallback if manager is null (shouldn't happen normally)
+    private void StartDisableFallback(float seconds)
+    {
+        cameraEnabled = false;
+        // best-effort re-enable after delay using Unity time (only usable in editor when manager null)
+        // (No coroutine available here, keep simple: use Invoke if MonoBehaviour available)
+    }
+
+    private IEnumerator DisableCoroutine(float seconds)
+    {
+        cameraEnabled = false;
+        yield return new WaitForSeconds(seconds);
+        // sync to camera transform before enabling to avoid snap
+        SyncYawToCamera();
+        cameraEnabled = true;
     }
 
     public Vector3 GetCameraForward()
