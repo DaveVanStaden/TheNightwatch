@@ -3,30 +3,34 @@ using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
-
+    bool isPaused = false;
+    PlayerManager pm;
     [Tooltip("Build index of the main menu scene. Default = 0.")]
     public int mainMenuSceneIndex = 0;
 
     [Tooltip("Build index of the game scene to restart. Default = 1.")]
     public int gameSceneIndex = 1;
 
-    private void OnEnable()
+    [Header("Finished UI")]
+    [Tooltip("UI GameObject (panel) that will be activated when escape is pressed. Assign in inspector.")]
+    public GameObject finishedScreen;
+    private void Awake()
     {
-        // Pause game time while end menu is open
-        Time.timeScale = 0f;
-
-        // Unlock and show the cursor so the player can interact with the menu
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        Debug.Log("[EndMenu] Opened - time paused and cursor unlocked.");
+        pm = FindAnyObjectByType<PlayerManager>();
     }
     // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            enabled = true;
+            if (!isPaused)
+            {
+                Pause();
+            }
+            else
+            {
+                Unpause();
+            }
         }
     }
     public void RestartGame()
@@ -51,5 +55,29 @@ public class PauseMenu : MonoBehaviour
     {
         Debug.Log("[EndMenu] ExitGame called.");
         Application.Quit();
+    }
+    public void Pause()
+    {
+        // Pause game time while end menu is open
+        Time.timeScale = 0f;
+        pm.PauseCamera();
+        // Unlock and show the cursor so the player can interact with the menu
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        Debug.Log("[PauseMenu] Opened - time paused and cursor unlocked.");
+        finishedScreen.SetActive(true);
+        isPaused = true;
+    }
+    public void Unpause()
+    {
+        Time.timeScale = 1f;
+        pm.ResumeCamera();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        Debug.Log("[PauseMenu] Closed - time unpaused and cursor locked.");
+        finishedScreen.SetActive(false);
+        isPaused = false;
     }
 }

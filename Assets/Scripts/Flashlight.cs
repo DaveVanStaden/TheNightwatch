@@ -24,7 +24,9 @@ public class Flashlight : MonoBehaviour
         // Don't let the player toggle while input is disabled
         if (!inputEnabled)
             return;
-
+        // Don't let the player toggle while time is paused
+        if (Time.timeScale != 1)
+            return;
         if (Input.GetMouseButtonDown(0))
         {
             SwitchLight();
