@@ -18,7 +18,12 @@ public class EndMenu : MonoBehaviour
     {
         // Pause game time while end menu is open
         Time.timeScale = 0f;
-        Debug.Log("[EndMenu] Opened - time paused.");
+
+        // Unlock and show the cursor so the player can interact with the menu
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        Debug.Log("[EndMenu] Opened - time paused and cursor unlocked.");
     }
 
     /// <summary>
