@@ -453,6 +453,8 @@ public class ShadowLogic : MonoBehaviour
 
             // mark that a reposition has been requested — count it when movement actually starts
             repositionPending = initialPeekDone; // don't count the initial placement
+
+            Debug.Log($"[ShadowLogic] SetPeekDestination: {debugContext ?? "none"} -> peekDestination={peekDestination} (repositionPending={repositionPending})");
         }
     }
 
@@ -1056,6 +1058,8 @@ public class ShadowLogic : MonoBehaviour
             yield break;
         }
 
+        Debug.Log($"[ShadowLogic] TrySetDestinationCoroutine started for rawTarget={rawTarget}");
+
         // Try a few times to set a path and detect movement
         for (int attempt = 0; attempt < Mathf.Max(1, moveRecoveryAttempts); attempt++)
         {
@@ -1069,7 +1073,21 @@ public class ShadowLogic : MonoBehaviour
             NavMeshHit hit;
             bool snapped = NavMesh.SamplePosition(rawTarget, out hit, 2.0f, NavMesh.AllAreas);
             if (snapped) dest = hit.position;
-            agent.SetDestination(dest);
+
+            Debug.Log($"[ShadowLogic] Attempt #{attempt + 1}: preparing SetDestination. dest={dest}, snapped={snapped}, agent.enabled={agent.enabled}, isStopped={agent.isStopped}, hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}");
+
+            // call SetDestination and log immediately
+            bool setCalled = false;
+            try
+            {
+                agent.SetDestination(dest);
+                setCalled = true;
+                Debug.Log($"[ShadowLogic] Called agent.SetDestination({dest})");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[ShadowLogic] agent.SetDestination threw: {ex}");
+            }
 
             // wait a short time for Unity to compute a path
             float elapsed = 0f;
@@ -1077,24 +1095,32 @@ public class ShadowLogic : MonoBehaviour
             while (elapsed < timeout)
             {
                 elapsed += Time.deltaTime;
+
+                // refresh state
+                bool hasPath = agent.hasPath;
+                float velSqr = agent.velocity.sqrMagnitude;
+                float remDist = agent.remainingDistance;
+
                 // If agent reports a path and is moving, success
-                if (agent.hasPath && agent.velocity.sqrMagnitude > 0.01f)
+                if (hasPath && velSqr > 0.01f)
                 {
                     Debug.Log("[ShadowLogic] Destination accepted and agent moving.");
                     moveRecoveryCoroutine = null;
                     yield break;
                 }
+
                 // If remainingDistance indicates movement is happening (sometimes velocity is small), accept that too
-                if (agent.hasPath && agent.remainingDistance > agent.stoppingDistance + 0.1f)
+                if (hasPath && remDist > agent.stoppingDistance + 0.1f)
                 {
                     Debug.Log("[ShadowLogic] Destination accepted (remainingDistance indicates en route).");
                     moveRecoveryCoroutine = null;
                     yield break;
                 }
+
                 yield return null;
             }
 
-            Debug.LogWarning($"[ShadowLogic] SetDestination did not produce movement on attempt {attempt + 1}.");
+            Debug.LogWarning($"[ShadowLogic] SetDestination did not produce movement on attempt {attempt + 1}. hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}, velocity={agent.velocity}");
 
             // If aggressive recovery enabled, try sampling outward and warp to navmesh then retry
             if (enableAggressiveRecovery)
@@ -1116,7 +1142,16 @@ public class ShadowLogic : MonoBehaviour
                     if (warped)
                     {
                         Debug.Log("[ShadowLogic] agent.Warp succeeded. Reissuing SetDestination to same pos.");
-                        agent.SetDestination(hit.position);
+                        try
+                        {
+                            agent.SetDestination(hit.position);
+                            Debug.Log($"[ShadowLogic] Called agent.SetDestination after warp ({hit.position})");
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Debug.LogError($"[ShadowLogic] agent.SetDestination after warp threw: {ex}");
+                        }
+
                         // small yield to let agent state update
                         yield return new WaitForSeconds(0.05f);
 
