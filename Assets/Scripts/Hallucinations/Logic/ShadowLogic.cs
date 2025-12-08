@@ -106,6 +106,11 @@ public class ShadowLogic : MonoBehaviour
     [SerializeField, Tooltip("Maximum radius to search for a NavMesh sample")]
     private float warpSearchMaxRadius = 20f;
 
+    // Restore hunt suppress variables (were accidentally removed)
+    [SerializeField, Tooltip("Seconds to suppress re-entering hunt after an attack/miss")]
+    private float huntSuppressDuration = 1.0f;
+    private float huntSuppressTimer = 0f;
+
     private Vector3 lastHumanPosition;
     private Vector3 lastSafePosition;
     private bool isSafePositionLocked = false;
@@ -632,8 +637,7 @@ public class ShadowLogic : MonoBehaviour
     {
         if (playerTransform == null) return false;
 
-        Vector3[] playerPoints = new Vector3[]
-        {
+        Vector3[] playerPoints = new Vector3[] {
         playerTransform.position + Vector3.up * 1.6f, // head
         playerTransform.position + Vector3.up * 0.9f, // torso
         playerTransform.position + Vector3.up * 0.2f  // feet
@@ -1065,9 +1069,6 @@ public class ShadowLogic : MonoBehaviour
             NavMeshHit hit;
             bool snapped = NavMesh.SamplePosition(rawTarget, out hit, 2.0f, NavMesh.AllAreas);
             if (snapped) dest = hit.position;
-
-            Debug.Log($"[ShadowLogic] TrySetDestination attempt {attempt + 1}/{moveRecoveryAttempts}. agent.enabled={agent.enabled}, isStopped={agent.isStopped}, hasPath={agent.hasPath}, pathPending={agent.pathPending}, isOnNavMesh={(Application.unityVersion.StartsWith("2020") || Application.unityVersion.StartsWith("2021") ? (agent.isOnNavMesh ? "true" : "false") : "n/a")}, dest={dest}, snapped={snapped}");
-
             agent.SetDestination(dest);
 
             // wait a short time for Unity to compute a path
