@@ -21,29 +21,17 @@ public class CamGroup : MonoBehaviour
     };
     public Group _group;
 
-    // ensure arrays are present; code will handle null elements safely
     public GameObject[] cameras;
     public GameObject[] icons;
 
     private void Awake()
     {
-        // Ensure icons array exists
-        if (icons == null || icons.Length < 4) icons = new GameObject[4];
-
         GameObject[] iconList = GameObject.FindGameObjectsWithTag("CamIcon");
         int k = 0;
         for (int i = 0; i < iconList.Length; i++)
         {
-            var iconComp = iconList[i].GetComponent<CamIcon>();
-            if (iconComp == null) continue;
-            if (iconComp._group.ToString() == _group.ToString())
+            if (iconList[i].GetComponent<CamIcon>()._group.ToString() == _group.ToString())
             {
-                // protect against index overflow
-                if (k >= icons.Length)
-                {
-                    Debug.LogWarning($"[CamGroup:{name}] Not enough space in icons array, resizing.");
-                    System.Array.Resize(ref icons, k + 1);
-                }
                 icons[k] = iconList[i];
                 k++;
                 if (k >= 4)
@@ -55,35 +43,13 @@ public class CamGroup : MonoBehaviour
     }
     void Start()
     {
-        // safe audioSource lookup
-        var mgrObj = GameObject.Find("MonitorGroupBleeps");
-        if (mgrObj != null)
-        {
-            audioSource = mgrObj.GetComponent<AudioSource>();
-            if (audioSource == null)
-                Debug.LogWarning($"[CamGroup:{name}] 'MonitorGroupBleeps' found but no AudioSource attached.");
-        }
-        else
-        {
-            Debug.LogWarning($"[CamGroup:{name}] Could not find GameObject 'MonitorGroupBleeps' in scene.");
-        }
-
-        // Ensure cameras array exists
-        if (cameras == null || cameras.Length < 4) cameras = new GameObject[4];
-
+        audioSource = GameObject.Find("MonitorGroupBleeps").GetComponent<AudioSource>();
         GameObject[] cameralist = GameObject.FindGameObjectsWithTag("CameraView");
         int j = 0;
         for (int i = 0; i < cameralist.Length; i++)
         {
-            var camImage = cameralist[i].GetComponent<CamImage>();
-            if (camImage == null) continue;
-            if (camImage._group.ToString() == _group.ToString())
+            if (cameralist[i].GetComponent<CamImage>()._group.ToString() == _group.ToString())
             {
-                if (j >= cameras.Length)
-                {
-                    Debug.LogWarning($"[CamGroup:{name}] Not enough space in cameras array, resizing.");
-                    System.Array.Resize(ref cameras, j + 1);
-                }
                 cameras[j] = cameralist[i];
                 j++;
                 if (j >= 4)
@@ -102,9 +68,7 @@ public class CamGroup : MonoBehaviour
 
     private void Update()
     {
-        var img = GetComponent<Image>();
-        if (img != null)
-            img.color = currentColor;
+        GetComponent<Image>().color = currentColor;
     }
 
     private void MakeSelected()
@@ -119,49 +83,32 @@ public class CamGroup : MonoBehaviour
     }
     public void ReplaceCameras()
     {
-        if (audioSource != null && blip != null)
-            audioSource.PlayOneShot(blip);
-
+        audioSource.PlayOneShot(blip);
         //Disable everything, just for a moment
         //First disable the camera's views
         GameObject[] cameraViews = GameObject.FindGameObjectsWithTag("CameraView");
         for (int i = 0; i < cameraViews.Length; i++)
         {
-            if (cameraViews[i] == null) continue;
-            var raw = cameraViews[i].GetComponent<RawImage>();
-            if (raw != null) raw.enabled = false;
-            var bc = cameraViews[i].GetComponent<BoxCollider2D>();
-            if (bc != null) bc.enabled = false;
-            var camImg = cameraViews[i].GetComponent<CamImage>();
-            if (camImg != null)
-            {
-                if (camImg.titleText != null) camImg.titleText.enabled = false;
-                if (camImg.descText != null) camImg.descText.enabled = false;
-            }
+            cameraViews[i].GetComponent<RawImage>().enabled = false;
+            cameraViews[i].GetComponent<BoxCollider2D>().enabled = false;
+            cameraViews[i].GetComponent<CamImage>().titleText.enabled = false;
+            cameraViews[i].GetComponent<CamImage>().descText.enabled = false;
         }
         //Then deselect the other buttons
         GameObject[] groupButtons = GameObject.FindGameObjectsWithTag("GroupButton");
         for (int i = 0; i < groupButtons.Length; i++)
         {
-            var cg = groupButtons[i].GetComponent<CamGroup>();
-            if (cg != null) cg.Deselect();
+            groupButtons[i].GetComponent<CamGroup>().Deselect();
         }
 
 
         //Now that everything is deselected, re-enable all the cameras that are part of our group
         for (int i = 0; i < cameras.Length; i++)
         {
-            if (cameras[i] == null) continue;
-            var raw = cameras[i].GetComponent<RawImage>();
-            if (raw != null) raw.enabled = true;
-            var bc = cameras[i].GetComponent<Collider2D>();
-            if (bc != null) bc.enabled = true;
-            var camImg = cameras[i].GetComponent<CamImage>();
-            if (camImg != null)
-            {
-                if (camImg.titleText != null) camImg.titleText.enabled = true;
-                if (camImg.descText != null) camImg.descText.enabled = true;
-            }
+            _ = cameras[i].GetComponent<RawImage>().enabled = true;
+            _ = cameras[i].GetComponent<BoxCollider2D>().enabled = true;
+            _ = cameras[i].GetComponent<CamImage>().titleText.enabled = true;
+            _ = cameras[i].GetComponent<CamImage>().descText.enabled = true;
         }
 
         MakeSelected();
@@ -174,23 +121,16 @@ public class CamGroup : MonoBehaviour
         GameObject[] allLights = GameObject.FindGameObjectsWithTag("SecurityCam");
         for (int i = 0; i < allLights.Length; i++)
         {
-            if (allLights[i] == null) continue;
-            var sec = allLights[i].GetComponent<SecurityCamera>();
-            if (sec != null && sec.lights)
-                sec.DisableLight();
+            if (allLights[i].GetComponent<SecurityCamera>().lights)
+                allLights[i].GetComponent<SecurityCamera>().DisableLight();
         }
-
         for (int i = 0; i < cameras.Length; i++)
         {
-            var camObj = cameras[i];
-            if (camObj == null) continue;
-            var camImg = camObj.GetComponent<CamImage>();
-            if (camImg == null) continue;
-            var orig = camImg.originalCam;
-            if (orig == null) continue;
-            if (!orig.lights)
-                orig.EnableLight();
+            if (!cameras[i].GetComponent<CamImage>().originalCam.lights)
+                cameras[i].GetComponent<CamImage>().originalCam.EnableLight();
         }
+
+
     }
     private void ReplaceIcons()
     {
@@ -198,15 +138,12 @@ public class CamGroup : MonoBehaviour
         GameObject[] allIcons = GameObject.FindGameObjectsWithTag("CamIcon");
         for (int i = 0; i < allIcons.Length; i++)
         {
-            var icon = allIcons[i].GetComponent<CamIcon>();
-            if (icon != null) icon.Deselect();
+            allIcons[i].GetComponent<CamIcon>().Deselect();
         }
         //Then re-enable the icons that are part of the group
         for (int i = 0; i < icons.Length; i++)
         {
-            if (icons[i] == null) continue;
-            var ic = icons[i].GetComponent<CamIcon>();
-            if (ic != null) ic.Select();
+            icons[i].GetComponent<CamIcon>().Select();
         }
     }
 
