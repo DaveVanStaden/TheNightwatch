@@ -6,10 +6,20 @@ using UnityEngine;
 /// </summary>
 public class TrashTask : ITask
 {
-    public override string TaskName => "TrashTask";
+    private string taskName = "TrashTask";
+    public override string TaskName => taskName;
 
     private GameObject spawnedTrash;
     private bool completed = false;
+
+    public override void Initialize(TaskManager manager)
+    {
+        this.manager = manager;
+        if (manager != null && !string.IsNullOrWhiteSpace(manager.TrashTaskName))
+            taskName = manager.TrashTaskName;
+        else
+            taskName = "TrashTask";
+    }
 
     public override bool CanActivate(Transform player)
     {

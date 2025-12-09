@@ -14,7 +14,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private int tiredness;
 
     private float sanityAccumulator = 0f;
-
+    
     public int HP
     {
         get => hp;
@@ -51,7 +51,6 @@ public class PlayerStats : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         HP = maxHP;
         Sanity = maxSanity;

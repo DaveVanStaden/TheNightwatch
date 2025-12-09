@@ -28,6 +28,36 @@ MonoBehaviour:
   saturation:
     m_OverrideState: 1
     m_Value: 0
+--- !u!114 &-6627555535904805036
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ea62842ddb6960488930897ba9ce398, type: 3}
+  m_Name: Dithering
+  m_EditorClassIdentifier: Assembly-CSharp::PSX.Dithering
+  active: 1
+  <displayName>k__BackingField: 
+  patternIndex:
+    <fieldHash>k__BackingField: 1657968528
+    m_OverrideState: 1
+    m_Value: 0
+  ditherThreshold:
+    <fieldHash>k__BackingField: 1897318920
+    m_OverrideState: 1
+    m_Value: 512
+  ditherStrength:
+    <fieldHash>k__BackingField: 2136669312
+    m_OverrideState: 1
+    m_Value: 1
+  ditherScale:
+    <fieldHash>k__BackingField: -1918947592
+    m_OverrideState: 1
+    m_Value: 2
 --- !u!114 &-6573762466823626061
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -320,6 +350,32 @@ MonoBehaviour:
   contribution:
     m_OverrideState: 1
     m_Value: 0
+--- !u!114 &854102580636610065
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a1bd58dd7548198609eabd8ae2bb7d, type: 3}
+  m_Name: Pixelation
+  m_EditorClassIdentifier: Assembly-CSharp::PSX.Pixelation
+  active: 1
+  <displayName>k__BackingField: 
+  widthPixelation:
+    <fieldHash>k__BackingField: -1214236176
+    m_OverrideState: 1
+    m_Value: 512
+  heightPixelation:
+    <fieldHash>k__BackingField: -974885784
+    m_OverrideState: 1
+    m_Value: 512
+  colorPrecision:
+    <fieldHash>k__BackingField: -735535392
+    m_OverrideState: 1
+    m_Value: 32
 --- !u!114 &904598384474634333
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -724,6 +780,60 @@ MonoBehaviour:
   intensity:
     m_OverrideState: 1
     m_Value: 0
+--- !u!114 &7409103787838620774
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32eb3b8fb939d9b41b04b5621e6d36dd, type: 3}
+  m_Name: Fog
+  m_EditorClassIdentifier: Assembly-CSharp::PSX.Fog
+  active: 1
+  <displayName>k__BackingField: 
+  fogDensity:
+    <fieldHash>k__BackingField: -270174368
+    m_OverrideState: 1
+    m_Value: 1
+  fogDistance:
+    <fieldHash>k__BackingField: -30823976
+    m_OverrideState: 1
+    m_Value: 10
+  fogColor:
+    <fieldHash>k__BackingField: 208526416
+    m_OverrideState: 1
+    m_Value:
+      r: 1
+      g: 1
+      b: 1
+      a: 1
+  fogNear:
+    <fieldHash>k__BackingField: 447876808
+    m_OverrideState: 1
+    m_Value: 1
+  fogFar:
+    <fieldHash>k__BackingField: 687227200
+    m_OverrideState: 1
+    m_Value: 100
+  fogAltScale:
+    <fieldHash>k__BackingField: 926577592
+    m_OverrideState: 1
+    m_Value: 10
+  fogThinning:
+    <fieldHash>k__BackingField: 1165927984
+    m_OverrideState: 1
+    m_Value: 100
+  noiseScale:
+    <fieldHash>k__BackingField: 1405278376
+    m_OverrideState: 1
+    m_Value: 100
+  noiseStrength:
+    <fieldHash>k__BackingField: 1644628768
+    m_OverrideState: 1
+    m_Value: 0.05
 --- !u!114 &7528843405871033881
 MonoBehaviour:
   m_ObjectHideFlags: 3

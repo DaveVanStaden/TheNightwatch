@@ -48,7 +48,7 @@ public class CamImage : MonoBehaviour
         {
             isBig = true;
 
-            foreach (CamImage camera in FindObjectsOfType<CamImage>())
+            foreach (CamImage camera in FindObjectsByType<CamImage>(FindObjectsSortMode.None))
             {
                 if (camera._group == _group)
                 {
@@ -101,7 +101,7 @@ public class CamImage : MonoBehaviour
             isBig = false;
             audioSource.pitch = 1f;
             audioSource.PlayOneShot(collapse);
-            foreach (CamImage camera in FindObjectsOfType<CamImage>())
+            foreach (CamImage camera in FindObjectsByType<CamImage>(FindObjectsSortMode.None))
             {
                 if (camera._group == _group)
                 {

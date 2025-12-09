@@ -27,7 +27,7 @@ public class HallucinationSpawner : MonoBehaviour
 
     private void Awake()
     {
-        playerStats = PlayerStats.Instance != null ? PlayerStats.Instance : Object.FindObjectOfType<PlayerStats>();
+        playerStats = PlayerStats.Instance != null ? PlayerStats.Instance : FindAnyObjectByType<PlayerStats>();
         if (playerStats != null)
             playerTransform = playerStats.transform;
         // else try to find player transform by tag as fallback

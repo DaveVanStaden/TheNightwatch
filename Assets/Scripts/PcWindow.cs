@@ -5,6 +5,11 @@ public class PcWindow : MonoBehaviour
     MonitorCursor cursor;
     private bool isGrabbed;
     PcWindow overlappedWindow;
+    BoxCollider2D bCollider;
+    private void Start()
+    {
+        bCollider = GetComponent<BoxCollider2D>();
+    }
     private void Update()
     {
         if (cursor != null)
@@ -13,19 +18,17 @@ public class PcWindow : MonoBehaviour
             {
                 if (Input.GetKeyDown(KeyCode.Mouse0))
                 {
-                    if (overlappedWindow != null)
+                    Collider2D[] cols = Physics2D.OverlapCircleAll(cursor.transform.position, 0.001f);
+                    if (cols[^1] == bCollider)
                     {
-                        if (transform.GetSiblingIndex() > overlappedWindow.transform.GetSiblingIndex())
-                        {
-                            isGrabbed = true;
-                        }
+                        isGrabbed = true;
                     }
-                    else isGrabbed = true;
+                    else isGrabbed = false;
                 }
                 if (Input.GetKey(KeyCode.Mouse0) && isGrabbed)
                 {
                     transform.SetAsLastSibling();
-                    transform.SetSiblingIndex(transform.GetSiblingIndex() - 1);
+                    transform.SetSiblingIndex(transform.GetSiblingIndex() - 2);
                     transform.localPosition += new Vector3(Input.GetAxis("Mouse X") * cursor.cursorSpeed, Input.GetAxis("Mouse Y") * cursor.cursorSpeed, 0f);
 
                 }

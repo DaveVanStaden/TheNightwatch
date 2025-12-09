@@ -38,8 +38,14 @@ public class TaskManager : MonoBehaviour
     [Tooltip("Distance player must be to interact with trash.")]
     public float trashInteractionDistance = 2.5f;
 
+    [Header("Task names")]
+    [Tooltip("Human readable name used for the Painting task (logged/completed list).")]
+    public string PaintingTaskName = "PaintingTask";
+    [Tooltip("Human readable name used for the Trash task (logged/completed list).")]
+    public string TrashTaskName = "TrashTask";
+
     // runtime
-    private List<ITask> tasks = new List<ITask>();
+    public  List<ITask> tasks = new();
     private ITask activeTask = null;
     private int activeTaskIndex = -1;         // index of the currently active task in `tasks`
     private int lastActivatedTaskIndex = -1;  // index of the last completed task; skip it once
@@ -48,8 +54,20 @@ public class TaskManager : MonoBehaviour
     // simple tracking
     public List<string> completedTasks = new List<string>();
 
+    private void OnEnable()
+    {
+        Debug.Log("[TaskManager] OnEnable");
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("[TaskManager] OnDisable");
+    }
+
     private void Awake()
     {
+        Debug.Log("[TaskManager] Awake start");
+
         if (playerManager == null)
             playerManager = FindObjectOfType<PlayerManager>();
 
@@ -68,6 +86,10 @@ public class TaskManager : MonoBehaviour
             }
         }
 
+        // ensure task name defaults (allows inspector override; guarantees non-empty names)
+        if (string.IsNullOrWhiteSpace(PaintingTaskName)) PaintingTaskName = "PaintingTask";
+        if (string.IsNullOrWhiteSpace(TrashTaskName)) TrashTaskName = "TrashTask";
+
         // create task instances and initialize them
         var paintingTask = new PaintingTask();
         paintingTask.Initialize(this);
@@ -78,12 +100,24 @@ public class TaskManager : MonoBehaviour
         tasks.Add(paintingTask);
         tasks.Add(trashTask);
 
+        // safe scheduling
         ScheduleNextTask();
+
+        Debug.Log("[TaskManager] Awake end - tasks count: " + tasks.Count);
     }
 
     private void ScheduleNextTask()
     {
         nextTaskTimer = Random.Range(minTimeToNextTask, maxTimeToNextTask);
+        var checker = FindAnyObjectByType<TaskChecker>();
+        if (checker != null)
+        {
+            checker.CheckTaskList();
+        }
+        else
+        {
+            Debug.Log("[TaskManager] ScheduleNextTask: TaskChecker not found (will retry later).");
+        }
     }
 
     private void Update()
@@ -96,6 +130,8 @@ public class TaskManager : MonoBehaviour
             if (activeTask.IsCompleted)
             {
                 completedTasks.Add(activeTask.TaskName);
+                var checker = FindAnyObjectByType<TaskChecker>();
+                if (checker != null) checker.CheckCompletedTasks();
 
                 // remember which task just finished so it won't be picked immediately next time
                 lastActivatedTaskIndex = activeTaskIndex;

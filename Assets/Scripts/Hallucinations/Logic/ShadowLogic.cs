@@ -87,10 +87,33 @@ public class ShadowLogic : MonoBehaviour
     private float huntMaxDurationSeconds = 30f;
     private float huntTimer = 0f;
 
-    // Add these fields with other private fields (reposition/lifetime counters)
+    // Add these serialized fields near the other [SerializeField] settings at the top of the class
+    [SerializeField, Tooltip("Enable aggressive recovery (NavMesh sampling + Warp) if SetDestination fails)")]
+    private bool enableAggressiveRecovery = true;
+
+    [SerializeField, Tooltip("Number of attempts to try SetDestination before giving up (and trying Warp)")]
+    private int moveRecoveryAttempts = 3;
+
+    [SerializeField, Tooltip("Delay (seconds) between recovery attempts")]
+    private float moveRecoveryDelay = 0.2f;
+
+    [SerializeField, Tooltip("Initial radius to search for a NavMesh sample when attempting a warp")]
+    private float warpSearchRadiusStart = 1f;
+
+    [SerializeField, Tooltip("Radius increment per attempt when searching for a NavMesh sample")]
+    private float warpSearchRadiusStep = 2f;
+
+    [SerializeField, Tooltip("Maximum radius to search for a NavMesh sample")]
+    private float warpSearchMaxRadius = 20f;
+
+    // Restore hunt suppress variables (were accidentally removed)
     [SerializeField, Tooltip("Seconds to suppress re-entering hunt after an attack/miss")]
     private float huntSuppressDuration = 1.0f;
     private float huntSuppressTimer = 0f;
+
+    private Vector3 lastHumanPosition;
+    private Vector3 lastSafePosition;
+    private bool isSafePositionLocked = false;
 
     // Flicker management
     private readonly Dictionary<Light, Coroutine> flickerCoroutines = new Dictionary<Light, Coroutine>();
@@ -430,6 +453,33 @@ public class ShadowLogic : MonoBehaviour
 
             // mark that a reposition has been requested — count it when movement actually starts
             repositionPending = initialPeekDone; // don't count the initial placement
+
+            Debug.Log($"[ShadowLogic] SetPeekDestination: {debugContext ?? "none"} -> peekDestination={peekDestination} (repositionPending={repositionPending}, repositionScheduled={repositionScheduled}, repositionLocked={repositionLocked})");
+
+            // Try to start movement immediately if cooldown is not active and agent available.
+            // This helps cases where timing/order differences on other machines prevented the StandardAIUpdate path
+            // from starting the TrySetDestinationCoroutine.
+            if (!repositionScheduled && !repositionLocked && agent != null && Vector3.Distance(transform.position, peekDestination) > 1.0f)
+            {
+                // stop any existing recovery coroutine and start a fresh attempt now
+                if (moveRecoveryCoroutine != null)
+                    StopCoroutine(moveRecoveryCoroutine);
+
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(peekDestination, out hit, 2.0f, NavMesh.AllAreas))
+                {
+                    moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(hit.position));
+                    Debug.Log($"[ShadowLogic] Immediate TrySetDestinationCoroutine -> navHit at {hit.position}");
+                }
+                else
+                {
+                    moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(peekDestination));
+                    Debug.Log($"[ShadowLogic] Immediate TrySetDestinationCoroutine -> raw peekDestination {peekDestination} (NavMesh.SamplePosition failed)");
+                }
+
+                // Ensure we're visually hidden while moving
+                DisableRenderer();
+            }
         }
     }
 
@@ -614,8 +664,7 @@ public class ShadowLogic : MonoBehaviour
     {
         if (playerTransform == null) return false;
 
-        Vector3[] playerPoints = new Vector3[]
-        {
+        Vector3[] playerPoints = new Vector3[] {
         playerTransform.position + Vector3.up * 1.6f, // head
         playerTransform.position + Vector3.up * 0.9f, // torso
         playerTransform.position + Vector3.up * 0.2f  // feet
@@ -813,7 +862,46 @@ public class ShadowLogic : MonoBehaviour
             // If a reposition is scheduled (cooldown active), stay hidden and do not set destination yet.
             if (!repositionScheduled && !repositionLocked)
             {
-                agent.SetDestination(peekDestination);
+                // Diagnostics: log agent state before issuing destination so we can see why it may not move.
+                if (agent == null)
+                {
+                    Debug.LogWarning("[ShadowLogic] Agent is null when trying to SetDestination.");
+                }
+                else
+                {
+                    bool onNavMesh = true;
+#if UNITY_2020_1_OR_NEWER
+                        onNavMesh = agent.isOnNavMesh;
+#endif
+                    Debug.Log($"[ShadowLogic] Attempting SetDestination. enabled={agent.enabled}, onNavMesh={onNavMesh}, isStopped={agent.isStopped}, hasPath={agent.hasPath}, pathPending={agent.pathPending}, speed={agent.speed}, updatePosition={agent.updatePosition}");
+
+                    // Safety: ensure agent is allowed to move
+                    agent.isStopped = false;
+                    agent.updatePosition = true;
+
+                    // Prefer snapping target to NavMesh before setting destination
+                    NavMeshHit hit;
+                    if (NavMesh.SamplePosition(peekDestination, out hit, 2.0f, NavMesh.AllAreas))
+                    {
+                        // start recovery coroutine instead of a single SetDestination call
+                        if (moveRecoveryCoroutine != null)
+                            StopCoroutine(moveRecoveryCoroutine);
+                        moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(hit.position));
+                        Debug.Log($"[ShadowLogic] Requested TrySetDestinationCoroutine -> navHit at {hit.position}");
+                    }
+                    else
+                    {
+                        // start recovery coroutine instead of a single SetDestination call
+                        if (moveRecoveryCoroutine != null)
+                            StopCoroutine(moveRecoveryCoroutine);
+                        moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(peekDestination));
+                        Debug.Log($"[ShadowLogic] Requested TrySetDestinationCoroutine -> raw peekDestination {peekDestination} (NavMesh.SamplePosition failed)");
+                    }
+
+                    // Log result of attempting to set destination
+                    Debug.Log($"[ShadowLogic] After SetDestination: hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}");
+                }
+
                 DisableRenderer();
             }
             else
@@ -951,5 +1039,170 @@ public class ShadowLogic : MonoBehaviour
 
         if (playerStats != null)
             Debug.Log($"[ShadowLogic] Reposition scheduled in {repositionTimer:F1}s (repositionsDone={repositionsDone}/{repositionsBeforeDestroy}).");
+    }
+
+    // Try to move to a safe position near the last known human position
+    private void MoveToSafePosition()
+    {
+        if (agent == null || playerTransform == null)
+            return;
+
+        Vector3 targetPosition = lastSafePosition;
+
+        // If the last safe position is too far, teleport closer to the human
+        float maxDistance = 10f;
+        if (Vector3.Distance(transform.position, targetPosition) > maxDistance)
+        {
+            targetPosition = playerTransform.position - (playerTransform.forward * maxDistance);
+            targetPosition.y = 0; // Ensure it's on the ground
+        }
+
+        // Snap to navmesh if possible
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(targetPosition, out hit, 2.0f, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+            Debug.Log("[ShadowLogic] Warped to safe position: " + hit.position);
+        }
+        else
+        {
+            Debug.LogWarning("[ShadowLogic] Couldn't warp to safe position, moving normally.");
+            agent.SetDestination(targetPosition);
+        }
+
+        agent.isStopped = false;
+    }
+
+    private Coroutine moveRecoveryCoroutine = null;
+
+    private IEnumerator TrySetDestinationCoroutine(Vector3 rawTarget)
+    {
+        if (agent == null)
+        {
+            Debug.LogWarning("[ShadowLogic] TrySetDestinationCoroutine: agent is null.");
+            yield break;
+        }
+
+        Debug.Log($"[ShadowLogic] TrySetDestinationCoroutine started for rawTarget={rawTarget}");
+
+        // Try a few times to set a path and detect movement
+        for (int attempt = 0; attempt < Mathf.Max(1, moveRecoveryAttempts); attempt++)
+        {
+            // ensure agent is in a state to move
+            if (!agent.enabled) agent.enabled = true;
+            agent.isStopped = false;
+            agent.updatePosition = true;
+
+            // Sample close navmesh and prefer snapped position
+            Vector3 dest = rawTarget;
+            NavMeshHit hit;
+            bool snapped = NavMesh.SamplePosition(rawTarget, out hit, 2.0f, NavMesh.AllAreas);
+            if (snapped) dest = hit.position;
+
+            Debug.Log($"[ShadowLogic] Attempt #{attempt + 1}: preparing SetDestination. dest={dest}, snapped={snapped}, agent.enabled={agent.enabled}, isStopped={agent.isStopped}, hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}");
+
+            // call SetDestination and log immediately
+            bool setCalled = false;
+            try
+            {
+                agent.SetDestination(dest);
+                setCalled = true;
+                Debug.Log($"[ShadowLogic] Called agent.SetDestination({dest})");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[ShadowLogic] agent.SetDestination threw: {ex}");
+            }
+
+            // wait a short time for Unity to compute a path
+            float elapsed = 0f;
+            float timeout = Mathf.Max(0.15f, moveRecoveryDelay);
+            while (elapsed < timeout)
+            {
+                elapsed += Time.deltaTime;
+
+                // refresh state
+                bool hasPath = agent.hasPath;
+                float velSqr = agent.velocity.sqrMagnitude;
+                float remDist = agent.remainingDistance;
+
+                // If agent reports a path and is moving, success
+                if (hasPath && velSqr > 0.01f)
+                {
+                    Debug.Log("[ShadowLogic] Destination accepted and agent moving.");
+                    moveRecoveryCoroutine = null;
+                    yield break;
+                }
+
+                // If remainingDistance indicates movement is happening (sometimes velocity is small), accept that too
+                if (hasPath && remDist > agent.stoppingDistance + 0.1f)
+                {
+                    Debug.Log("[ShadowLogic] Destination accepted (remainingDistance indicates en route).");
+                    moveRecoveryCoroutine = null;
+                    yield break;
+                }
+
+                yield return null;
+            }
+
+            Debug.LogWarning($"[ShadowLogic] SetDestination did not produce movement on attempt {attempt + 1}. hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}, velocity={agent.velocity}");
+
+            // If aggressive recovery enabled, try sampling outward and warp to navmesh then retry
+            if (enableAggressiveRecovery)
+            {
+                float searchRadius = Mathf.Min(warpSearchRadiusStart + attempt * warpSearchRadiusStep, warpSearchMaxRadius);
+                if (NavMesh.SamplePosition(rawTarget, out hit, searchRadius, NavMesh.AllAreas))
+                {
+                    Debug.Log($"[ShadowLogic] Found NavMesh at {hit.position} using radius {searchRadius}, attempting agent.Warp.");
+                    bool warped = false;
+                    try
+                    {
+                        warped = agent.Warp(hit.position);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogWarning($"[ShadowLogic] agent.Warp threw: {ex}");
+                    }
+
+                    if (warped)
+                    {
+                        Debug.Log("[ShadowLogic] agent.Warp succeeded. Reissuing SetDestination to same pos.");
+                        try
+                        {
+                            agent.SetDestination(hit.position);
+                            Debug.Log($"[ShadowLogic] Called agent.SetDestination after warp ({hit.position})");
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Debug.LogError($"[ShadowLogic] agent.SetDestination after warp threw: {ex}");
+                        }
+
+                        // small yield to let agent state update
+                        yield return new WaitForSeconds(0.05f);
+
+                        if (agent.hasPath && agent.velocity.sqrMagnitude > 0.01f)
+                        {
+                            Debug.Log("[ShadowLogic] After warp agent moving.");
+                            moveRecoveryCoroutine = null;
+                            yield break;
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[ShadowLogic] agent.Warp failed or returned false.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"[ShadowLogic] NavMesh.SamplePosition failed within radius {searchRadius} for target {rawTarget}.");
+                }
+            }
+
+            // wait between attempts
+            yield return new WaitForSeconds(moveRecoveryDelay);
+        }
+
+        Debug.LogError("[ShadowLogic] Move recovery exhausted — could not start moving to peekDestination. Last target: " + rawTarget);
+        moveRecoveryCoroutine = null;
     }
 }

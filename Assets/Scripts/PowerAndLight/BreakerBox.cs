@@ -49,7 +49,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
 
     public void EnterInteraction(PlayerManager playerManager)
     {
-        Debug.Log("[BreakerBox] EnterInteraction called on " + name + " by " + (playerManager != null ? playerManager.name : "null"));
+        //Debug.Log("[BreakerBox] EnterInteraction called on " + name + " by " + (playerManager != null ? playerManager.name : "null"));
 
         if (interactionCamera == null || zoomTarget == null)
         {
@@ -77,7 +77,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
                 playerCamera.GetComponent<AudioListener>().enabled = false;
         }
 
-        var flashlightRotator = FindObjectOfType<FlashlightRotator>();
+        var flashlightRotator = FindAnyObjectByType<FlashlightRotator>();
         if (flashlightRotator != null)
             flashlightRotator.canMove = false;
 
@@ -110,7 +110,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
         }
         else
         {
-            var foundFlashlights = FindObjectsOfType<Flashlight>(includeInactive: true);
+            var foundFlashlights = FindObjectsByType<Flashlight>(FindObjectsSortMode.None);
             int disabledCount = 0;
             foreach (var f in foundFlashlights)
             {
@@ -184,7 +184,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
             }
             else
             {
-                Debug.Log("[BreakerBox] Requested camera angle target is not assigned.");
+                Debug.LogWarning("[BreakerBox] Requested camera angle target is not assigned.");
             }
 
             // input consumed - don't process clicks this frame
@@ -192,8 +192,8 @@ public class BreakerBox : MonoBehaviour, IInteraction
         }
 
         // read input (Input System preferred) for clicking
-        bool click = false;
-        Vector2 mousePos = Vector2.zero;
+        bool click;
+        Vector2 mousePos;
         if (Mouse.current != null)
         {
             click = Mouse.current.leftButton.wasPressedThisFrame;
@@ -237,13 +237,13 @@ public class BreakerBox : MonoBehaviour, IInteraction
         viewportPoint.y = Mathf.Clamp01(viewportPoint.y);
 
         // Debug info to help diagnose coordinate mapping
-        Debug.Log($"[BreakerBox] Camera pixelRect={camRect}, Screen={Screen.width}x{Screen.height}, mouse={mousePos}, viewport={viewportPoint}");
+        //Debug.Log($"[BreakerBox] Camera pixelRect={camRect}, Screen={Screen.width}x{Screen.height}, mouse={mousePos}, viewport={viewportPoint}");
 
         // Create ray from viewport point
         Ray ray = interactionCamera.ViewportPointToRay(viewportPoint);
 
         // Print ray info for debugging
-        Debug.Log($"[BreakerBox] Click ray (viewport): origin={ray.origin}, dir={ray.direction}, mouse={mousePos}, viewport={viewportPoint}");
+        //Debug.Log($"[BreakerBox] Click ray (viewport): origin={ray.origin}, dir={ray.direction}, mouse={mousePos}, viewport={viewportPoint}");
 
         // Scene view debug (keeps simple editor debug line; renderer visual removed)
         Debug.DrawRay(ray.origin, ray.direction * 50f, debugRayColor, 2f);
@@ -251,14 +251,14 @@ public class BreakerBox : MonoBehaviour, IInteraction
         // Raycast handling (no runtime debug line renderer used)
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, interactableMask, QueryTriggerInteraction.Collide))
         {
-            Debug.Log($"[BreakerBox] Click ray hit: {hit.collider.name}");
+            //Debug.Log($"[BreakerBox] Click ray hit: {hit.collider.name}");
 
             // ONLY toggle if the exact collider hit has a BreakerButton component (no parent/child fallbacks)
             var hitColliderGO = hit.collider.gameObject;
             var btn = hitColliderGO.GetComponent<BreakerButton>();
             if (btn != null)
             {
-                Debug.Log($"[BreakerBox] Hit exact BreakerButton on '{btn.gameObject.name}' � calling Toggle()");
+                //Debug.Log($"[BreakerBox] Hit exact BreakerButton on '{btn.gameObject.name}' � calling Toggle()");
                 btn.Toggle();
                 return;
             }
@@ -268,7 +268,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
         }
         else
         {
-            Debug.Log($"[BreakerBox] Click raycast missed at screen {mousePos}");
+            Debug.LogError($"[BreakerBox] Click raycast missed at screen {mousePos}");
         }
     }
 
@@ -314,7 +314,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
         interactionCamera.fieldOfView = endFOV;
         busy = false;
 
-        Debug.Log("[BreakerBox] MoveToZoom finished � interaction is now active and clickable.");
+        //Debug.Log("[BreakerBox] MoveToZoom finished � interaction is now active and clickable.");
     }
 
     private IEnumerator TransitionToAngle(Transform target, float targetFOV)
@@ -382,7 +382,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
 
     public void LeaveInteraction(PlayerManager playerManager)
     {
-        Debug.Log("[BreakerBox] LeaveInteraction called on " + name);
+        //Debug.Log("[BreakerBox] LeaveInteraction called on " + name);
         StartCoroutine(LeaveRoutine());
     }
 
@@ -399,7 +399,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
                     go.SetActive(true);
                 }
             }
-            Debug.Log($"[BreakerBox] Re-enabled {cachedFlashlightGOs.Count} Flashlight GameObject(s) after interaction.");
+            //Debug.Log($"[BreakerBox] Re-enabled {cachedFlashlightGOs.Count} Flashlight GameObject(s) after interaction.");
             cachedFlashlightGOs.Clear();
         }
 
@@ -439,7 +439,7 @@ public class BreakerBox : MonoBehaviour, IInteraction
                 interactionCamera.GetComponent<AudioListener>().enabled = false;
         }
 
-        var flashlightRotator = FindObjectOfType<FlashlightRotator>();
+        var flashlightRotator = FindAnyObjectByType<FlashlightRotator>();
         if (flashlightRotator != null)
             flashlightRotator.canMove = true;
 

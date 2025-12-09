@@ -102,7 +102,7 @@ public class ElectricityLogic : MonoBehaviour
     // Finds all BreakerButtons in the scene and registers them.
     public void RegisterAllInScene()
     {
-        var found = FindObjectsOfType<BreakerButton>(true);
+        var found = FindObjectsByType<BreakerButton>(FindObjectsSortMode.None);
         registeredBreakers.Clear();
         for (int i = 0; i < found.Length; i++)
             registeredBreakers.Add(found[i]);
