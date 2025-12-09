@@ -20,12 +20,10 @@ public class TutorialBook : MonoBehaviour, IInteraction
     [SerializeField] private float transitionTime = 0.15f;
 
     [Header("Pages")]
-    [Tooltip("Assign page GameObjects in order (0 = first). Each page must have a Renderer or Collider so the hinge can be computed.")]
+    [Tooltip("Assign page GameObjects in order (0 = first). Each page must have a TutorialPage component or will get one added.")]
     [SerializeField] private GameObject[] pages;
     [Tooltip("Time it takes to animate a single page flip")]
     [SerializeField] private float pageFlipTime = 0.25f;
-    [Tooltip("Horizontal offset (in local page units) to nudge pages left when opened. Positive moves pages leftwards.")]
-    [SerializeField] private float pageLeftOffset = 0.05f;
 
     [Header("Audio")]
     [SerializeField] private AudioSource swoosh;
@@ -43,8 +41,8 @@ public class TutorialBook : MonoBehaviour, IInteraction
     private int currentPageIndex = 0;
     private List<GameObject> cachedFlashlightGOs = new();
 
-    // runtime hinge parents for each page (created on EnterInteraction)
-    private Transform[] pageHinges;
+    // TutorialPage components (one per page GameObject)
+    private TutorialPage[] pageComponents;
 
     private const string PrefKeyFormat = "TutorialBook_{0}_page";
 
@@ -125,8 +123,8 @@ public class TutorialBook : MonoBehaviour, IInteraction
         currentPageIndex = PlayerPrefs.GetInt(key, 0);
         currentPageIndex = Mathf.Clamp(currentPageIndex, 0, Mathf.Max(0, pages.Length - 1));
 
-        // prepare hinges and initial page visuals
-        EnsurePageHingesAndLayout();
+        // prepare TutorialPage components and set initial states
+        EnsurePageComponentsAndInitialState();
 
         // Start move coroutine
         StartCoroutine(MoveToZoom());
@@ -167,9 +165,11 @@ public class TutorialBook : MonoBehaviour, IInteraction
             int newIndex = Mathf.Clamp(currentPageIndex - 1, 0, pages.Length > 0 ? pages.Length - 1 : 0);
             if (newIndex != currentPageIndex)
             {
-                // the page that visually flips back is the one before currentPageIndex
                 int pageToFlipBack = currentPageIndex - 1;
-                StartCoroutine(FlipPageBackward(pageToFlipBack));
+                if (pageComponents != null && pageToFlipBack >= 0 && pageToFlipBack < pageComponents.Length && pageComponents[pageToFlipBack] != null)
+                {
+                    StartCoroutine(StartFlipBackward(pageComponents[pageToFlipBack]));
+                }
                 currentPageIndex = newIndex;
                 PlayFlip();
             }
@@ -182,7 +182,10 @@ public class TutorialBook : MonoBehaviour, IInteraction
             int newIndex = Mathf.Clamp(currentPageIndex + 1, 0, pages.Length > 0 ? pages.Length - 1 : 0);
             if (newIndex != currentPageIndex)
             {
-                StartCoroutine(FlipPageForward(currentPageIndex));
+                if (pageComponents != null && currentPageIndex >= 0 && currentPageIndex < pageComponents.Length && pageComponents[currentPageIndex] != null)
+                {
+                    StartCoroutine(StartFlipForward(pageComponents[currentPageIndex]));
+                }
                 currentPageIndex = newIndex;
                 PlayFlip();
             }
@@ -227,59 +230,21 @@ public class TutorialBook : MonoBehaviour, IInteraction
         busy = false;
     }
 
-    private IEnumerator FlipPageForward(int pageIndex)
+    private IEnumerator StartFlipForward(TutorialPage page)
     {
-        // Flip the page at pageIndex from 0 -> 180 around its left edge hinge so it visually moves left.
-        if (pageIndex < 0 || pageIndex >= pages.Length) yield break;
-        if (pageHinges == null) yield break;
-        Transform hinge = pageHinges[pageIndex];
-        if (hinge == null) yield break;
-
+        if (page == null) yield break;
         busy = true;
-
-        Quaternion start = hinge.localRotation;
-        Quaternion end = start * Quaternion.Euler(0f, -180f, 0f); // rotate leftwards
-        float elapsed = 0f;
-        while (elapsed < pageFlipTime)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / pageFlipTime);
-            float s = Mathf.SmoothStep(0f, 1f, t);
-            hinge.localRotation = Quaternion.Slerp(start, end, s);
-            yield return null;
-        }
-
-        hinge.localRotation = end;
+        yield return page.FlipForward(pageFlipTime);
         busy = false;
-
         SaveCurrentPage();
     }
 
-    private IEnumerator FlipPageBackward(int pageIndex)
+    private IEnumerator StartFlipBackward(TutorialPage page)
     {
-        // Flip the page at pageIndex from 180 -> 0 (unflip). pageIndex is the page to unflip.
-        if (pageIndex < 0 || pageIndex >= pages.Length) yield break;
-        if (pageHinges == null) yield break;
-        Transform hinge = pageHinges[pageIndex];
-        if (hinge == null) yield break;
-
+        if (page == null) yield break;
         busy = true;
-
-        Quaternion start = hinge.localRotation;
-        Quaternion end = start * Quaternion.Euler(0f, 180f, 0f); // rotate rightwards to return
-        float elapsed = 0f;
-        while (elapsed < pageFlipTime)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / pageFlipTime);
-            float s = Mathf.SmoothStep(0f, 1f, t);
-            hinge.localRotation = Quaternion.Slerp(start, end, s);
-            yield return null;
-        }
-
-        hinge.localRotation = end;
+        yield return page.FlipBackward(pageFlipTime);
         busy = false;
-
         SaveCurrentPage();
     }
 
@@ -369,67 +334,28 @@ public class TutorialBook : MonoBehaviour, IInteraction
         swoosh.PlayOneShot(flipClip);
     }
 
-    // Create hinge parents for pages (only once) and position pages slightly left for visual book layout.
-    private void EnsurePageHingesAndLayout()
+    // Ensure every page GameObject has a TutorialPage component and set initial flipped state
+    private void EnsurePageComponentsAndInitialState()
     {
         if (pages == null) return;
-        if (pageHinges == null || pageHinges.Length != pages.Length)
-            pageHinges = new Transform[pages.Length];
 
+        pageComponents = new TutorialPage[pages.Length];
         for (int i = 0; i < pages.Length; i++)
         {
-            var page = pages[i];
-            if (page == null) continue;
+            var pg = pages[i];
+            if (pg == null) continue;
 
-            // create hinge if missing
-            if (pageHinges[i] == null)
+            var comp = pg.GetComponent<TutorialPage>();
+            if (comp == null)
             {
-                GameObject hingeGO = new GameObject(page.name + "_Hinge");
-                hingeGO.transform.SetParent(page.transform.parent, true);
-
-                // compute approximate left-edge hinge position using Renderer or Collider bounds
-                Renderer r = page.GetComponentInChildren<Renderer>();
-                Collider c = page.GetComponentInChildren<Collider>();
-                Vector3 hingeWorldPos = page.transform.position;
-                if (r != null)
-                {
-                    // world-space left edge along page's local right vector
-                    Vector3 right = page.transform.right;
-                    float halfWidth = r.bounds.extents.x;
-                    hingeWorldPos = r.bounds.center - right.normalized * halfWidth;
-                }
-                else if (c != null)
-                {
-                    Vector3 right = page.transform.right;
-                    float halfWidth = c.bounds.extents.x;
-                    hingeWorldPos = c.bounds.center - right.normalized * halfWidth;
-                }
-                else
-                {
-                    // fallback: offset from page center
-                    hingeWorldPos = page.transform.position - page.transform.right * 0.5f;
-                }
-
-                hingeGO.transform.position = hingeWorldPos;
-                hingeGO.transform.rotation = page.transform.rotation;
-
-                // reparent page under hinge while preserving world transform
-                page.transform.SetParent(hingeGO.transform, true);
-
-                // small left offset so multiple pages don't overlap in the center
-                page.transform.localPosition += Vector3.right * pageLeftOffset * -1f; // move left in hinge-local space
-                pageHinges[i] = hingeGO.transform;
-
-                // If page should start "turned", set hinge accordingly
-                if (i < currentPageIndex)
-                {
-                    pageHinges[i].localRotation = Quaternion.Euler(0f, -180f, 0f);
-                }
-                else
-                {
-                    pageHinges[i].localRotation = Quaternion.identity;
-                }
+                // add the component and let it cache original transform on Awake
+                comp = pg.AddComponent<TutorialPage>();
             }
+            pageComponents[i] = comp;
+
+            // initial state: pages with index < currentPageIndex are considered turned/flipped
+            bool flipped = i < currentPageIndex;
+            comp.SetImmediateFlipped(flipped);
         }
     }
 }

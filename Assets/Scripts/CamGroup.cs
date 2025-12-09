@@ -126,8 +126,9 @@ public class CamGroup : MonoBehaviour
         }
         for (int i = 0; i < cameras.Length; i++)
         {
-            if (!cameras[i].GetComponent<CamImage>().originalCam.lights)
-                cameras[i].GetComponent<CamImage>().originalCam.EnableLight();
+            if(cameras[i].GetComponent<CamImage>().originalCam != null)
+                if (!cameras[i].GetComponent<CamImage>().originalCam.lights)
+                    cameras[i].GetComponent<CamImage>().originalCam.EnableLight();
         }
 
 
