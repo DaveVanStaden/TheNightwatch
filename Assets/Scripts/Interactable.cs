@@ -19,6 +19,9 @@ public class Interactable : MonoBehaviour, IInteraction
     private bool isInInteractionView = false;
     private PlayerManager currentPlayerManager;
 
+    //store the currently selected angle index so other systems (events) can read it
+    public int currentAngle = 0;
+
     private void Start()
     {
         flashlightRotator = FindObjectOfType<FlashlightRotator>();
@@ -101,6 +104,9 @@ public class Interactable : MonoBehaviour, IInteraction
             audioListener.enabled = true;
 
         int angle = 0;
+        // ensure currentAngle reflects the chosen angle
+        currentAngle = angle;
+
         interactionCamera.transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
         float startFOV = interactionCamera.fieldOfView;
 
@@ -205,6 +211,9 @@ public class Interactable : MonoBehaviour, IInteraction
         float timePassed = 0f;
         float pos;
         float maxTime = .15f;
+
+        // store the requested angle so other systems can read it
+        currentAngle = angle;
 
         CheckCursor(camera);
 
