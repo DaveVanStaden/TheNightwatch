@@ -77,20 +77,19 @@ public class TutorialBook : MonoBehaviour, IInteraction
             interactionCamera.fieldOfView = playerCamera.fieldOfView;
         }
 
-        // Ensure interaction camera GameObject is active and enable its Camera component.
-        // Use GameObject.SetActive because the camera component can be present but the GameObject could be inactive.
-        if (!interactionCamera.gameObject.activeSelf)
-            interactionCamera.gameObject.SetActive(true);
-        interactionCamera.enabled = true;
+        // Ensure interaction camera Camera component is enabled (do NOT toggle the camera GameObject).
+        // Toggling the GameObject caused other systems to break; only enable/disable the Camera and AudioListener components.
+        if (interactionCamera != null)
+        {
+            interactionCamera.enabled = true;
+            var al = interactionCamera.GetComponent<AudioListener>();
+            if (al != null) al.enabled = true;
+        }
 
-        var al = interactionCamera.GetComponent<AudioListener>();
-        if (al != null) al.enabled = true;
-
-        // Disable the player camera GameObject (safer than only toggling component).
+        // Disable the player camera Camera component (do NOT toggle the GameObject).
         if (playerCamera != null)
         {
-            if (playerCamera.gameObject.activeSelf)
-                playerCamera.gameObject.SetActive(false);
+            playerCamera.enabled = false;
             var pal = playerCamera.GetComponent<AudioListener>();   
             if (pal != null) pal.enabled = false;
         }
@@ -291,18 +290,18 @@ public class TutorialBook : MonoBehaviour, IInteraction
             }
         }
 
-        // Re-enable the player camera GameObject and disable the interaction camera GameObject.
+        // Re-enable the player camera Camera component and disable the interaction camera Camera component.
         if (currentPlayer != null && currentPlayer.playerCamera != null)
         {
-            currentPlayer.playerCamera.gameObject.SetActive(true);
+            currentPlayer.playerCamera.enabled = true;
             var pal = currentPlayer.playerCamera.GetComponent<AudioListener>();
             if (pal != null) pal.enabled = true;
         }
 
         if (interactionCamera != null)
         {
-            // disable the interaction camera GameObject to ensure no other scripts override component state
-            interactionCamera.gameObject.SetActive(false);
+            // disable only the Camera component and AudioListener — do NOT toggle the GameObject.
+            interactionCamera.enabled = false;
             var al = interactionCamera.GetComponent<AudioListener>();
             if (al != null) al.enabled = false;
         }
