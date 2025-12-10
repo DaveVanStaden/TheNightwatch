@@ -149,8 +149,8 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   trashInteractionDistance: 7
-  PaintingTaskName: PaintingTask
-  TrashTaskName: TrashTask
+  PaintingTaskName: Fixed painting
+  TrashTaskName: Cleaned trash
   completedTasks: []
 --- !u!114 &7397186432879180287
 MonoBehaviour:
@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b96d0c3232e71964293d47dc637cff21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NightCycle
-  nightDurationSeconds: 360
+  nightDurationSeconds: 900
   finishedScreen: {fileID: 0}
 --- !u!114 &8310935552331939685
 MonoBehaviour:
