@@ -251,6 +251,7 @@ public class TutorialBook : MonoBehaviour, IInteraction
     private IEnumerator LeaveRoutine()
     {
         busy = true;
+        PlaySwoosh();
 
         // Re-enable flashlight GameObjects we disabled
         if (cachedFlashlightGOs != null && cachedFlashlightGOs.Count > 0)
@@ -301,7 +302,6 @@ public class TutorialBook : MonoBehaviour, IInteraction
             if (al != null) al.enabled = false;
         }
 
-        PlaySwoosh();
 
         // persist final page
         SaveCurrentPage();
@@ -323,7 +323,8 @@ public class TutorialBook : MonoBehaviour, IInteraction
     private void PlaySwoosh()
     {
         if (swoosh == null) return;
-        swoosh.pitch = Random.Range(.9f, 1.1f);
+        swoosh.pitch = Random.Range(.20f, .30f);
+        swoosh.volume = .01f;
         swoosh.PlayOneShot(swoosh.clip);
     }
 
@@ -331,6 +332,7 @@ public class TutorialBook : MonoBehaviour, IInteraction
     {
         if (swoosh == null || flipClip == null) return;
         swoosh.pitch = Random.Range(.9f, 1.1f);
+        swoosh.volume = .1f;
         swoosh.PlayOneShot(flipClip);
     }
 
