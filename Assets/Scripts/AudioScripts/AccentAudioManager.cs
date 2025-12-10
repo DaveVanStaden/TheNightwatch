@@ -48,7 +48,7 @@ public class AccentAudioManager : MonoBehaviour
 
     private void AutoDiscoverHolders()
     {
-        holders = new List<AccentAudioHolder>(FindObjectsOfType<AccentAudioHolder>());
+        holders = new List<AccentAudioHolder>(FindObjectsByType<AccentAudioHolder>(FindObjectsSortMode.None));
         if (debug) Debug.Log($"[AccentAudioManager] Auto-discovered {holders.Count} holders.");
     }
 

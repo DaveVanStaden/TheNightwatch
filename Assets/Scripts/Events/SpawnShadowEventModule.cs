@@ -29,8 +29,11 @@ public class ShadowSpawnEventModule : IEventModule
         float sanity = manager.playerSanity;
         float dt = Time.deltaTime;
 
-        // count active shadows in scene
-        int activeShadows = Object.FindObjectsOfType<ShadowLogic>().Length;
+        // Replace this line:
+        // int activeShadows = Object.FindObjectsOfType<ShadowLogic>().Length;
+
+        // With the following:
+        int activeShadows = Object.FindObjectsByType<ShadowLogic>(FindObjectsSortMode.None).Length;
         if (activeShadows >= manager.shadowMaxActive)
         {
             // still accumulate time while more shadows are active so chance ramps when they disappear

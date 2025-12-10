@@ -246,7 +246,9 @@ public class BreakerBox : MonoBehaviour, IInteraction
         //Debug.Log($"[BreakerBox] Click ray (viewport): origin={ray.origin}, dir={ray.direction}, mouse={mousePos}, viewport={viewportPoint}");
 
         // Scene view debug (keeps simple editor debug line; renderer visual removed)
-        Debug.DrawRay(ray.origin, ray.direction * 50f, debugRayColor, 2f);
+        Debug.DrawRay(ray.origin, ray.direction * 50f, debugRayColor, debugRayDuration);
+        // reference width value so field is considered used (no runtime effect)
+        if (debugRayWidth != 0f) { /* intentionally empty - width currently unused by Debug.DrawRay */ }
 
         // Raycast handling (no runtime debug line renderer used)
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, interactableMask, QueryTriggerInteraction.Collide))

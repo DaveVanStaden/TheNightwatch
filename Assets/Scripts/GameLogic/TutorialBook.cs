@@ -91,13 +91,19 @@ public class TutorialBook : MonoBehaviour, IInteraction
         {
             if (playerCamera.gameObject.activeSelf)
                 playerCamera.gameObject.SetActive(false);
-            var pal = playerCamera.GetComponent<AudioListener>();
+            var pal = playerCamera.GetComponent<AudioListener>();   
             if (pal != null) pal.enabled = false;
         }
 
         // disable flashlight GameObjects (same approach as BreakerBox)
         cachedFlashlightGOs.Clear();
-        var flashlightRoot = FindObjectOfType<FlashlightRotator>()?.gameObject;
+
+        // Prefer FindObjectsByType (non-deprecated) to locate Flashlight instances.
+        // Use FindFirstObjectForType for the rotator root (also non-deprecated).
+        var foundFlashlights = FindObjectsByType<Flashlight>(FindObjectsSortMode.None);
+        var flashlightRotator = FindFirstObjectByType<FlashlightRotator>();
+        var flashlightRoot = flashlightRotator != null ? flashlightRotator.gameObject : null;
+
         if (flashlightRoot != null && flashlightRoot.activeSelf)
         {
             cachedFlashlightGOs.Add(flashlightRoot);
@@ -105,7 +111,6 @@ public class TutorialBook : MonoBehaviour, IInteraction
         }
         else
         {
-            var foundFlashlights = FindObjectsOfType<Flashlight>();
             foreach (var f in foundFlashlights)
             {
                 if (f == null) continue;

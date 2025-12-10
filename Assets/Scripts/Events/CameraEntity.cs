@@ -4,11 +4,11 @@ using UnityEngine.Events;
 
 /// <summary>
 /// Simple entity that can sit at a camera spawn. It remains inactive until Show() is called.
-/// When visible and conditions are met it drains player sanity.
+/// When visible it drains player sanity and notifies the module when destroyed.
 /// </summary>
 public class CameraEntity : MonoBehaviour
 {
-    [Tooltip("Sanity per second drained while player is looking at the camera group and angle condition is met.")]
+    [Tooltip("Sanity per second drained while the entity is visible.")]
     public float sanityDrainPerSecond = 5f;
 
     [Tooltip("Optional event invoked once the entity becomes visible/active.")]
@@ -19,13 +19,16 @@ public class CameraEntity : MonoBehaviour
     [HideInInspector] public CamGroup ownerGroup;
 
     // internal
-    bool isVisible = false;
+    private bool isVisible = false;
+
+    // Notifies spawner when this entity disables/destroys
+    public event Action onDestroyed;
 
     public void Init(EventManager manager, CamGroup ownerGroup)
     {
         this.manager = manager;
         this.ownerGroup = ownerGroup;
-        // remain inactive until group is selected
+        // remain inactive until Show() is called
         gameObject.SetActive(false);
         isVisible = false;
     }
@@ -37,35 +40,56 @@ public class CameraEntity : MonoBehaviour
         onActivated?.Invoke();
     }
 
+    /// <summary>
+    /// Safe API to request this entity be removed by its own logic.
+    /// Use instead of external Destroy(...) when possible.
+    /// </summary>
+    public void Kill()
+    {
+        Destroy(gameObject);
+    }
+
     private void Update()
     {
         if (!isVisible) return;
-        if (manager == null) return;
 
-        // Only drain when player is in interaction view, owner group is selected, and the active Interactable's angle == 2
-        if (manager.playerManager != null && manager.playerManager.inInteractionView)
+        bool playerHasManager = manager != null && manager.playerManager != null;
+        bool playerOnCams = playerHasManager && manager.playerManager.inInteractionView;
+        bool ownerSelected = ownerGroup != null && ownerGroup.selectedGroup;
+
+        if (manager == null)
         {
-            // Find the currently active Interactable (interactionCamera enabled)
-            Interactable active = null;
-            var all = FindObjectsOfType<Interactable>();
-            for (int i = 0; i < all.Length; i++)
-            {
-                var it = all[i];
-                if (it.interactionCamera != null && it.interactionCamera.enabled)
-                {
-                    active = it;
-                    break;
-                }
-            }
-
-            if (active != null && active.currentAngle == 2 && ownerGroup != null && ownerGroup.selectedGroup)
-            {
-                // drain sanity
-                if (PlayerStats.Instance != null)
-                {
-                    PlayerStats.Instance.ChangeSanity(-sanityDrainPerSecond * Time.deltaTime);
-                }
-            }
+            Destroy(gameObject);
+            return;
         }
+
+        // If player left the camera UI or group deselected -> self-destruct
+        if (!playerOnCams || ownerGroup == null || !ownerSelected)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // Drain sanity while visible
+        if (PlayerStats.Instance != null)
+        {
+            PlayerStats.Instance.ChangeSanity(-sanityDrainPerSecond * Time.deltaTime);
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Mark invisible and notify subscribers
+        isVisible = false;
+        try
+        {
+            onDestroyed?.Invoke();
+        }
+        catch (Exception) { /* ignore subscriber exceptions */ }
+    }
+
+    private void OnDestroy()
+    {
+        // intentionally empty - kept for future cleanup if needed
     }
 }

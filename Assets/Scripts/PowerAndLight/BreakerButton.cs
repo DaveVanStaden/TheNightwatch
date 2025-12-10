@@ -28,8 +28,6 @@ public class BreakerButton : MonoBehaviour
     [SerializeField] private Light groupLight;
     [Tooltip("Optional Renderer (e.g. a mesh with emissive material) that indicates the PowerGroup state")]
     [SerializeField] private Renderer groupLightRenderer;
-    [Tooltip("Time to transition the group indicator color (unused when using materials)")]
-    [SerializeField] private float groupColorTransitionTime = 0.12f;
 
     [Header("PowerGroup Materials (optional)")]
     [Tooltip("Material to use when the PowerGroup is powered")]
