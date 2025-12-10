@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -14,7 +15,22 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private int tiredness;
 
     private float sanityAccumulator = 0f;
-    
+
+    [Header("Inventory / Keys")]
+    [Tooltip("Runtime list of key identifiers the player currently holds.")]
+    [SerializeField] private List<string> keys = new List<string>();
+
+    // Backwards-compatible convenience property: true if player has any key.
+    public bool HasKey
+    {
+        get => keys != null && keys.Count > 0;
+        // Setting to false clears keys (best-effort compatibility with existing code that sets HasKey = false)
+        set
+        {
+            if (!value && keys != null) keys.Clear();
+        }
+    }
+
     public int HP
     {
         get => hp;
@@ -56,6 +72,30 @@ public class PlayerStats : MonoBehaviour
         Sanity = maxSanity;
         Tiredness = 0;
     }
+
+    // Key inventory API
+    public void AddKey(string keyId)
+    {
+        if (string.IsNullOrEmpty(keyId)) return;
+        if (keys == null) keys = new List<string>();
+        if (!keys.Contains(keyId))
+            keys.Add(keyId);
+    }
+
+    // Renamed to avoid collision with the HasKey property
+    public bool HasKeyId(string keyId)
+    {
+        if (string.IsNullOrEmpty(keyId)) return false;
+        return keys != null && keys.Contains(keyId);
+    }
+
+    public bool RemoveKey(string keyId)
+    {
+        if (string.IsNullOrEmpty(keyId) || keys == null) return false;
+        return keys.Remove(keyId);
+    }
+
+    public IReadOnlyList<string> GetKeys() => keys.AsReadOnly();
 
     public void ChangeHP(int amount)
     {
