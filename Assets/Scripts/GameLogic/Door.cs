@@ -61,7 +61,7 @@ public class Door : MonoBehaviour
         state = locked ? DoorState.Locked : DoorState.Closed;
 
         // try to find player manager now
-        playerManager = FindObjectOfType<PlayerManager>();
+        playerManager = Object.FindFirstObjectByType<PlayerManager>();
 
         if (debugLogs) Debug.Log($"[Door:{name}] Awake. locked={locked} requiredKey='{requiredKey}' initialState={state}");
     }

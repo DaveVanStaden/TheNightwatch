@@ -69,6 +69,8 @@ public class EventManager : MonoBehaviour
     public float cameraEventCooldownSeconds = 120f;
     [Tooltip("Multiplier applied to baseChancePerSecond while player is on the cameras (increases chance).")]
     public float cameraEventChanceMultiplierOnCamera = 5f;
+    [Tooltip("Sanity drained per second while the camera entity is active.")]
+    public float cameraEntitySanityDrainPerSecond = 5f;
 
     // list of CamGroup instances discovered at Awake (populated early so non-Mono modules can read it)
     [HideInInspector] public List<CamGroup> allCamGroups = new List<CamGroup>();
@@ -82,7 +84,7 @@ public class EventManager : MonoBehaviour
     void Awake()
     {
         // populate CamGroup list early (modules are created immediately afterwards and may use it)
-        allCamGroups = new List<CamGroup>(FindObjectsOfType<CamGroup>());
+        allCamGroups = new List<CamGroup>(FindObjectsByType<CamGroup>(FindObjectsSortMode.None));
 
         // create modules here. Keep EventManager minimal by delegating logic into modules.
         modules.Add(new PaintingEventModule(this));

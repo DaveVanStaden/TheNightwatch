@@ -56,20 +56,20 @@ public class TaskManager : MonoBehaviour
 
     private void OnEnable()
     {
-        Debug.Log("[TaskManager] OnEnable");
+        // intentionally silent to avoid console spam
     }
 
     private void OnDisable()
     {
-        Debug.Log("[TaskManager] OnDisable");
+        // intentionally silent to avoid console spam
     }
 
     private void Awake()
     {
-        Debug.Log("[TaskManager] Awake start");
+        // intentionally silent to avoid console spam
 
         if (playerManager == null)
-            playerManager = FindObjectOfType<PlayerManager>();
+            playerManager = Object.FindFirstObjectByType<PlayerManager>();
 
         // ensure playerTransform follows PlayerManager if available
         if (playerManager != null && playerTransform == null)
@@ -102,8 +102,6 @@ public class TaskManager : MonoBehaviour
 
         // safe scheduling
         ScheduleNextTask();
-
-        Debug.Log("[TaskManager] Awake end - tasks count: " + tasks.Count);
     }
 
     private void ScheduleNextTask()
@@ -116,7 +114,7 @@ public class TaskManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("[TaskManager] ScheduleNextTask: TaskChecker not found (will retry later).");
+            // intentionally silent if no TaskChecker is present
         }
     }
 
