@@ -72,6 +72,12 @@ public class EventManager : MonoBehaviour
     [Tooltip("Sanity drained per second while the camera entity is active.")]
     public float cameraEntitySanityDrainPerSecond = 5f;
 
+    [Header("BreakerCrashEvent")]
+    [Tooltip("Sanity threshold below which the breaker-crash event may occur.")]
+    public float breakerEventSanityThreshold = 60f;
+    [Tooltip("Cooldown in seconds after a breaker-crash before it can happen again.")]
+    public float breakerEventCooldownSeconds = 120f;
+
     // list of CamGroup instances discovered at Awake (populated early so non-Mono modules can read it)
     [HideInInspector] public List<CamGroup> allCamGroups = new List<CamGroup>();
 
@@ -93,6 +99,9 @@ public class EventManager : MonoBehaviour
 
         // camera event module
         modules.Add(new CameraEventModule(this));
+
+        // breaker box crash module (randomly toggles a single ON BreakerButton once)
+        modules.Add(new BreakerEventModule(this));
 
         // debug: list modules created
         var names = new System.Collections.Generic.List<string>();
