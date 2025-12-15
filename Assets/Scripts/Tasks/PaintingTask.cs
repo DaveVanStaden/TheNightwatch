@@ -1,9 +1,16 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Painting task implemented without MonoBehaviour so it can be driven by TaskManager.
-/// The TaskManager provides configuration via its inspector fields (only targets & distance). Per-painting overrides come from PaintingFallConfig.
+/// The TaskManager provides configuration via its inspector fields (targets, distances, min/max fall count).
+/// Per-painting overrides come from PaintingFallConfig.
+/// 
+/// Changed to support multiple paintings falling at the start of the night:
+/// - Selects a random number of paintings between manager.paintingMinFallCount and manager.paintingMaxFallCount
+/// - Spawns ALL selected paintings to fall simultaneously
+/// - Task completes only when all fallen paintings have been returned by the player
 /// </summary>
 public class PaintingTask : ITask
 {
@@ -17,23 +24,31 @@ public class PaintingTask : ITask
     private const float DefaultFallDuration = 0.5f;
     private const float DefaultReturnDuration = 1.5f;
 
-    // runtime state
-    private Transform targetPainting;
-    private Vector3 originalPosition;
-    private Quaternion originalRotation;
-    private Vector3 fallenPosition;
-    private Quaternion fallenRotation;
+    // Per-selected-painting runtime state
+    private class PaintState
+    {
+        public Transform painting;
+        public Vector3 originalPosition;
+        public Quaternion originalRotation;
+        public Vector3 fallenPosition;
+        public Quaternion fallenRotation;
+        public float fallDuration;
+        public float returnDuration;
 
-    private bool isFalling = false;
-    private bool hasFallen = false;
-    private bool isReturning = false;
+        public float fallTimer;
+        public float returnTimer;
+
+        public bool isFalling;
+        public bool hasFallen;
+        public bool isReturning;
+        public bool completed;
+    }
+
+    private List<PaintState> states = new List<PaintState>();
     private bool completed = false;
 
-    private float fallTimer = 0f;
-    private float returnTimer = 0f;
-
-    private float fallDurationLocal;
-    private float returnDurationLocal;
+    // Track how many chosen paintings still need to be returned before task completes
+    private int remainingToReturn = 0;
 
     public override void Initialize(TaskManager manager)
     {
@@ -45,159 +60,210 @@ public class PaintingTask : ITask
             taskName = "PaintingTask";
     }
 
+    // Activation no longer requires a player object or distance/room checks.
+    // If there are any configured paintingTargets (non-null) the painting task may run.
     public override bool CanActivate(Transform player)
     {
         if (manager == null) return false;
         if (manager.paintingTargets == null || manager.paintingTargets.Count == 0) return false;
-        if (player == null) return false;
-        // we will activate only if at least one painting is far enough from player and not in the player's current room
+
+        // If there's at least one non-null target, allow activation
         foreach (var t in manager.paintingTargets)
-        {
-            if (t == null) continue;
-            float d = Vector3.Distance(player.position, t.position);
-            if (d >= manager.paintingRequiredPlayerDistanceToFall && !IsPlayerInRoomForPainting(t, player))
-                return true;
-        }
+            if (t != null) return true;
         return false;
     }
 
     public override void Activate(Transform player)
     {
-        // pick a random painting that is far enough and not in the player's room
-        if (manager == null || manager.paintingTargets == null) return;
+        // reset per-run state
+        states.Clear();
+        completed = false;
+        remainingToReturn = 0;
 
-        var candidates = manager.paintingTargets.FindAll(t =>
-            t != null &&
-            Vector3.Distance(player.position, t.position) >= manager.paintingRequiredPlayerDistanceToFall &&
-            !IsPlayerInRoomForPainting(t, player)
-        );
-
-        if (candidates == null || candidates.Count == 0)
+        if (manager == null || manager.paintingTargets == null)
         {
-            completed = true; // nothing to do
+            completed = true;
             return;
         }
 
-        targetPainting = candidates[UnityEngine.Random.Range(0, candidates.Count)];
-
-        // capture original transform
-        originalPosition = targetPainting.position;
-        originalRotation = targetPainting.rotation;
-
-        // read per-painting override if present
-        var cfg = targetPainting.GetComponent<PaintingFallConfig>();
-
-        // compute fallen position:
-        // - Use local-space Vector3 offset from PaintingFallConfig converted to world via Transform.TransformVector.
-        // - Otherwise, fallback to previous scalar defaults (forward along painting.forward and down).
-        Vector3 offsetWorld;
-        if (cfg != null)
+        // collect all non-null targets (no distance or room filtering)
+        var candidates = new List<Transform>();
+        foreach (var t in manager.paintingTargets)
         {
-            offsetWorld = targetPainting.TransformVector(cfg.fallOffset);
+            if (t == null) continue;
+            candidates.Add(t);
+        }
+
+        if (candidates.Count == 0)
+        {
+            Debug.Log("[PaintingTask] Activate: no painting targets configured");
+            completed = true;
+            return;
+        }
+
+        // determine how many should fall this activation (clamped to available candidates)
+        int pickCount;
+        if (manager != null && manager.paintingForceAllToFall)
+        {
+            // force all configured candidates to fall
+            pickCount = candidates.Count;
         }
         else
         {
-            offsetWorld = targetPainting.forward * DefaultFallForward + Vector3.down * DefaultFallDepth;
+            int minCount = Mathf.Max(1, manager.paintingMinFallCount);
+            int maxCount = Mathf.Max(minCount, manager.paintingMaxFallCount);
+            pickCount = UnityEngine.Random.Range(minCount, maxCount + 1);
+            pickCount = Mathf.Clamp(pickCount, 1, candidates.Count);
         }
 
-        fallenPosition = originalPosition + offsetWorld;
+        Debug.Log($"[PaintingTask] Activating: picking {pickCount} paintings to fall (candidates={candidates.Count})");
 
-        // compute fallen rotation
-        if (cfg != null)
+        // pick unique random painting transforms
+        var chosen = new List<Transform>();
+        var pool = new List<Transform>(candidates);
+        for (int i = 0; i < pickCount; i++)
         {
-            // apply local Euler rotation relative to the painting's original rotation
-            fallenRotation = originalRotation * Quaternion.Euler(cfg.fallRotationEuler);
+            int idx = UnityEngine.Random.Range(0, pool.Count);
+            chosen.Add(pool[idx]);
+            pool.RemoveAt(idx);
         }
-        else
+
+        // log chosen names/positions for debugging
+        foreach (var c in chosen)
         {
-            // fallback: rotate around local X by default angle so it falls face-first
-            fallenRotation = originalRotation * Quaternion.Euler(DefaultFallRotationX, 0f, 0f);
+            if (c != null)
+                Debug.Log($"[PaintingTask] Chosen painting: {c.name} at {c.position}");
         }
 
-        // durations (allow per-painting override if > 0)
-        fallDurationLocal = (cfg != null && cfg.fallDuration > 0f) ? cfg.fallDuration : DefaultFallDuration;
-        returnDurationLocal = (cfg != null && cfg.returnDuration > 0f) ? cfg.returnDuration : DefaultReturnDuration;
+        // create state entries for each chosen painting
+        foreach (var p in chosen)
+        {
+            if (p == null) continue;
+            var s = new PaintState();
+            s.painting = p;
+            s.originalPosition = p.position;
+            s.originalRotation = p.rotation;
 
-        // start falling animation
-        isFalling = true;
-        fallTimer = 0f;
-        hasFallen = false;
-        isReturning = false;
-        completed = false;
+            var cfg = p.GetComponent<PaintingFallConfig>();
+
+            // compute fallen position (use local offset if provided)
+            Vector3 offsetWorld;
+            if (cfg != null)
+                offsetWorld = p.TransformVector(cfg.fallOffset);
+            else
+                offsetWorld = p.forward * DefaultFallForward + Vector3.down * DefaultFallDepth;
+
+            s.fallenPosition = s.originalPosition + offsetWorld;
+
+            // compute fallen rotation
+            if (cfg != null)
+                s.fallenRotation = s.originalRotation * Quaternion.Euler(cfg.fallRotationEuler);
+            else
+                s.fallenRotation = s.originalRotation * Quaternion.Euler(DefaultFallRotationX, 0f, 0f);
+
+            s.fallDuration = (cfg != null && cfg.fallDuration > 0f) ? cfg.fallDuration : DefaultFallDuration;
+            s.returnDuration = (cfg != null && cfg.returnDuration > 0f) ? cfg.returnDuration : DefaultReturnDuration;
+
+            s.fallTimer = 0f;
+            s.returnTimer = 0f;
+            s.isFalling = true;
+            s.hasFallen = false;
+            s.isReturning = false;
+            s.completed = false;
+
+            states.Add(s);
+        }
+
+        // remainingToReturn equals number of chosen paintings that must be returned
+        remainingToReturn = states.Count;
+
+        // if nothing created, mark completed
+        if (states.Count == 0)
+        {
+            Debug.Log("[PaintingTask] No states created; marking completed");
+            completed = true;
+        }
     }
 
     public override void Tick(Transform player)
     {
-        if (completed || targetPainting == null) return;
+        if (completed || states == null || states.Count == 0) return;
 
         float dt = Time.deltaTime;
 
-        if (isFalling)
+        // Process each painting's animation & interaction independently
+        for (int i = 0; i < states.Count; i++)
         {
-            fallTimer += dt;
-            float f = Mathf.Clamp01(fallTimer / fallDurationLocal);
-            targetPainting.position = Vector3.Lerp(originalPosition, fallenPosition, f);
-            targetPainting.rotation = Quaternion.Slerp(originalRotation, fallenRotation, f);
-            if (f >= 1f)
+            var s = states[i];
+            if (s == null || s.painting == null) continue;
+
+            // Falling animation
+            if (s.isFalling)
             {
-                isFalling = false;
-                hasFallen = true;
+                s.fallTimer += dt;
+                float f = Mathf.Clamp01(s.fallTimer / Mathf.Max(0.0001f, s.fallDuration));
+                s.painting.position = Vector3.Lerp(s.originalPosition, s.fallenPosition, f);
+                s.painting.rotation = Quaternion.Slerp(s.originalRotation, s.fallenRotation, f);
+                if (f >= 1f)
+                {
+                    s.isFalling = false;
+                    s.hasFallen = true;
+                    Debug.Log($"[PaintingTask] Painting {s.painting.name} has fallen");
+                }
+                continue;
             }
-            return;
+
+            // Returning animation
+            if (s.isReturning)
+            {
+                s.returnTimer += dt;
+                float f = Mathf.Clamp01(s.returnTimer / Mathf.Max(0.0001f, s.returnDuration));
+                s.painting.position = Vector3.Lerp(s.fallenPosition, s.originalPosition, f);
+                s.painting.rotation = Quaternion.Slerp(s.painting.rotation, s.originalRotation, f);
+                if (f >= 1f)
+                {
+                    s.isReturning = false;
+                    s.hasFallen = false;
+                    if (!s.completed)
+                    {
+                        s.completed = true;
+                        remainingToReturn = Mathf.Max(0, remainingToReturn - 1);
+                        Debug.Log($"[PaintingTask] Painting {s.painting.name} returned and completed; remainingToReturn={remainingToReturn}");
+                    }
+                }
+                continue;
+            }
+
+            // If painting has fallen, allow player to interact to return it
+            if (s.hasFallen)
+            {
+                // Use interaction distance from manager; player must be present for interaction checks
+                if (player == null) continue;
+                float d = Vector3.Distance(player.position, s.painting.position);
+                if (d <= manager.paintingInteractionDistance && manager != null && manager.InteractPressed())
+                {
+                    s.isReturning = true;
+                    s.returnTimer = 0f;
+                }
+            }
         }
 
-        if (isReturning)
+        // Complete only when all chosen (fallen) paintings have been returned
+        if (remainingToReturn <= 0)
         {
-            returnTimer += dt;
-            float f = Mathf.Clamp01(returnTimer / returnDurationLocal);
-            targetPainting.position = Vector3.Lerp(fallenPosition, originalPosition, f);
-            targetPainting.rotation = Quaternion.Slerp(targetPainting.rotation, originalRotation, f);
-            if (f >= 1f)
-            {
-                isReturning = false;
-                hasFallen = false;
-                completed = true;
-            }
-            return;
+            completed = true;
+            Debug.Log("[PaintingTask] All chosen paintings returned - task completed");
         }
-
-        // If painting is on floor, allow interaction when player close
-        if (hasFallen)
-        {
-            float d = Vector3.Distance(player.position, targetPainting.position);
-
-            // Simple interaction: press Interact when within range to return painting.
-            if (d <= manager.paintingInteractionDistance && manager != null && manager.InteractPressed())
-            {
-                StartReturn();
-            }
-        }
-    }
-
-    private void StartReturn()
-    {
-        if (targetPainting == null) return;
-        isReturning = true;
-        returnTimer = 0f;
     }
 
     public override void Deactivate()
     {
-        // if task cancelled mid-state, attempt to clean state (do not destroy objects)
-        targetPainting = null;
+        // Reset runtime state. We do not forcibly teleport paintings back to avoid interfering
+        // with gameplay; Deactivate simply abandons the task state and leaves scene objects as-is.
+        states.Clear();
+        completed = false;
+        remainingToReturn = 0;
     }
 
     public override bool IsCompleted => completed;
-
-    // Helper: returns true if the painting has a PaintingFallConfig.roomBounds with a Collider
-    // and the player's position is inside that collider bounds.
-    private bool IsPlayerInRoomForPainting(Transform painting, Transform player)
-    {
-        if (painting == null || player == null) return false;
-        var cfg = painting.GetComponent<PaintingFallConfig>();
-        if (cfg == null || cfg.roomBounds == null) return false;
-        var col = cfg.roomBounds.GetComponent<Collider>();
-        if (col == null) return false;
-        return col.bounds.Contains(player.position);
-    }
 }
