@@ -59,6 +59,10 @@ public class Door : MonoBehaviour
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
 
+        // auto-find Animator if not assigned in inspector
+        if (animator == null)
+            animator = GetComponent<Animator>();
+
         closedRotation = transform.localRotation;
         openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
 
@@ -84,8 +88,15 @@ public class Door : MonoBehaviour
         }
         else
         {
-            // fallback: also check Unity input key 'E' if PlayerManager not present
-            if (Keyboard.current == null)
+            // fallback: check new Input System keyboard first, otherwise fallback to legacy Input.GetKeyDown
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.eKey.wasPressedThisFrame)
+                {
+                    TryInteract();
+                }
+            }
+            else
             {
                 if (Input.GetKeyDown(KeyCode.E))
                 {
@@ -224,13 +235,19 @@ public class Door : MonoBehaviour
         locked = false;
         state = DoorState.Closed;
         if (animator != null)
-            animator.SetTrigger("Unlock");
+        {
+            if (AnimatorHasTrigger("Unlock")) animator.SetTrigger("Unlock");
+            else if (AnimatorHasBool("Unlock")) animator.SetBool("Unlock", true);
+        }
     }
 
     private void PlayLockedFeedback()
     {
         if (animator != null)
-            animator.SetTrigger("LockedHit");
+        {
+            if (AnimatorHasTrigger("LockedHit")) animator.SetTrigger("LockedHit");
+            else if (AnimatorHasBool("LockedHit")) animator.SetBool("LockedHit", true);
+        }
 
         if (audioSource != null && lockedClip != null)
             audioSource.PlayOneShot(lockedClip);
@@ -239,7 +256,10 @@ public class Door : MonoBehaviour
     private void PlayUnlockFeedback()
     {
         if (animator != null)
-            animator.SetTrigger("Unlock");
+        {
+            if (AnimatorHasTrigger("Unlock")) animator.SetTrigger("Unlock");
+            else if (AnimatorHasBool("Unlock")) animator.SetBool("Unlock", true);
+        }
 
         if (audioSource != null && unlockClip != null)
             audioSource.PlayOneShot(unlockClip);
@@ -251,15 +271,27 @@ public class Door : MonoBehaviour
         if (rotateCoroutine != null)
             StopCoroutine(rotateCoroutine);
 
-        if (debugLogs) Debug.Log($"[Door:{name}] StartOpening() called. Starting RotateTo coroutine.");
+        if (animator != null)
+        {
+            // prefer triggers (your Animator uses Trigger parameters for Open/Close)
+            if (AnimatorHasTrigger("Open"))
+            {
+                animator.SetTrigger("Open");
+            }
+            else if (AnimatorHasBool("Open"))
+            {
+                // fallback if Animator was configured with bools
+                animator.SetBool("Open", true);
+                if (AnimatorHasBool("Close")) animator.SetBool("Close", false);
+            }
+        }
+
+        if (audioSource != null && openClip != null)
+            audioSource.PlayOneShot(openClip);
 
         rotateCoroutine = StartCoroutine(RotateTo(openRotation, () =>
         {
             state = DoorState.Open;
-            if (animator != null)
-                animator.SetTrigger("Open");
-            if (audioSource != null && openClip != null)
-                audioSource.PlayOneShot(openClip);
 
             // start auto close countdown (replace any existing countdown)
             if (autoCloseCoroutine != null)
@@ -280,22 +312,31 @@ public class Door : MonoBehaviour
         if (rotateCoroutine != null)
             StopCoroutine(rotateCoroutine);
 
-        if (debugLogs) Debug.Log($"[Door:{name}] StartClosing() called. Starting RotateTo coroutine.");
-
-        // Cancel any pending auto-close countdown when actively closing
         if (autoCloseCoroutine != null)
         {
             StopCoroutine(autoCloseCoroutine);
             autoCloseCoroutine = null;
         }
 
+        if (animator != null)
+        {
+            if (AnimatorHasTrigger("Close"))
+            {
+                animator.SetTrigger("Close");
+            }
+            else if (AnimatorHasBool("Close"))
+            {
+                animator.SetBool("Close", true);
+                if (AnimatorHasBool("Open")) animator.SetBool("Open", false);
+            }
+        }
+
+        if (audioSource != null && closeClip != null)
+            audioSource.PlayOneShot(closeClip);
+
         rotateCoroutine = StartCoroutine(RotateTo(closedRotation, () =>
         {
             state = locked ? DoorState.Locked : DoorState.Closed;
-            if (animator != null)
-                animator.SetTrigger("Close");
-            if (audioSource != null && closeClip != null)
-                audioSource.PlayOneShot(closeClip);
 
             rotateCoroutine = null;
 
@@ -344,6 +385,28 @@ public class Door : MonoBehaviour
         {
             autoCloseCoroutine = null;
         }
+    }
+
+    // Helper: check for trigger parameter presence to avoid animator errors when parameter missing
+    private bool AnimatorHasTrigger(string paramName)
+    {
+        if (animator == null) return false;
+        foreach (var p in animator.parameters)
+        {
+            if (p.type == AnimatorControllerParameterType.Trigger && p.name == paramName) return true;
+        }
+        return false;
+    }
+
+    // Helper: check for bool parameter presence (fallback)
+    private bool AnimatorHasBool(string paramName)
+    {
+        if (animator == null) return false;
+        foreach (var p in animator.parameters)
+        {
+            if (p.type == AnimatorControllerParameterType.Bool && p.name == paramName) return true;
+        }
+        return false;
     }
 
 #if UNITY_EDITOR
