@@ -21,6 +21,9 @@ public class TrashTask : ITask
     // externally planned group (set by TaskManager before Activate); if null the task chooses randomly
     private Transform[] plannedGroup = null;
 
+    // store a human-readable name for the planned/selected group (designer scripts can read this)
+    public string PlannedGroupName { get; private set; } = null;
+
     // multiple spawned trash objects (one per spawn point in chosen group)
     private List<GameObject> spawnedTrash = new List<GameObject>();
     private bool completed = false;
@@ -37,11 +40,13 @@ public class TrashTask : ITask
     /// <summary>
     /// Allow TaskManager to explicitly pick which group to use when the timer fires.
     /// Pass null to clear planned selection and allow the task to choose randomly on activation.
+    /// Optional groupName is a human readable identifier (e.g. "Group A", "Legacy") supplied by TaskManager.
     /// </summary>
-    public void SetPlannedGroup(Transform[] group)
+    public void SetPlannedGroup(Transform[] group, string groupName = null)
     {
         plannedGroup = group;
-        Debug.Log($"[TrashTask] Planned group set ({(group == null ? "null" : group.Length.ToString())} entries)");
+        PlannedGroupName = groupName;
+        Debug.Log($"[TrashTask] Planned group set ({(group == null ? "null" : group.Length.ToString())} entries) name={(groupName ?? "null")}");
     }
 
     public override bool CanActivate(Transform player)
@@ -82,7 +87,7 @@ public class TrashTask : ITask
         // If a planned group was provided by TaskManager, use it deterministically.
         if (plannedGroup != null && plannedGroup.Length > 0)
         {
-            Debug.Log($"[TrashTask] Using planned group with {plannedGroup.Length} entries");
+            Debug.Log($"[TrashTask] Using planned group with {plannedGroup.Length} entries (name={PlannedGroupName ?? "null"})");
             foreach (var sp in plannedGroup)
             {
                 if (sp == null) continue;
@@ -90,6 +95,7 @@ public class TrashTask : ITask
                 spawnedTrash.Add(go);
             }
             // Clear planned selection after use so subsequent activations behave normally
+            // Keep PlannedGroupName set while active so designer UI can read it; clear plannedGroup reference.
             plannedGroup = null;
             Debug.Log($"[TrashTask] Spawned {spawnedTrash.Count} trash from planned group");
             completed = spawnedTrash.Count == 0;
@@ -107,6 +113,7 @@ public class TrashTask : ITask
         if (candidateGroups.Count == 0 && manager.trashSpawnPoints != null && manager.trashSpawnPoints.Length > 0)
         {
             Debug.Log("[TrashTask] Using legacy trashSpawnPoints fallback");
+            PlannedGroupName = "Legacy";
             foreach (var sp in manager.trashSpawnPoints)
             {
                 if (sp == null) continue;
@@ -131,7 +138,13 @@ public class TrashTask : ITask
         var chosenGroup = candidateGroups[Random.Range(0, candidateGroups.Count)];
         if (chosenGroup == null || chosenGroup.Length == 0) { completed = true; return; }
 
-        Debug.Log($"[TrashTask] Randomly chosen group has {chosenGroup.Length} entries");
+        // attempt to set a human-readable name for the chosen group
+        if (chosenGroup == manager.trashSpawnGroupA) PlannedGroupName = "Group A";
+        else if (chosenGroup == manager.trashSpawnGroupB) PlannedGroupName = "Group B";
+        else if (chosenGroup == manager.trashSpawnGroupC) PlannedGroupName = "Group C";
+        else PlannedGroupName = "Group (unknown)";
+
+        Debug.Log($"[TrashTask] Randomly chosen group has {chosenGroup.Length} entries (name={PlannedGroupName})");
         // spawn trash at all spawn points in chosenGroup (skip null entries)
         foreach (var sp in chosenGroup)
         {
@@ -187,6 +200,7 @@ public class TrashTask : ITask
         }
         // clear planned group on deactivate as well
         plannedGroup = null;
+        PlannedGroupName = null;
         completed = false;
     }
 

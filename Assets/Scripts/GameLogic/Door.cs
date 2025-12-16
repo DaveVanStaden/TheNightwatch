@@ -39,10 +39,15 @@ public class Door : MonoBehaviour
     [Tooltip("Enable debug logs for door interaction / rotation state.")]
     public bool debugLogs = false;
 
+    [Header("Interaction options")]
+    [Tooltip("If true, pressing Interact while the door is open (or opening) will manually close it and cancel the auto-close timer.")]
+    public bool allowManualClose = true;
+
     // internal
     private Quaternion closedRotation;
     private Quaternion openRotation;
     private Coroutine rotateCoroutine;
+    private Coroutine autoCloseCoroutine;
     private DoorState state = DoorState.Closed;
 
     // cached player manager for input + raycast
@@ -173,11 +178,36 @@ public class Door : MonoBehaviour
         }
         else if (state == DoorState.Open || state == DoorState.Opening)
         {
-            // reset auto-close timer by re-starting it
-            if (rotateCoroutine == null)
+            if (allowManualClose)
             {
-                if (debugLogs) Debug.Log($"[Door:{name}] Door already open - re-arming auto-close.");
-                StartCoroutine(AutoCloseCountdown());
+                if (debugLogs) Debug.Log($"[Door:{name}] Manual close requested while open/opening. Cancelling auto-close and closing now.");
+                // stop any auto-close countdown
+                if (autoCloseCoroutine != null)
+                {
+                    StopCoroutine(autoCloseCoroutine);
+                    autoCloseCoroutine = null;
+                }
+                // stop any current rotation coroutine to start closing cleanly
+                if (rotateCoroutine != null)
+                {
+                    StopCoroutine(rotateCoroutine);
+                    rotateCoroutine = null;
+                }
+                StartClosing();
+            }
+            else
+            {
+                // reset auto-close timer by re-starting it
+                if (rotateCoroutine == null)
+                {
+                    if (debugLogs) Debug.Log($"[Door:{name}] Door already open - re-arming auto-close.");
+                    if (autoCloseCoroutine != null)
+                    {
+                        StopCoroutine(autoCloseCoroutine);
+                        autoCloseCoroutine = null;
+                    }
+                    autoCloseCoroutine = StartCoroutine(AutoCloseCountdown());
+                }
             }
         }
 
@@ -231,8 +261,13 @@ public class Door : MonoBehaviour
             if (audioSource != null && openClip != null)
                 audioSource.PlayOneShot(openClip);
 
-            // start auto close countdown
-            StartCoroutine(AutoCloseCountdown());
+            // start auto close countdown (replace any existing countdown)
+            if (autoCloseCoroutine != null)
+            {
+                StopCoroutine(autoCloseCoroutine);
+                autoCloseCoroutine = null;
+            }
+            autoCloseCoroutine = StartCoroutine(AutoCloseCountdown());
             rotateCoroutine = null;
 
             if (debugLogs) Debug.Log($"[Door:{name}] Finished opening. state={state}");
@@ -246,6 +281,13 @@ public class Door : MonoBehaviour
             StopCoroutine(rotateCoroutine);
 
         if (debugLogs) Debug.Log($"[Door:{name}] StartClosing() called. Starting RotateTo coroutine.");
+
+        // Cancel any pending auto-close countdown when actively closing
+        if (autoCloseCoroutine != null)
+        {
+            StopCoroutine(autoCloseCoroutine);
+            autoCloseCoroutine = null;
+        }
 
         rotateCoroutine = StartCoroutine(RotateTo(closedRotation, () =>
         {
@@ -283,7 +325,10 @@ public class Door : MonoBehaviour
         {
             // if door got closed or locked via other logic, bail out
             if (state != DoorState.Open)
+            {
+                autoCloseCoroutine = null;
                 yield break;
+            }
 
             elapsed += Time.deltaTime;
             yield return null;
@@ -292,7 +337,12 @@ public class Door : MonoBehaviour
         // begin closing if still open
         if (state == DoorState.Open)
         {
+            autoCloseCoroutine = null;
             StartClosing();
+        }
+        else
+        {
+            autoCloseCoroutine = null;
         }
     }
 

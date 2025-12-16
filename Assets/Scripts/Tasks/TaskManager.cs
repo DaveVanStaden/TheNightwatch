@@ -60,6 +60,29 @@ public class TaskManager : MonoBehaviour
     [Tooltip("Human readable name used for the Trash task (logged/completed list).")]
     public string TrashTaskName = "TrashTask";
 
+    [Header("Special single-painting mini-task")]
+    [Tooltip("Assign the specific painting Transform that will be used for the single static fall mini-task.")]
+    public Transform specialPaintingTarget;
+    [Tooltip("Seconds until the phone 'allows' the painting to fall.")]
+    public float specialPhoneDelay = 10f;
+    [Tooltip("Optional AudioSource used to play completion audio for the mini-task.")]
+    public AudioSource specialPhoneAudioSource;
+    [Tooltip("Optional AudioClip played by specialPhoneAudioSource when the mini-task completes.")]
+    public AudioClip specialPhoneCompleteClip;
+
+    // New: explicit CamImage reference for the special camera to check zoom state.
+    // Assign the CamImage (B2) here in the inspector to avoid scene searches.
+    [Tooltip("Optional: assign the CamImage (e.g. B2) to be used by the single painting fall task. If null the task will search by group/name.")]
+    public CamImage specialCamImage;
+
+    // New: whether the phone call flow is used (if true the task will wait for manager.specialPhoneCallStarted before starting phone delay)
+    [Tooltip("If true the special phone-delay will only start once specialPhoneCallStarted is set to true. Leave false to start the delay immediately.")]
+    public bool specialPhoneUseCall = false;
+
+    // New: placeholder boolean indicating an external phone call has started.
+    // You can set this to true from other systems when you implement the phone call.
+    [HideInInspector] public bool specialPhoneCallStarted = false;
+
     // runtime
     public List<ITask> tasks = new();
     // support multiple concurrent active tasks
@@ -69,12 +92,16 @@ public class TaskManager : MonoBehaviour
     // runtime direct refs for clarity
     private ITask paintingTaskRef;
     private ITask trashTaskRef;
+    private ITask singlePaintingTaskRef; // <- new reference
 
     // simple tracking
     public List<string> completedTasks = new List<string>();
 
     // store indices that should no longer be considered (non-repeat tasks that have completed)
     private System.Collections.Generic.HashSet<int> disabledTaskIndices;
+
+    // Expose last chosen trash group name so designer scripts can read it
+    public string LastTrashGroupName { get; private set; }
 
     private void OnEnable()
     {
@@ -88,8 +115,6 @@ public class TaskManager : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("[TaskManager] Awake");
-
         if (playerManager == null)
             playerManager = Object.FindFirstObjectByType<PlayerManager>();
 
@@ -119,21 +144,32 @@ public class TaskManager : MonoBehaviour
         var trashTask = new TrashTask();
         trashTask.Initialize(this);
 
+        // New: create and register the single-painting mini-task (keeps existing code intact)
+        var singlePaintingTask = new SinglePaintingFallTask();
+        singlePaintingTask.Initialize(this);
+
+        // register tasks
+        tasks.Add(singlePaintingTask);
         tasks.Add(paintingTask);
         tasks.Add(trashTask);
 
-        // keep direct refs (index 0 = painting, index 1 = trash based on creation order)
+        // keep direct refs (so we can reference them at Start)
+        singlePaintingTaskRef = singlePaintingTask;
         paintingTaskRef = paintingTask;
         trashTaskRef = trashTask;
 
         // track non-repeatable tasks by index once they finish (empty initially)
         disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
 
-        // quick sanity checks to help debugging
+        // quick sanity checks (no debug logs to avoid flooding)
         if (trashPrefab == null)
-            Debug.LogWarning("[TaskManager] trashPrefab is not assigned in inspector - trash cannot spawn.");
+        {
+            // intentionally silent
+        }
         if (!HasNonNull(trashSpawnGroupA) && !HasNonNull(trashSpawnGroupB) && !HasNonNull(trashSpawnGroupC) && !HasNonNull(trashSpawnPoints))
-            Debug.LogWarning("[TaskManager] No trash spawn points/groups assigned. Assign inspector entries or use legacy trashSpawnPoints.");
+        {
+            // intentionally silent
+        }
 
         // schedule trash timer by default; painting will be attempted at Start
         ScheduleNextTask();
@@ -141,8 +177,6 @@ public class TaskManager : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("[TaskManager] Start");
-
         // Re-resolve player references in Start in case PlayerStats/PlayerManager weren't initialized when Awake ran
         if (playerManager == null)
             playerManager = Object.FindFirstObjectByType<PlayerManager>();
@@ -161,6 +195,23 @@ public class TaskManager : MonoBehaviour
             }
         }
 
+        // Try to run single mini-task at Start (deterministic first-night event).
+        if (singlePaintingTaskRef != null)
+        {
+            int singleIdx = tasks.IndexOf(singlePaintingTaskRef);
+            if (singleIdx >= 0 && (disabledTaskIndices == null || !disabledTaskIndices.Contains(singleIdx)))
+            {
+                if (singlePaintingTaskRef.CanActivate(playerTransform))
+                {
+                    if (!activeTasks.Contains(singlePaintingTaskRef))
+                    {
+                        activeTasks.Add(singlePaintingTaskRef);
+                        singlePaintingTaskRef.Activate(playerTransform);
+                    }
+                }
+            }
+        }
+
         // Try to run painting at beginning of the night deterministically.
         // Only start if not disabled and the task reports it can activate.
         if (paintingTaskRef != null)
@@ -168,10 +219,8 @@ public class TaskManager : MonoBehaviour
             int paintIdx = tasks.IndexOf(paintingTaskRef);
             if (paintIdx >= 0 && (disabledTaskIndices == null || !disabledTaskIndices.Contains(paintIdx)))
             {
-                Debug.Log("[TaskManager] Attempting to activate PaintingTask at Start");
                 if (paintingTaskRef.CanActivate(playerTransform))
                 {
-                    Debug.Log("[TaskManager] PaintingTask.CanActivate returned true -> Activating");
                     if (!activeTasks.Contains(paintingTaskRef))
                     {
                         activeTasks.Add(paintingTaskRef);
@@ -180,7 +229,7 @@ public class TaskManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("[TaskManager] PaintingTask.CanActivate returned false at Start");
+                    // intentionally silent
                 }
             }
         }
@@ -192,7 +241,6 @@ public class TaskManager : MonoBehaviour
         if (disabledTaskIndices != null && disabledTaskIndices.Contains(tasks.IndexOf(trashTaskRef)))
         {
             nextTaskTimer = 0f;
-            Debug.Log("[TaskManager] Trash task disabled — not scheduling timer");
             return;
         }
 
@@ -201,7 +249,6 @@ public class TaskManager : MonoBehaviour
         float maxT = Mathf.Max(minT, trashMaxTimeToStart);
 
         nextTaskTimer = Random.Range(minT, maxT);
-        Debug.Log($"[TaskManager] Scheduled next trash timer: {nextTaskTimer:0.00}s (range {minT}-{maxT})");
     }
 
     private void Update()
@@ -233,12 +280,10 @@ public class TaskManager : MonoBehaviour
                         if (t is PaintingTask && !paintingRepeat)
                         {
                             disabledTaskIndices.Add(idx);
-                            Debug.Log($"[TaskManager] Marked PaintingTask index {idx} disabled (non-repeatable)");
                         }
                         if (t is TrashTask && !trashRepeat)
                         {
                             disabledTaskIndices.Add(idx);
-                            Debug.Log($"[TaskManager] Marked TrashTask index {idx} disabled (non-repeatable)");
                         }
                     }
 
@@ -255,7 +300,6 @@ public class TaskManager : MonoBehaviour
             if (nextTaskTimer <= 0f)
             {
                 nextTaskTimer = 0f;
-                Debug.Log("[TaskManager] Trash timer reached zero");
             }
         }
 
@@ -280,18 +324,14 @@ public class TaskManager : MonoBehaviour
     // Returns true if the trash task was activated.
     private bool TryStartTrashFromTimer()
     {
-        Debug.Log("[TaskManager] TryStartTrashFromTimer invoked");
-
         int trashIdx = tasks.IndexOf(trashTaskRef);
         if (trashTaskRef == null || trashIdx < 0)
         {
-            Debug.Log("[TaskManager] No trash task reference available");
             return false;
         }
 
         if (disabledTaskIndices != null && disabledTaskIndices.Contains(trashIdx))
         {
-            Debug.Log("[TaskManager] Trash task is disabled (non-repeatable) - won't start");
             return false;
         }
 
@@ -302,50 +342,59 @@ public class TaskManager : MonoBehaviour
         if (HasNonNull(trashSpawnGroupC)) groups.Add(trashSpawnGroupC);
 
         Transform[] chosenGroup = null;
+        string groupName = null;
         if (groups.Count > 0)
         {
             chosenGroup = groups[Random.Range(0, groups.Count)];
-            Debug.Log("[TaskManager] Chosen trash group from A/B/C");
-            Debug.Log(DescribeGroup(chosenGroup));
+            // identify which concrete group we picked for naming
+            if (chosenGroup == trashSpawnGroupA) groupName = "Group A";
+            else if (chosenGroup == trashSpawnGroupB) groupName = "Group B";
+            else if (chosenGroup == trashSpawnGroupC) groupName = "Group C";
+            else groupName = "Group (unknown source)";
         }
         else if (trashSpawnPoints != null && trashSpawnPoints.Length > 0)
         {
             if (HasNonNull(trashSpawnPoints))
             {
                 chosenGroup = trashSpawnPoints;
-                Debug.Log("[TaskManager] Using legacy trashSpawnPoints as chosen group");
-                Debug.Log(DescribeGroup(chosenGroup));
+                groupName = "Legacy";
             }
         }
 
         if (chosenGroup == null || chosenGroup.Length == 0)
         {
-            Debug.Log("[TaskManager] No valid trash spawn points found; cannot start trash now");
             return false;
         }
 
+        // remember last chosen group name for external readers (designer scripts)
+        LastTrashGroupName = groupName;
+
         if (trashTaskRef is TrashTask tt)
         {
-            tt.SetPlannedGroup(chosenGroup);
-            Debug.Log("[TaskManager] PlannedGroup set on TrashTask");
+            tt.SetPlannedGroup(chosenGroup, groupName);
         }
 
         // Verify the task can activate (plannedGroup will be considered) and activate it
         if (trashTaskRef.CanActivate(playerTransform))
         {
-            Debug.Log("[TaskManager] TrashTask.CanActivate returned true -> Activating TrashTask (concurrent allowed)");
             // ensure we don't add the same task multiple times
             if (!activeTasks.Contains(trashTaskRef))
             {
                 activeTasks.Add(trashTaskRef);
                 trashTaskRef.Activate(playerTransform);
+
+                // If trash is non-repeatable, mark it disabled immediately after activation
+                if (!trashRepeat)
+                {
+                    if (disabledTaskIndices == null) disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
+                    disabledTaskIndices.Add(trashIdx);
+                }
             }
             return true;
         }
         else
         {
-            Debug.Log("[TaskManager] TrashTask.CanActivate returned false after planning group");
-            if (trashTaskRef is TrashTask tt2) tt2.SetPlannedGroup(null);
+            if (trashTaskRef is TrashTask tt2) tt2.SetPlannedGroup(null, null);
             return false;
         }
     }
@@ -375,14 +424,12 @@ public class TaskManager : MonoBehaviour
     [ContextMenu("Trigger Trash Now")]
     public void DebugTriggerTrashNow()
     {
-        Debug.Log("[TaskManager] DebugTriggerTrashNow called");
         nextTaskTimer = 0f;
     }
 
     [ContextMenu("Trigger Painting Now")]
     public void DebugTriggerPaintingNow()
     {
-        Debug.Log("[TaskManager] DebugTriggerPaintingNow called");
         if (paintingTaskRef != null && paintingTaskRef.CanActivate(playerTransform))
         {
             if (!activeTasks.Contains(paintingTaskRef))
@@ -391,7 +438,6 @@ public class TaskManager : MonoBehaviour
                 paintingTaskRef.Activate(playerTransform);
             }
         }
-        else Debug.Log("[TaskManager] PaintingTask cannot activate now");
     }
 
     public bool InteractPressed()

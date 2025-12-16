@@ -1798,6 +1798,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87778d3361165a144a39b88318dfeb23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &1119651119 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8415620266923585420, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+  m_PrefabInstance: {fileID: 4921537392257424806}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2fd0c976d555244846e2bd836a6989, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1140809199 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5832335041875165807, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
@@ -2212,6 +2223,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1639015417772fa4597af7c18e3681ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!1 &1601234807 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3068237737237438931, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+  m_PrefabInstance: {fileID: 6829324717808045921}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1601234808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1601234807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
+  fallOffset: {x: 0, y: -3, z: 0.5}
+  fallRotationEuler: {x: 90, y: 0, z: 0}
+  fallDuration: 0.5
+  returnDuration: 1.5
+  roomBounds: {fileID: 0}
+--- !u!4 &1601234810 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2440741384920775529, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+  m_PrefabInstance: {fileID: 6829324717808045921}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1606250933 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6255477179465790459, guid: 3c268f4c77ab3ef4c846663b0f747ebd, type: 3}
@@ -2797,6 +2835,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 460481664}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: specialCamImage
+      value: 
+      objectReference: {fileID: 1119651119}
+    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: trashMaxTimeToStart
       value: 2
       objectReference: {fileID: 0}
@@ -2804,6 +2846,10 @@ PrefabInstance:
       propertyPath: trashMinTimeToStart
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: specialPaintingTarget
+      value: 
+      objectReference: {fileID: 1601234810}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: paintingMaxTimeToStart
       value: 2
@@ -4714,6 +4760,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3068237737237438931, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1601234808}
     - targetCorrespondingSourceObject: {fileID: 8911989782332987868, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
       insertIndex: -1
       addedObject: {fileID: 0}

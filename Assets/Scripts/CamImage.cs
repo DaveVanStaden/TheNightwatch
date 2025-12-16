@@ -114,4 +114,10 @@ public class CamImage : MonoBehaviour
             }
         }
     }
+
+    // Expose the zoom state with a public accessor (no other changes)
+    public bool IsZoomed()
+    {
+        return isBig;
+    }
 }
