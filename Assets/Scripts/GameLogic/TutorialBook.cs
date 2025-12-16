@@ -49,6 +49,13 @@ public class TutorialBook : MonoBehaviour, IInteraction
     private void Awake()
     {
         if (pages == null) pages = new GameObject[0];
+
+        // Force the book to always start at page 0 on Awake (ignore persisted value).
+        // Also reset the persisted PlayerPrefs key so subsequent EnterInteraction will load page 0.
+        currentPageIndex = 0;
+        string key = string.Format(PrefKeyFormat, bookId);
+        PlayerPrefs.SetInt(key, 0);
+        PlayerPrefs.Save();
     }
 
     public void EnterInteraction(PlayerManager playerManager)
@@ -199,7 +206,46 @@ public class TutorialBook : MonoBehaviour, IInteraction
 
     public void LeaveInteraction(PlayerManager playerManager)
     {
+        // Start visual/audio leave flow as before
         StartCoroutine(LeaveRoutine());
+
+        // Because PlayerInteraction/CleanupInteraction clears manager.inInteractionView immediately
+        // (which would re-enable movement while our camera is still transitioning),
+        // explicitly enforce a short lockout for the player here matching the visual transition.
+        // This implementation disables the PlayerManager component for the duration of the transition
+        // so movement and module updates are fully suspended, then re-enables it.
+        if (playerManager != null)
+        {
+            StartCoroutine(LockoutDuringLeave(playerManager, transitionTime));
+        }
+    }
+
+    private IEnumerator LockoutDuringLeave(PlayerManager manager, float duration)
+    {
+        if (manager == null) yield break;
+
+        // Disable camera input briefly to avoid snapping when we re-enable controls.
+        // Call this before disabling the whole manager so coroutines / camera state are scheduled.
+        manager.DisableCameraForSeconds(duration);
+
+        // Ensure external leave flag cleared.
+        manager.externalLeaveRequested = false;
+
+        // Disable the PlayerManager component to fully prevent movement / module updates.
+        manager.enabled = false;
+
+        // Wait the visual transition length
+        yield return new WaitForSeconds(duration);
+
+        // Re-enable PlayerManager and restore camera input immediately.
+        // Guard against manager being destroyed while waiting.
+        if (manager != null)
+        {
+            manager.enabled = true;
+            // Make sure camera input resumes and yaw/pitch are synced to avoid snap
+            manager.ResumeCamera();
+            manager.inInteractionView = false;
+        }
     }
 
     private IEnumerator MoveToZoom()
