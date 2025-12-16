@@ -69,6 +69,14 @@ public class EventManager : MonoBehaviour
     public float cameraEventCooldownSeconds = 120f;
     [Tooltip("Multiplier applied to baseChancePerSecond while player is on the cameras (increases chance).")]
     public float cameraEventChanceMultiplierOnCamera = 5f;
+    [Tooltip("Sanity drained per second while the camera entity is active.")]
+    public float cameraEntitySanityDrainPerSecond = 5f;
+
+    [Header("BreakerCrashEvent")]
+    [Tooltip("Sanity threshold below which the breaker-crash event may occur.")]
+    public float breakerEventSanityThreshold = 60f;
+    [Tooltip("Cooldown in seconds after a breaker-crash before it can happen again.")]
+    public float breakerEventCooldownSeconds = 120f;
 
     // list of CamGroup instances discovered at Awake (populated early so non-Mono modules can read it)
     [HideInInspector] public List<CamGroup> allCamGroups = new List<CamGroup>();
@@ -82,7 +90,7 @@ public class EventManager : MonoBehaviour
     void Awake()
     {
         // populate CamGroup list early (modules are created immediately afterwards and may use it)
-        allCamGroups = new List<CamGroup>(FindObjectsOfType<CamGroup>());
+        allCamGroups = new List<CamGroup>(FindObjectsByType<CamGroup>(FindObjectsSortMode.None));
 
         // create modules here. Keep EventManager minimal by delegating logic into modules.
         modules.Add(new PaintingEventModule(this));
@@ -91,6 +99,9 @@ public class EventManager : MonoBehaviour
 
         // camera event module
         modules.Add(new CameraEventModule(this));
+
+        // breaker box crash module (randomly toggles a single ON BreakerButton once)
+        modules.Add(new BreakerEventModule(this));
 
         // debug: list modules created
         var names = new System.Collections.Generic.List<string>();

@@ -14,12 +14,26 @@ public class CameraEventModule : IEventModule
     private CamGroup entityGroup = null;
     private List<CamGroup> camGroups = new List<CamGroup>();
 
+    // Weight multiplier applied to the currently-selected group when choosing spawn group
+    private const float SelectedGroupWeight = 6f;
+    private const float DefaultGroupWeight = 1f;
+
+    // fallback cooldown if EventManager's value is 0 or invalid
+    private const float DefaultCameraEventCooldown = 120f;
+
+    // New: explicit spawned flag requested
+    private bool entitySpawned = false;
+
     public CameraEventModule(EventManager manager) : base(manager) { }
 
     public override void OnAwake()
     {
-        cooldownTimer = 0f;
+        // initialize cooldown so we don't immediately spawn on scene load
+        float configuredCd = (manager != null) ? manager.cameraEventCooldownSeconds : 0f;
+        cooldownTimer = (configuredCd > 0f) ? configuredCd : DefaultCameraEventCooldown;
+
         happenedSinceBelowThreshold = false;
+        entitySpawned = false;
 
         // read the list provided by EventManager (EventManager is a MonoBehaviour so it can call FindObjectsOfType)
         if (manager != null && manager.allCamGroups != null)
@@ -39,59 +53,70 @@ public class CameraEventModule : IEventModule
 
         float dt = Time.deltaTime;
 
-        if (cooldownTimer > 0f) cooldownTimer -= dt;
+        // decrement cooldown and detect expiry transition so we can reset the "happened" flag
+        float oldCooldown = cooldownTimer;
+        if (cooldownTimer > 0f)
+            cooldownTimer = Mathf.Max(0f, cooldownTimer - dt);
+
+        if (oldCooldown > 0f && cooldownTimer <= 0f)
+        {
+            // cooldown finished -> allow the camera event again
+            happenedSinceBelowThreshold = false;
+        }
 
         // Reset the "happened" flag when sanity goes above threshold
         if (manager.playerSanity >= manager.cameraEventSanityThreshold)
             happenedSinceBelowThreshold = false;
 
-        // If there's an active entity, ensure it gets destroyed when conditions no longer hold
+        // If there's an active entity, ensure it gets destroyed when conditions no longer hold.
         if (activeEntity != null)
         {
             bool playerOnCameras = manager.playerManager != null && manager.playerManager.inInteractionView;
             bool groupStillSelected = entityGroup != null && entityGroup.selectedGroup;
 
-            if (!playerOnCameras || !groupStillSelected)
+            // If player left the camera UI, destroy the entity immediately.
+            if (!playerOnCameras)
             {
-                // destroy the entity
                 UnityEngine.Object.Destroy(activeEntity.gameObject);
-                activeEntity = null;
-                entityGroup = null;
+                return;
             }
-            else
+            // If the entity is visible but its group was deselected, destroy it.
+            if (activeEntity.gameObject.activeSelf && !groupStillSelected)
             {
-                // If entity exists but not yet shown & its group just became selected, show it
-                if (!activeEntity.gameObject.activeSelf && groupStillSelected)
-                {
-                    activeEntity.Show();
-                }
+                UnityEngine.Object.Destroy(activeEntity.gameObject);
+                return;
+            }
+            // If the entity is still hidden and the group just became selected, show it.
+            if (!activeEntity.gameObject.activeSelf && groupStillSelected)
+            {
+                activeEntity.Show();
             }
 
             // while activeEntity exists we do not spawn another
             return;
         }
 
-        // Only attempt spawn when player is in camera interaction view and has the cameras angle open (angle == 2)
-        bool playerOnCamerasNow = manager.playerManager != null && manager.playerManager.inInteractionView;
+        // Replace all usages of Object.FindObjectsOfType<T>(bool) with Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)
+        // Fix for CS0618
 
-        if (!playerOnCamerasNow) return;
-
-        // find current active Interactable (interaction camera enabled)
-        Interactable activeInteract = null;
-        var list = UnityEngine.Object.FindObjectsOfType<Interactable>();
-        for (int i = 0; i < list.Length; i++)
+        // In OnUpdate method:
+        var existingEntities = UnityEngine.Object.FindObjectsByType<CameraEntity>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (existingEntities != null && existingEntities.Length > 0)
         {
-            if (list[i].interactionCamera != null && list[i].interactionCamera.enabled)
-            {
-                activeInteract = list[i];
-                break;
-            }
+            if (activeEntity == null)
+                activeEntity = existingEntities[0];
+            entitySpawned = true;
+            return;
         }
 
-        if (activeInteract == null) return;
+        // If module-level flag says an entity is already spawned, don't spawn
+        if (entitySpawned)
+            return;
 
-        // require angle == 2 to be looking at camera UI
-        if (activeInteract.currentAngle != 2) return;
+        // Only attempt spawn when player is in camera interaction view
+        bool playerOnCamerasNow = manager.playerManager != null && manager.playerManager.inInteractionView;
+        if (!playerOnCamerasNow) return;
 
         // require sanity below threshold and not already happened while below threshold
         if (manager.playerSanity >= manager.cameraEventSanityThreshold) return;
@@ -102,78 +127,111 @@ public class CameraEventModule : IEventModule
 
         // compute a chance per second: use manager.baseChancePerSecond multiplied when on cameras
         float chancePerSecond = manager.baseChancePerSecond * manager.cameraEventChanceMultiplierOnCamera;
-        float roll = chancePerSecond * dt;
-        if (UnityEngine.Random.value < roll)
-        {
+
+        // Use Poisson probability for per-frame chance: p = 1 - exp(-rate * dt)
+        float rollThreshold = 1f - Mathf.Exp(-chancePerSecond * dt);
+
+        if (UnityEngine.Random.value < rollThreshold)
             TryCreateEntity();
-        }
     }
 
     private void TryCreateEntity()
     {
-        if (camGroups == null || camGroups.Count == 0)
+        try
         {
-            Debug.LogWarning("[CameraEventModule] No CamGroup found in manager.allCamGroups.");
-            return;
-        }
+            if (manager == null) return;
+            if (camGroups == null || camGroups.Count == 0) return;
 
-        // pick a random CamGroup
-        CamGroup chosenGroup = camGroups[UnityEngine.Random.Range(0, camGroups.Count)];
-        if (chosenGroup == null || chosenGroup.cameras == null || chosenGroup.cameras.Length == 0)
+            // Safety: do not start a spawn if one is already active
+            if (activeEntity != null) return;
+
+            // In TryCreateEntity method:
+            var existing = UnityEngine.Object.FindObjectsByType<CameraEntity>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            if (existing != null && existing.Length > 0)
+            {
+                activeEntity = existing[0];
+                entitySpawned = true;
+                return;
+            }
+
+            // Prefer currently selected groups only (do not spawn on inactive groups)
+            var selectedGroups = camGroups.FindAll(g => g != null && g.selectedGroup);
+            if (selectedGroups == null || selectedGroups.Count == 0) return;
+
+            // pick one of the selected groups at random
+            CamGroup chosenGroup = selectedGroups[UnityEngine.Random.Range(0, selectedGroups.Count)];
+            if (chosenGroup == null) return;
+
+            // In TryCreateEntity method (for CameraSpot):
+            var allSpots = UnityEngine.Object.FindObjectsByType<CameraSpot>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var groupSpots = new System.Collections.Generic.List<CameraSpot>();
+            foreach (var s in allSpots)
+            {
+                if (s == null) continue;
+                if (s.camGroup == chosenGroup && s.spawnPoint != null)
+                    groupSpots.Add(s);
+            }
+            if (groupSpots.Count == 0) return;
+
+            var chosenSpot = groupSpots[UnityEngine.Random.Range(0, groupSpots.Count)];
+            if (chosenSpot == null || chosenSpot.spawnPoint == null) return;
+            if (manager.cameraEntityPrefab == null) return;
+
+            // Instantiate entity
+            var go = UnityEngine.Object.Instantiate(manager.cameraEntityPrefab, chosenSpot.spawnPoint.position, chosenSpot.spawnPoint.rotation, chosenSpot.spawnPoint);
+            if (go == null) return;
+
+            var entity = go.GetComponent<CameraEntity>();
+            if (entity == null)
+            {
+                UnityEngine.Object.Destroy(go);
+                return;
+            }
+
+            // assign reference before Show to avoid race
+            activeEntity = entity;
+            entityGroup = chosenGroup;
+
+            // init, assign drain rate, subscribe, show immediately
+            entity.Init(manager, chosenGroup);
+            entity.sanityDrainPerSecond = manager.cameraEntitySanityDrainPerSecond;
+            entity.onDestroyed += HandleEntityDestroyed;
+            entity.Show();
+
+            // start cooldown immediately
+            float configuredCd = (manager != null) ? manager.cameraEventCooldownSeconds : 0f;
+            cooldownTimer = (configuredCd > 0f) ? configuredCd : DefaultCameraEventCooldown;
+
+            // mark that event happened while below threshold so we don't retrigger until cooldown/conditions reset
+            happenedSinceBelowThreshold = true;
+            entitySpawned = true;
+        }
+        catch (Exception)
         {
-            Debug.LogWarning("[CameraEventModule] Chosen group has no cameras.");
-            return;
+            // ensure we don't leave activeEntity referencing a broken object
+            activeEntity = null;
+            entitySpawned = false;
         }
+    }
 
-        // pick one of the 4 cameras in the group
-        int camIndex = UnityEngine.Random.Range(0, Mathf.Min(4, chosenGroup.cameras.Length));
-        GameObject camView = chosenGroup.cameras[camIndex];
-        if (camView == null)
+    // Handles entity destruction callback from CameraEntity
+    private void HandleEntityDestroyed()
+    {
+        try
         {
-            Debug.LogWarning("[CameraEventModule] Selected camera view is null.");
-            return;
+            if (activeEntity != null)
+                activeEntity.onDestroyed -= HandleEntityDestroyed;
         }
+        catch { /* ignore */ }
 
-        // Get CamImage to find the originalCam (SecurityCamera)
-        CamImage camImage = camView.GetComponent<CamImage>();
-        if (camImage == null || camImage.originalCam == null)
-        {
-            Debug.LogWarning("[CameraEventModule] CamImage or originalCam missing on camera view.");
-            return;
-        }
+        // start cooldown when the entity is removed (whether destroyed by module or self)
+        float configuredCd = (manager != null) ? manager.cameraEventCooldownSeconds : 0f;
+        cooldownTimer = (configuredCd > 0f) ? configuredCd : DefaultCameraEventCooldown;
 
-        SecurityCamera secCam = camImage.originalCam;
-        CameraSpot spot = secCam.GetComponent<CameraSpot>();
-        if (spot == null || spot.spawnPoint == null)
-        {
-            Debug.LogWarning("[CameraEventModule] CameraSpot/spawnPoint missing on SecurityCamera: " + secCam.name);
-            return;
-        }
-
-        if (manager.cameraEntityPrefab == null)
-        {
-            Debug.LogWarning("[CameraEventModule] cameraEntityPrefab not assigned on EventManager.");
-            return;
-        }
-
-        // Instantiate but keep inactive until group is selected
-        GameObject go = UnityEngine.Object.Instantiate(manager.cameraEntityPrefab, spot.spawnPoint.position, spot.spawnPoint.rotation, spot.spawnPoint);
-        var entity = go.GetComponent<CameraEntity>();
-        if (entity == null)
-        {
-            Debug.LogWarning("[CameraEventModule] cameraEntityPrefab doesn't have CameraEntity component.");
-            UnityEngine.Object.Destroy(go);
-            return;
-        }
-
-        entity.Init(manager, chosenGroup);
-
-        // keep reference and set cooldown + happened flag
-        activeEntity = entity;
-        entityGroup = chosenGroup;
-        cooldownTimer = manager.cameraEventCooldownSeconds;
-        happenedSinceBelowThreshold = true;
-
-        Debug.Log($"[CameraEventModule] Spawned hidden CameraEntity on group {chosenGroup.name}, cam index {camIndex}. Waiting for group selection to show it.");
+        activeEntity = null;
+        entityGroup = null;
+        entitySpawned = false;
     }
 }

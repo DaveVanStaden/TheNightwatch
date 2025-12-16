@@ -17,6 +17,8 @@ public class PauseMenu : MonoBehaviour
 
     MonitorCursor[] cursors;
     MonitorCursor currentCursor;
+
+    AudioSource[] pausedAudio;
     private void Awake()
     {
         pm = FindAnyObjectByType<PlayerManager>();
@@ -69,6 +71,8 @@ public class PauseMenu : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        pausedAudio = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+
         Debug.Log("[PauseMenu] Opened - time paused and cursor unlocked.");
         finishedScreen.SetActive(true);
         isPaused = true;
@@ -79,6 +83,10 @@ public class PauseMenu : MonoBehaviour
                 currentCursor = cursor;
                 currentCursor.DisableCursor();
             }
+        }
+        foreach (AudioSource audio in pausedAudio)
+        {
+            audio.Pause();
         }
     }
     public void Unpause()
@@ -94,6 +102,11 @@ public class PauseMenu : MonoBehaviour
             currentCursor = null;
         }
 
+        foreach (AudioSource audio in pausedAudio)
+        {
+            audio.UnPause();
+        }
+        pausedAudio = null;
         Debug.Log("[PauseMenu] Closed - time unpaused and cursor locked.");
         finishedScreen.SetActive(false);
         isPaused = false;

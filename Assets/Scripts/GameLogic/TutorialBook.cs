@@ -77,27 +77,32 @@ public class TutorialBook : MonoBehaviour, IInteraction
             interactionCamera.fieldOfView = playerCamera.fieldOfView;
         }
 
-        // Ensure interaction camera GameObject is active and enable its Camera component.
-        // Use GameObject.SetActive because the camera component can be present but the GameObject could be inactive.
-        if (!interactionCamera.gameObject.activeSelf)
-            interactionCamera.gameObject.SetActive(true);
-        interactionCamera.enabled = true;
+        // Ensure interaction camera Camera component is enabled (do NOT toggle the camera GameObject).
+        // Toggling the GameObject caused other systems to break; only enable/disable the Camera and AudioListener components.
+        if (interactionCamera != null)
+        {
+            interactionCamera.enabled = true;
+            var al = interactionCamera.GetComponent<AudioListener>();
+            if (al != null) al.enabled = true;
+        }
 
-        var al = interactionCamera.GetComponent<AudioListener>();
-        if (al != null) al.enabled = true;
-
-        // Disable the player camera GameObject (safer than only toggling component).
+        // Disable the player camera Camera component (do NOT toggle the GameObject).
         if (playerCamera != null)
         {
-            if (playerCamera.gameObject.activeSelf)
-                playerCamera.gameObject.SetActive(false);
-            var pal = playerCamera.GetComponent<AudioListener>();
+            playerCamera.enabled = false;
+            var pal = playerCamera.GetComponent<AudioListener>();   
             if (pal != null) pal.enabled = false;
         }
 
         // disable flashlight GameObjects (same approach as BreakerBox)
         cachedFlashlightGOs.Clear();
-        var flashlightRoot = FindObjectOfType<FlashlightRotator>()?.gameObject;
+
+        // Prefer FindObjectsByType (non-deprecated) to locate Flashlight instances.
+        // Use FindFirstObjectForType for the rotator root (also non-deprecated).
+        var foundFlashlights = FindObjectsByType<Flashlight>(FindObjectsSortMode.None);
+        var flashlightRotator = FindFirstObjectByType<FlashlightRotator>();
+        var flashlightRoot = flashlightRotator != null ? flashlightRotator.gameObject : null;
+
         if (flashlightRoot != null && flashlightRoot.activeSelf)
         {
             cachedFlashlightGOs.Add(flashlightRoot);
@@ -105,7 +110,6 @@ public class TutorialBook : MonoBehaviour, IInteraction
         }
         else
         {
-            var foundFlashlights = FindObjectsOfType<Flashlight>();
             foreach (var f in foundFlashlights)
             {
                 if (f == null) continue;
@@ -251,6 +255,7 @@ public class TutorialBook : MonoBehaviour, IInteraction
     private IEnumerator LeaveRoutine()
     {
         busy = true;
+        PlaySwoosh();
 
         // Re-enable flashlight GameObjects we disabled
         if (cachedFlashlightGOs != null && cachedFlashlightGOs.Count > 0)
@@ -285,23 +290,22 @@ public class TutorialBook : MonoBehaviour, IInteraction
             }
         }
 
-        // Re-enable the player camera GameObject and disable the interaction camera GameObject.
+        // Re-enable the player camera Camera component and disable the interaction camera Camera component.
         if (currentPlayer != null && currentPlayer.playerCamera != null)
         {
-            currentPlayer.playerCamera.gameObject.SetActive(true);
+            currentPlayer.playerCamera.enabled = true;
             var pal = currentPlayer.playerCamera.GetComponent<AudioListener>();
             if (pal != null) pal.enabled = true;
         }
 
         if (interactionCamera != null)
         {
-            // disable the interaction camera GameObject to ensure no other scripts override component state
-            interactionCamera.gameObject.SetActive(false);
+            // disable only the Camera component and AudioListener — do NOT toggle the GameObject.
+            interactionCamera.enabled = false;
             var al = interactionCamera.GetComponent<AudioListener>();
             if (al != null) al.enabled = false;
         }
 
-        PlaySwoosh();
 
         // persist final page
         SaveCurrentPage();
@@ -323,7 +327,8 @@ public class TutorialBook : MonoBehaviour, IInteraction
     private void PlaySwoosh()
     {
         if (swoosh == null) return;
-        swoosh.pitch = Random.Range(.9f, 1.1f);
+        swoosh.pitch = Random.Range(.20f, .30f);
+        swoosh.volume = .01f;
         swoosh.PlayOneShot(swoosh.clip);
     }
 
@@ -331,6 +336,7 @@ public class TutorialBook : MonoBehaviour, IInteraction
     {
         if (swoosh == null || flipClip == null) return;
         swoosh.pitch = Random.Range(.9f, 1.1f);
+        swoosh.volume = .1f;
         swoosh.PlayOneShot(flipClip);
     }
 

@@ -26,30 +26,15 @@ public class StatueEventModule : IEventModule
     public override void OnAwake()
     {
         BuildStates();
-        if (manager != null && manager.debugPaintings)
-            Debug.Log("[StatueEventModule] OnAwake - module initialized.");
     }
 
     public override void OnStart()
     {
         BuildStates();
-        if (manager != null && manager.debugPaintings)
-            Debug.Log("[StatueEventModule] OnStart - module started.");
     }
 
     public override void OnUpdate()
     {
-        // low-rate debug so you can confirm the module is updating in Play mode
-        if (manager != null && manager.debugPaintings)
-        {
-            debugAccum += Time.deltaTime;
-            if (debugAccum >= 1f)
-            {
-                debugAccum = 0f;
-                Debug.Log($"[StatueEventModule] OnUpdate running. states={states.Count} inspectorList={(manager.statues!=null?manager.statues.Count.ToString():"null")}, sanity={manager.playerSanity:F1}");
-            }
-        }
-
         // Ensure we have states (auto-discover statues if manager.statues is empty)
         if (states.Count == 0)
             BuildStates();
@@ -103,12 +88,8 @@ public class StatueEventModule : IEventModule
             if (manager.statueRequireNotSeen)
             {
                 playerLooking = IsStatueVisibleToCamera(statue, cam, manager.paintingLookAngle);
-                if (manager.debugPaintings) Debug.Log($"[StatueEventModule] '{statue.name}' playerLooking={playerLooking}");
             }
-            else
-            {
-                if (manager.debugPaintings) Debug.Log($"[StatueEventModule] Visibility gating disabled (statueRequireNotSeen=false) for '{statue.name}'");
-            }
+
             // When the player is looking, freeze the head and capture the current yaw so we don't snap when unobserved.
             if (playerLooking)
             {
@@ -177,42 +158,36 @@ public class StatueEventModule : IEventModule
 
             head.localRotation = newLocal;
 
-            if (manager.debugPaintings) Debug.Log($"[StatueEventModule] {statue.name} desiredYaw={desiredYaw:F1} appliedYaw={newYaw:F1}");
-
             states[i] = st;
         }
 
-        // TEMPORARY TEST: confirm module runs and force-rotate first statue with F9
-        if (manager != null && manager.debugPaintings)
-        {
-            Debug.Log($"[StatueEventModule TEST] OnUpdate states={states.Count} playerSanity={manager.playerSanity:F1}");
-        }
+        // Test key handling - keep runtime test behavior but without logs
         if (Input.GetKeyDown(KeyCode.F9))
         {
             if (states.Count == 0)
             {
-                Debug.Log("[StatueEventModule TEST] No states available to test-rotate.");
+                // nothing to do
             }
             else
             {
                 var testState = states[0];
                 if (testState.statue == null)
                 {
-                    Debug.Log("[StatueEventModule TEST] Test statue is null.");
+                    // nothing
                 }
                 else
                 {
                     var head = testState.statue.GetHeadTransform();
                     if (head == null)
                     {
-                        Debug.Log("[StatueEventModule TEST] Test statue headTransform is null.");
+                        // nothing
                     }
                     else
                     {
                         var camForTest = manager.GetPlayerCamera();
                         if (camForTest == null)
                         {
-                            Debug.Log("[StatueEventModule TEST] Player camera is null for test-rotate.");
+                            // nothing
                         }
                         else
                         {
@@ -225,7 +200,7 @@ public class StatueEventModule : IEventModule
 
                             if (toTargetLocal.sqrMagnitude < 1e-6f)
                             {
-                                Debug.Log("[StatueEventModule TEST] toTargetLocal too small; cannot compute yaw.");
+                                // nothing
                             }
                             else
                             {
@@ -235,7 +210,7 @@ public class StatueEventModule : IEventModule
                                 Vector3 flatTarget = new Vector3(toTargetLocal.x, 0f, toTargetLocal.z);
                                 if (flatInit.sqrMagnitude < 1e-6f || flatTarget.sqrMagnitude < 1e-6f)
                                 {
-                                    Debug.Log("[StatueEventModule TEST] degenerate flat vectors; cannot compute yaw.");
+                                    // nothing
                                 }
                                 else
                                 {
@@ -254,8 +229,6 @@ public class StatueEventModule : IEventModule
                                     Quaternion targetWorld = yawWorld * initialWorld;
                                     Quaternion newLocal = Quaternion.Inverse(headParent.rotation) * targetWorld;
                                     head.localRotation = newLocal;
-
-                                    Debug.Log($"[StatueEventModule TEST] Forced rotate applied to '{testState.statue.name}' head='{head.name}' desiredYaw={desiredYaw:F1}");
                                 }
                             }
                         }
@@ -272,11 +245,10 @@ public class StatueEventModule : IEventModule
         // Use inspector list if provided, otherwise auto-discover all Statue components in the scene
         List<Statue> sourceList = (manager.statues != null && manager.statues.Count > 0)
             ? manager.statues
-            : new List<Statue>(Object.FindObjectsOfType<Statue>());
+            : new List<Statue>(Object.FindObjectsByType<Statue>(FindObjectsSortMode.None)); 
 
         if (sourceList == null || sourceList.Count == 0)
         {
-            if (manager != null && manager.debugPaintings) Debug.Log("[StatueEventModule] No statues found to build states.");
             return;
         }
 
@@ -287,8 +259,6 @@ public class StatueEventModule : IEventModule
             var init = head != null ? head.localRotation : Quaternion.identity;
             states.Add(new State { statue = s, initialLocalRot = init, currentYawDeg = 0f });
         }
-
-        if (manager != null && manager.debugPaintings) Debug.Log($"[StatueEventModule] Built {states.Count} statue states.");
     }
 
     // Add this helper method (place it in the class, e.g. below BuildStates).
@@ -326,7 +296,6 @@ public class StatueEventModule : IEventModule
         return false;
     }
 
-    // Replace or add this helper in the same file (near the other helper methods).
     // Determines if any renderer on the statue is visible from the camera within angle threshold.
     // Uses frustum test + raycast to renderer center. Returns true if statue is considered looked-at.
     private bool IsStatueVisibleToCamera(Statue statue, Camera cam, float maxAngleDegrees)
@@ -389,7 +358,4 @@ public class StatueEventModule : IEventModule
 
         return false;
     }
-
-    // debug helper
-    private float debugAccum = 0f;
 }
