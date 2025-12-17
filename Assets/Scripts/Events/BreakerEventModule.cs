@@ -14,15 +14,24 @@ public class BreakerEventModule : IEventModule
     private float cooldownTimer = 0f;
     private bool happenedSinceBelowThreshold = false;
 
-    // fallback cooldown if EventManager's value is 0 or invalid
+    // fallback cooldown if EventManager's values are invalid
     private const float DefaultBreakerEventCooldown = 120f;
 
     public BreakerEventModule(EventManager manager) : base(manager) { }
 
     public override void OnAwake()
     {
-        float configuredCd = (manager != null) ? manager.breakerEventCooldownSeconds : 0f;
-        cooldownTimer = (configuredCd > 0f) ? configuredCd : DefaultBreakerEventCooldown;
+        // pick an initial randomized cooldown between configured min/max (safe fallbacks)
+        float minCd = (manager != null) ? manager.breakerEventMinCooldownSeconds : 0f;
+        float maxCd = (manager != null) ? manager.breakerEventMaxCooldownSeconds : 0f;
+
+        if (minCd > 0f && maxCd >= minCd)
+            cooldownTimer = Random.Range(minCd, maxCd);
+        else if (maxCd > 0f)
+            cooldownTimer = maxCd;
+        else
+            cooldownTimer = DefaultBreakerEventCooldown;
+
         happenedSinceBelowThreshold = false;
     }
 
@@ -97,9 +106,16 @@ public class BreakerEventModule : IEventModule
             // ignore errors from Toggle invocation
         }
 
-        // start cooldown immediately
-        float configuredCd = (manager != null) ? manager.breakerEventCooldownSeconds : 0f;
-        cooldownTimer = (configuredCd > 0f) ? configuredCd : DefaultBreakerEventCooldown;
+        // start randomized cooldown immediately between configured min/max (safe fallback)
+        float minCd = (manager != null) ? manager.breakerEventMinCooldownSeconds : 0f;
+        float maxCd = (manager != null) ? manager.breakerEventMaxCooldownSeconds : 0f;
+
+        if (minCd > 0f && maxCd >= minCd)
+            cooldownTimer = Random.Range(minCd, maxCd);
+        else if (maxCd > 0f)
+            cooldownTimer = maxCd;
+        else
+            cooldownTimer = DefaultBreakerEventCooldown;
 
         // mark that event happened while below threshold so it doesn't immediately retrigger
         happenedSinceBelowThreshold = true;

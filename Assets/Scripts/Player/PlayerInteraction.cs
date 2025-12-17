@@ -21,9 +21,9 @@ public class PlayerInteraction : PlayerModule
         // Start interaction / pickup
         if (!isInteracting && inputActions.Player.Interact.triggered)
         {
-            // Use the player's rayCam (or playerCamera) to start the interaction.
-            Camera castCam = manager.rayCam != null ? manager.rayCam :
-                              manager.playerCamera != null ? manager.playerCamera :
+            // Choose the camera used for the raycast
+            Camera castCam = manager.playerCamera != null ? manager.playerCamera :
+                              manager.rayCam != null ? manager.rayCam :
                               Camera.main;
 
             if (castCam == null)
@@ -32,87 +32,97 @@ public class PlayerInteraction : PlayerModule
                 return;
             }
 
-            // Decide how to create the ray:
-            // - If the player is using the mouse and the cursor is unlocked, ray should come from the cursor (ScreenPointToRay).
-            // - Otherwise (locked cursor / gamepad) cast from the camera's position along the camera's forward vector.
+            // Build ray more robustly:
+            // - When using the mouse & cursor unlocked use ScreenPointToRay (clamped to camera viewport)
+            // - Otherwise cast from the camera using a forward computed from the look module (if any)
             bool hasMouse = Mouse.current != null;
             Ray ray;
 
             if (hasMouse && Cursor.lockState != CursorLockMode.Locked)
             {
                 Vector2 screenPos = Mouse.current.position.ReadValue();
+
+                // Clamp screenPos to camera viewport to avoid weird off-screen coordinates when using other cameras
+                screenPos.x = Mathf.Clamp(screenPos.x, 0f, castCam.pixelWidth - 1f);
+                screenPos.y = Mathf.Clamp(screenPos.y, 0f, castCam.pixelHeight - 1f);
+
                 ray = castCam.ScreenPointToRay(screenPos);
             }
             else
             {
-                // Use the cast camera (the camera we're using for the raycast) as authoritative source
-                // for both origin and forward. Previously we used manager.playerCamera here which could
-                // differ from the camera actually used for raycasting (castCam), causing mismatch.
-                Vector3 camForward;
+                // Use camera transform for origin offset but allow the look module to provide direction
+                Vector3 origin = castCam.transform.position + castCam.transform.forward * castCam.nearClipPlane;
+
+                Vector3 forward = castCam.transform.forward;
                 if (manager.cameraLookModule != null)
                 {
-                    camForward = manager.cameraLookModule.GetCameraForward();
-                }
-                else
-                {
-                    camForward = castCam.transform.forward;
+                    // Use cameraLookModule primarily for direction but keep origin based on the camera transform
+                    forward = manager.cameraLookModule.GetCameraForward();
                 }
 
-                // Start the ray at the cast camera near plane to avoid self-intersection
-                Vector3 origin = castCam.transform.position + camForward.normalized * castCam.nearClipPlane;
-                ray = new Ray(origin, camForward.normalized);
+                ray = new Ray(origin, forward.normalized);
             }
 
-            // Use configured interactionRange but ensure a sensible minimum
-            float range = Mathf.Max(manager.interactionRange, 250f);
+            // Use configured range but keep a sensible min/max so we don't accidentally make it extremely tiny or huge
+            float range = Mathf.Clamp(manager.interactionRange, 2f, 500f);
 
             Debug.Log($"[PlayerInteraction] Interact pressed. Camera={castCam.name}, cursorLocked={(Cursor.lockState==CursorLockMode.Locked)}, mousePresent={(Mouse.current!=null)}, rayOrigin={ray.origin}, rayDir={ray.direction}, range={range}");
 
-            // draw debug ray for troubleshooting (visible in Scene view)
             Debug.DrawRay(ray.origin, ray.direction * range, Color.green, 1f);
 
-            // include triggers so in-scene trigger colliders are detected
+            // Primary raycast (include triggers)
             if (Physics.Raycast(ray, out RaycastHit hit, range, ~0, QueryTriggerInteraction.Collide))
             {
-                Debug.Log($"[PlayerInteraction] Ray hit: {hit.collider.name} (layer {hit.collider.gameObject.layer})");
+                Debug.Log($"[PlayerInteraction] Ray hit: {hit.collider.name} (layer {hit.collider.gameObject.layer}) distance={hit.distance}");
                 if (ProcessHit(hit)) return;
+
+                // EXTRA: if ray hit something but ProcessHit didn't start an interaction,
+                // do a small proximity scan around the hit point (3D and 2D) to catch interactables
+                // whose colliders are separate / 2D or offset from the visible object.
+                if (ProximityScanForInteractions(hit.point))
+                    return;
             }
             else
             {
-                // Primary raycast missed: try more diagnostic / tolerant fallbacks.
+                Debug.Log("[PlayerInteraction] Primary raycast missed. Running prioritized fallbacks.");
 
-                Debug.Log("[PlayerInteraction] Raycast missed. Running RaycastAll and SphereCast fallbacks.");
-
-                // 1) RaycastAll fallback - logs what is along the ray (helps diagnose occluders)
+                // 1) RaycastAll fallback - iterate through sorted hits until one is handled
                 var allHits = Physics.RaycastAll(ray, range, ~0, QueryTriggerInteraction.Collide);
                 if (allHits != null && allHits.Length > 0)
                 {
-                    // sort by distance
                     System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
-                    Debug.Log($"[PlayerInteraction] RaycastAll returned {allHits.Length} hits - using nearest as fallback: {allHits[0].collider.name}");
-                    if (ProcessHit(allHits[0])) return;
+                    Debug.Log($"[PlayerInteraction] RaycastAll returned {allHits.Length} hits - iterating for actionable hit.");
+                    foreach (var h in allHits)
+                    {
+                        Debug.Log($"[PlayerInteraction] RaycastAll candidate: {h.collider.name} @ {h.distance}");
+                        if (ProcessHit(h)) return;
+                    }
                 }
 
-                // 2) SphereCast fallback - tolerate slight aim offsets / small height differences
-                float sphereRadius = 0.3f; // tweak if needed
+                // 2) SphereCastAll fallback - iterate sorted hits
+                float sphereRadius = Mathf.Max(0.001f, manager.interactionSphereRadius);
                 var sphereHits = Physics.SphereCastAll(ray, sphereRadius, range, ~0, QueryTriggerInteraction.Collide);
                 if (sphereHits != null && sphereHits.Length > 0)
                 {
                     System.Array.Sort(sphereHits, (a, b) => a.distance.CompareTo(b.distance));
-                    Debug.Log($"[PlayerInteraction] SphereCastAll returned {sphereHits.Length} hits (r={sphereRadius}) - using nearest: {sphereHits[0].collider.name}");
-                    if (ProcessHit(sphereHits[0])) return;
+                    Debug.Log($"[PlayerInteraction] SphereCastAll returned {sphereHits.Length} hits (r={sphereRadius}) - iterating for actionable hit.");
+                    foreach (var sh in sphereHits)
+                    {
+                        Debug.Log($"[PlayerInteraction] SphereCast candidate: {sh.collider.name} @ {sh.distance}");
+                        if (ProcessHit(sh)) return;
+                    }
                 }
 
-                // 3) OverlapSphere sample along the ray (useful if objects are slightly off the ray)
+                // 3) OverlapSphere samples along the ray (useful for objects slightly off the ray)
                 int samples = 8;
                 float step = range / samples;
                 for (int i = 1; i <= samples; i++)
-                {
+                {   
                     Vector3 samplePoint = ray.origin + ray.direction * (i * step);
                     Collider[] overlaps = Physics.OverlapSphere(samplePoint, sphereRadius, ~0, QueryTriggerInteraction.Collide);
                     if (overlaps != null && overlaps.Length > 0)
                     {
-                        // pick closest overlap to camera
+                        // Choose the closest overlap to the camera origin
                         Collider chosen = overlaps[0];
                         float bestDist = Vector3.Distance(ray.origin, chosen.transform.position);
                         for (int j = 1; j < overlaps.Length; j++)
@@ -124,21 +134,25 @@ public class PlayerInteraction : PlayerModule
                                 bestDist = d;
                             }
                         }
-                        Debug.Log($"[PlayerInteraction] OverlapSphere found collider '{chosen.name}' near ray at sample {i}.");
-                        // build a synthetic RaycastHit-like wrapper by doing a short ray towards the chosen collider
-                        if (Physics.Raycast(ray, out RaycastHit overlapHit, range, ~0, QueryTriggerInteraction.Collide))
+
+                        Debug.Log($"[PlayerInteraction] OverlapSphere found collider '{chosen.name}' near ray at sample {i}. Trying targeted ray to that collider.");
+
+                        // Ray towards the chosen collider center (more reliable than reusing the original direction)
+                        Vector3 dirToChosen = (chosen.transform.position - ray.origin).normalized;
+                        if (Physics.Raycast(ray.origin, dirToChosen, out RaycastHit overlapHit, range, ~0, QueryTriggerInteraction.Collide))
                         {
+                            Debug.Log($"[PlayerInteraction] Targeted ray hit: {overlapHit.collider.name}");
                             if (ProcessHit(overlapHit)) return;
                         }
                         else
                         {
-                            // fallback: try to process collider directly
+                            // Fallback: try to process the collider directly
                             if (ProcessColliderDirect(chosen)) return;
                         }
                     }
                 }
 
-                Debug.Log("[PlayerInteraction] All fallbacks failed - nothing hit.");
+                Debug.Log("[PlayerInteraction] All fallbacks failed - nothing handled the raycast.");
             }
         }
 
@@ -274,27 +288,33 @@ public class PlayerInteraction : PlayerModule
         // Robust lookup for any IInteraction on hit collider, parents or children
         IInteraction interactable = null;
 
-        // 1) try exact collider
-        if (!hit.collider.TryGetComponent<IInteraction>(out interactable))
-        {
-            // 2) walk parents
-            Transform t = hit.collider.transform.parent;
-            while (t != null && interactable == null)
-            {
-                interactable = t.GetComponent<IInteraction>();
-                t = t.parent;
-            }
+        // 1) search components on the exact gameObject and cast to IInteraction if any MonoBehaviour implements it
+        interactable = FindIInteractionOnGameObject(hit.collider.gameObject);
 
-            // 3) fallback to children
-            if (interactable == null)
+        // 2) walk parents if not found
+        Transform t = hit.collider.transform.parent;
+        while (t != null && interactable == null)
+        {
+            interactable = FindIInteractionOnGameObject(t.gameObject);
+            t = t.parent;
+        }
+
+        // 3) fallback to children if still not found
+        if (interactable == null)
+        {
+            foreach (var mb in hit.collider.GetComponentsInChildren<MonoBehaviour>(true))
             {
-                interactable = hit.collider.GetComponentInChildren<IInteraction>();
+                if (mb is IInteraction ii)
+                {
+                    interactable = ii;
+                    break;
+                }
             }
         }
 
         if (interactable != null)
         {
-            Debug.Log($"[PlayerInteraction] Starting interaction with {interactable.GetType().Name}");
+            Debug.Log($"[PlayerInteraction] Starting interaction with {interactable.GetType().Name} (found via robust lookup)");
             // mark interaction state early
             manager.inInteractionView = true;
 
@@ -336,11 +356,37 @@ public class PlayerInteraction : PlayerModule
             return true;
         }
 
-        // other IInteraction on parent/children
-        var interactable = col.GetComponent<IInteraction>() ?? col.GetComponentInParent<IInteraction>() ?? col.GetComponentInChildren<IInteraction>();
+        // other IInteraction on parent/children — use robust lookup (components that implement IInteraction)
+        IInteraction interactable = null;
+
+        interactable = FindIInteractionOnGameObject(col.gameObject);
+
+        if (interactable == null)
+        {
+            // parents
+            Transform t = col.transform.parent;
+            while (t != null && interactable == null)
+            {
+                interactable = FindIInteractionOnGameObject(t.gameObject);
+                t = t.parent;
+            }
+        }
+
+        if (interactable == null)
+        {
+            foreach (var mb in col.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (mb is IInteraction ii)
+                {
+                    interactable = ii;
+                    break;
+                }
+            }
+        }
+
         if (interactable != null)
         {
-            Debug.Log($"[PlayerInteraction] (Overlap) Starting interaction with {interactable.GetType().Name}.");
+            Debug.Log($"[PlayerInteraction] (Overlap) Starting interaction with {interactable.GetType().Name} (robust lookup).");
             manager.inInteractionView = true;
             activeInteraction = interactable;
             activeInteraction.EnterInteraction(manager);
@@ -352,11 +398,29 @@ public class PlayerInteraction : PlayerModule
         return false;
     }
 
+    // Helper: find a component on the GameObject that implements IInteraction
+    private IInteraction FindIInteractionOnGameObject(GameObject go)
+    {
+        if (go == null) return null;
+
+        // Get all MonoBehaviours (fast and safe) and return the first that implements IInteraction
+        var monos = go.GetComponents<MonoBehaviour>();
+        if (monos == null || monos.Length == 0) return null;
+        foreach (var mb in monos)
+        {
+            if (mb is IInteraction ii)
+                return ii;
+        }
+        return null;
+    }
+
     private void StartLeaveInteraction()
     {
         if (activeInteraction is Interactable interactable)
         {
-            manager.StartCoroutine(LeaveInteractionCoroutine(interactable));
+            // Start the leave coroutine on the Interactable so manager.StopAllCoroutines()
+            // (called elsewhere when switching angles) cannot cancel the leave coroutine.
+            interactable.StartCoroutine(LeaveInteractionCoroutine(interactable));
         }
         else if (activeInteraction != null)
         {
@@ -367,7 +431,9 @@ public class PlayerInteraction : PlayerModule
 
     private IEnumerator LeaveInteractionCoroutine(Interactable interactable)
     {
-        yield return manager.StartCoroutine(interactable.LeaveTheThing(manager));
+        // Run the Interactable's LeaveTheThing coroutine on the Interactable itself
+        // so it won't be killed by manager.StopAllCoroutines().
+        yield return interactable.StartCoroutine(interactable.LeaveTheThing(manager));
         CleanupInteraction();
     }
 
@@ -388,5 +454,82 @@ public class PlayerInteraction : PlayerModule
         // Re-lock and hide the cursor when leaving interaction so normal player look resumes
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    // EXTRA: proximity scan for interactions at a specific point (e.g. ray hit point)
+    private bool ProximityScanForInteractions(Vector3 point)
+    {
+        // Sphere overlap check at the point of interest
+        float sphereRadius = Mathf.Max(0.001f, manager.interactionSphereRadius);
+        Collider[] nearbyColliders = Physics.OverlapSphere(point, sphereRadius, ~0, QueryTriggerInteraction.Collide);
+
+        Debug.Log($"[PlayerInteraction] Proximity scan found {nearbyColliders.Length} colliders near point {point} (r={sphereRadius})");
+
+        foreach (var col in nearbyColliders)
+        {
+            // Key check
+            var key = col.GetComponentInParent<KeyItem>() ?? col.GetComponentInChildren<KeyItem>();
+            if (key != null)
+            {
+                Debug.Log($"[PlayerInteraction] (Proximity) Picking up key '{key.keyId}'.");
+                key.PickupBy(manager, "proximity_scan");
+                return true;
+            }
+
+            var breaker = col.GetComponentInParent<BreakerBox>() ?? col.GetComponentInChildren<BreakerBox>();
+            if (breaker != null)
+            {
+                Debug.Log($"[PlayerInteraction] (Proximity) Starting BreakerBox '{breaker.gameObject.name}'.");
+                manager.inInteractionView = true;
+                activeInteraction = breaker;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                activeInteraction.EnterInteraction(manager);
+                isInteracting = true;
+                manager.currentLayer = 0;
+                return true;
+            }
+
+            // other IInteraction on parent/children — use robust lookup (components that implement IInteraction)
+            IInteraction interactable = null;
+
+            interactable = FindIInteractionOnGameObject(col.gameObject);
+
+            if (interactable == null)
+            {
+                // parents
+                Transform t = col.transform.parent;
+                while (t != null && interactable == null)
+                {
+                    interactable = FindIInteractionOnGameObject(t.gameObject);
+                    t = t.parent;
+                }
+            }
+
+            if (interactable == null)
+            {
+                foreach (var mb in col.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    if (mb is IInteraction ii)
+                    {
+                        interactable = ii;
+                        break;
+                    }
+                }
+            }
+
+            if (interactable != null)
+            {
+                Debug.Log($"[PlayerInteraction] (Proximity) Starting interaction with {interactable.GetType().Name} (robust lookup).");
+                manager.inInteractionView = true;
+                activeInteraction = interactable;
+                activeInteraction.EnterInteraction(manager);
+                isInteracting = true;
+                manager.currentLayer = 0;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -70,132 +71,321 @@ public class TaskManager : MonoBehaviour
     [Tooltip("Optional AudioClip played by specialPhoneAudioSource when the mini-task completes.")]
     public AudioClip specialPhoneCompleteClip;
 
-    // New: explicit CamImage reference for the special camera to check zoom state.
-    // Assign the CamImage (B2) here in the inspector to avoid scene searches.
-    [Tooltip("Optional: assign the CamImage (e.g. B2) to be used by the single painting fall task. If null the task will search by group/name.")]
+    [Tooltip("Optional: assign the CamImage (e.g. B2) to be used by the single painting fall task. If null the script will look up by SpecialCamName.")]
     public CamImage specialCamImage;
 
-    // New: whether the phone call flow is used (if true the task will wait for manager.specialPhoneCallStarted before starting phone delay)
+    [Header("Lookup names / tags (used when inspector references are missing)")]
+    [Tooltip("Name of the camera GameObject to search for (exact name). Leave empty to fallback to the first CamImage found.")]
+    public string specialCamName = "BigHall";
+    [Tooltip("Tag used for the special painting object (set on the painting GameObject).")]
+    public string specialPaintingTag = "SpecialPainting";
+    [Tooltip("Tag for Trash Group A objects.")]
+    public string trashGroupATag = "TrashGroupA";
+    [Tooltip("Tag for Trash Group B objects.")]
+    public string trashGroupBTag = "TrashGroupB";
+    [Tooltip("Tag for Trash Group C objects.")]
+    public string trashGroupCTag = "TrashGroupC";
+
     [Tooltip("If true the special phone-delay will only start once specialPhoneCallStarted is set to true. Leave false to start the delay immediately.")]
     public bool specialPhoneUseCall = false;
 
-    // New: placeholder boolean indicating an external phone call has started.
-    // You can set this to true from other systems when you implement the phone call.
     [HideInInspector] public bool specialPhoneCallStarted = false;
 
     // runtime
     public List<ITask> tasks = new();
-    // support multiple concurrent active tasks
     private List<ITask> activeTasks = new();
     private float nextTaskTimer = 0f;
 
-    // runtime direct refs for clarity
+    public IReadOnlyList<ITask> ActiveTasks => activeTasks.AsReadOnly();
+
+    public event Action OnTasksChanged;
+
+    // runtime direct refs
     private ITask paintingTaskRef;
     private ITask trashTaskRef;
-    private ITask singlePaintingTaskRef; // <- new reference
+    private ITask singlePaintingTaskRef;
 
-    // simple tracking
     public List<string> completedTasks = new List<string>();
 
-    // store indices that should no longer be considered (non-repeat tasks that have completed)
     private System.Collections.Generic.HashSet<int> disabledTaskIndices;
 
-    // Expose last chosen trash group name so designer scripts can read it
     public string LastTrashGroupName { get; private set; }
-
-    private void OnEnable()
-    {
-        // intentionally silent to avoid console spam
-    }
-
-    private void OnDisable()
-    {
-        // intentionally silent to avoid console spam
-    }
 
     private void Awake()
     {
-        if (playerManager == null)
-            playerManager = Object.FindFirstObjectByType<PlayerManager>();
+        // Initialize runtime collections but do NOT clear inspector-assigned fields.
+        activeTasks = new List<ITask>();
+        tasks = new List<ITask>();
+        completedTasks = new List<string>();
+        disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
+        nextTaskTimer = 0f;
+        LastTrashGroupName = null;
 
-        // ensure playerTransform follows PlayerManager if available
+        // try to find player manager if not assigned
+        if (playerManager == null)
+            playerManager = UnityEngine.Object.FindFirstObjectByType<PlayerManager>();
+
+        // ensure playerTransform follows PlayerManager if available (do not overwrite inspector if present)
         if (playerManager != null && playerTransform == null)
             playerTransform = playerManager.transform;
-        // find player if not assigned
-        if (playerTransform == null)
-        {
-            if (PlayerStats.Instance != null)
-                playerTransform = PlayerStats.Instance.transform;
-            else
-            {
-                var p = GameObject.FindGameObjectWithTag("Player");
-                if (p != null) playerTransform = p.transform;
-            }
-        }
 
-        // ensure task name defaults (allows inspector override; guarantees non-empty names)
+        // ensure task name defaults
         if (string.IsNullOrWhiteSpace(PaintingTaskName)) PaintingTaskName = "PaintingTask";
         if (string.IsNullOrWhiteSpace(TrashTaskName)) TrashTaskName = "TrashTask";
 
-        // create task instances and initialize them
+        // Recover inspector references if they are missing after reload
+        RestoreInspectorReferencesIfMissing();
+
+        // If user made trash spawn objects DontDestroyOnLoad they may persist across scene loads.
+        // Ensure spawn-group arrays are repopulated from tags when necessary (eg. scene reloads).
+        PopulateTrashGroupsFromTagsIfNeeded();
+
+        // create and register fresh task instances
         var paintingTask = new PaintingTask();
         paintingTask.Initialize(this);
 
         var trashTask = new TrashTask();
         trashTask.Initialize(this);
 
-        // New: create and register the single-painting mini-task (keeps existing code intact)
         var singlePaintingTask = new SinglePaintingFallTask();
         singlePaintingTask.Initialize(this);
 
-        // register tasks
         tasks.Add(singlePaintingTask);
         tasks.Add(paintingTask);
         tasks.Add(trashTask);
 
-        // keep direct refs (so we can reference them at Start)
         singlePaintingTaskRef = singlePaintingTask;
         paintingTaskRef = paintingTask;
         trashTaskRef = trashTask;
 
-        // track non-repeatable tasks by index once they finish (empty initially)
-        disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
-
-        // quick sanity checks (no debug logs to avoid flooding)
-        if (trashPrefab == null)
-        {
-            // intentionally silent
-        }
-        if (!HasNonNull(trashSpawnGroupA) && !HasNonNull(trashSpawnGroupB) && !HasNonNull(trashSpawnGroupC) && !HasNonNull(trashSpawnPoints))
-        {
-            // intentionally silent
-        }
-
-        // schedule trash timer by default; painting will be attempted at Start
+        // schedule initial trash timer
         ScheduleNextTask();
     }
 
     private void Start()
     {
-        // Re-resolve player references in Start in case PlayerStats/PlayerManager weren't initialized when Awake ran
-        if (playerManager == null)
-            playerManager = Object.FindFirstObjectByType<PlayerManager>();
+        TryStartInitialTasks();
+    }
 
-        if (playerManager != null && playerTransform == null)
-            playerTransform = playerManager.transform;
-
-        if (playerTransform == null)
+    private void RestoreInspectorReferencesIfMissing()
+    {
+        // 1) Special painting: prefer inspector-assigned, otherwise find by configured tag
+        if (specialPaintingTarget == null)
         {
-            if (PlayerStats.Instance != null)
-                playerTransform = PlayerStats.Instance.transform;
-            else
+            if (!string.IsNullOrWhiteSpace(specialPaintingTag))
             {
-                var p = GameObject.FindGameObjectWithTag("Player");
-                if (p != null) playerTransform = p.transform;
+                var go = GameObject.FindWithTag(specialPaintingTag);
+                if (go != null) specialPaintingTarget = go.transform;
+            }
+
+            if (specialPaintingTarget == null)
+            {
+                // fallback: use first PaintingFallConfig in scene
+                var cfg = UnityEngine.Object.FindFirstObjectByType<PaintingFallConfig>();
+                if (cfg != null) specialPaintingTarget = cfg.transform;
             }
         }
 
-        // Try to run single mini-task at Start (deterministic first-night event).
+        // 2) Special camera: if inspector not set, use name provided in specialCamName then fallback to first CamImage
+        if (specialCamImage == null)
+        {
+            if (!string.IsNullOrWhiteSpace(specialCamName))
+            {
+                var camGO = GameObject.Find(specialCamName);
+                if (camGO != null) specialCamImage = camGO.GetComponent<CamImage>();
+            }
+
+            if (specialCamImage == null)
+                specialCamImage = UnityEngine.Object.FindFirstObjectByType<CamImage>();
+        }
+
+        // 3) Trash spawn groups: if inspector arrays empty/null, populate from tag-based groups (A/B/C)
+        bool groupsHaveAny = HasNonNull(trashSpawnGroupA) || HasNonNull(trashSpawnGroupB) || HasNonNull(trashSpawnGroupC);
+        bool legacyHasAny = trashSpawnPoints != null && trashSpawnPoints.Length > 0 && HasNonNull(trashSpawnPoints);
+
+        if (!groupsHaveAny && !legacyHasAny)
+        {
+            // Try group A
+            if (!string.IsNullOrWhiteSpace(trashGroupATag) && TagExists(trashGroupATag))
+            {
+                var goA = GameObject.FindGameObjectsWithTag(trashGroupATag);
+                if (goA != null && goA.Length > 0)
+                {
+                    var list = new List<Transform>();
+                    foreach (var g in goA) if (g != null) list.Add(g.transform);
+                    trashSpawnGroupA = list.ToArray();
+                }
+            }
+
+            // Try group B
+            if (!HasNonNull(trashSpawnGroupB) && !string.IsNullOrWhiteSpace(trashGroupBTag) && TagExists(trashGroupBTag))
+            {
+                var goB = GameObject.FindGameObjectsWithTag(trashGroupBTag);
+                if (goB != null && goB.Length > 0)
+                {
+                    var list = new List<Transform>();
+                    foreach (var g in goB) if (g != null) list.Add(g.transform);
+                    trashSpawnGroupB = list.ToArray();
+                }
+            }
+
+            // Try group C
+            if (!HasNonNull(trashSpawnGroupC) && !string.IsNullOrWhiteSpace(trashGroupCTag) && TagExists(trashGroupCTag))
+            {
+                var goC = GameObject.FindGameObjectsWithTag(trashGroupCTag);
+                if (goC != null && goC.Length > 0)
+                {
+                    var list = new List<Transform>();
+                    foreach (var g in goC) if (g != null) list.Add(g.transform);
+                    trashSpawnGroupC = list.ToArray();
+                }
+            }
+
+            // Final fallback: try to fill legacy trashSpawnPoints from any found by tag/name/component
+            if ((trashSpawnGroupA == null || trashSpawnGroupA.Length == 0) &&
+                (trashSpawnGroupB == null || trashSpawnGroupB.Length == 0) &&
+                (trashSpawnGroupC == null || trashSpawnGroupC.Length == 0))
+            {
+                var candidates = new List<Transform>();
+                // try tag-based generic "TrashSpawn" if present
+                if (TagExists("TrashSpawn"))
+                {
+                    var tagged = GameObject.FindGameObjectsWithTag("TrashSpawn");
+                    foreach (var g in tagged) if (g != null) candidates.Add(g.transform);
+                }
+
+                // fallback: any transform with TrashSpawnConfig or name containing "trash" & "spawn"
+                if (candidates.Count == 0)
+                {
+                    var allTransforms = UnityEngine.Object.FindObjectsOfType<Transform>();
+                    foreach (var tr in allTransforms)
+                    {
+                        if (tr == null) continue;
+                        var nameLower = tr.name.ToLowerInvariant();
+                        if (nameLower.Contains("trash") && nameLower.Contains("spawn"))
+                        {
+                            candidates.Add(tr);
+                        }
+                        else if (tr.GetComponent<TrashSpawnConfig>() != null)
+                        {
+                            candidates.Add(tr);
+                        }
+                    }
+                }
+
+                if (candidates.Count > 0)
+                {
+                    trashSpawnPoints = candidates.ToArray();
+                }
+            }
+        }
+    }
+
+    // Helper: check whether a tag exists in the current project (safe guard for GameObject.FindGameObjectsWithTag)
+    private bool TagExists(string tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag)) return false;
+        try
+        {
+            // This will throw if tag doesn't exist; catch and return false
+            GameObject.FindGameObjectsWithTag(tag);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Ensure trash spawn groups are (re)filled from tagged GameObjects when needed.
+    /// This helps when trash objects are marked DontDestroyOnLoad and the scene is reloaded.
+    /// We only overwrite a group if it contains no non-null entries.
+    /// </summary>
+    private void PopulateTrashGroupsFromTagsIfNeeded()
+    {
+        // Group A
+        if (!string.IsNullOrWhiteSpace(trashGroupATag) &&
+            (trashSpawnGroupA == null || !HasNonNull(trashSpawnGroupA)) &&
+            TagExists(trashGroupATag))
+        {
+            var goA = GameObject.FindGameObjectsWithTag(trashGroupATag);
+            if (goA != null && goA.Length > 0)
+            {
+                var list = new List<Transform>();
+                foreach (var g in goA) if (g != null) list.Add(g.transform);
+                trashSpawnGroupA = list.ToArray();
+            }
+        }
+
+        // Group B
+        if (!string.IsNullOrWhiteSpace(trashGroupBTag) &&
+            (trashSpawnGroupB == null || !HasNonNull(trashSpawnGroupB)) &&
+            TagExists(trashGroupBTag))
+        {
+            var goB = GameObject.FindGameObjectsWithTag(trashGroupBTag);
+            if (goB != null && goB.Length > 0)
+            {
+                var list = new List<Transform>();
+                foreach (var g in goB) if (g != null) list.Add(g.transform);
+                trashSpawnGroupB = list.ToArray();
+            }
+        }
+
+        // Group C
+        if (!string.IsNullOrWhiteSpace(trashGroupCTag) &&
+            (trashSpawnGroupC == null || !HasNonNull(trashSpawnGroupC)) &&
+            TagExists(trashGroupCTag))
+        {
+            var goC = GameObject.FindGameObjectsWithTag(trashGroupCTag);
+            if (goC != null && goC.Length > 0)
+            {
+                var list = new List<Transform>();
+                foreach (var g in goC) if (g != null) list.Add(g.transform);
+                trashSpawnGroupC = list.ToArray();
+            }
+        }
+
+        // If no groups were found, try to fill legacy trashSpawnPoints (only if empty)
+        if ((trashSpawnGroupA == null || trashSpawnGroupA.Length == 0) &&
+            (trashSpawnGroupB == null || trashSpawnGroupB.Length == 0) &&
+            (trashSpawnGroupC == null || trashSpawnGroupC.Length == 0) &&
+            (trashSpawnPoints == null || !HasNonNull(trashSpawnPoints)))
+        {
+            var candidates = new List<Transform>();
+            if (TagExists("TrashSpawn"))
+            {
+                var tagged = GameObject.FindGameObjectsWithTag("TrashSpawn");
+                foreach (var g in tagged) if (g != null) candidates.Add(g.transform);
+            }
+
+            if (candidates.Count == 0)
+            {
+                var allTransforms = UnityEngine.Object.FindObjectsOfType<Transform>();
+                foreach (var tr in allTransforms)
+                {
+                    if (tr == null) continue;
+                    var nameLower = tr.name.ToLowerInvariant();
+                    if (nameLower.Contains("trash") && nameLower.Contains("spawn"))
+                    {
+                        candidates.Add(tr);
+                    }
+                    else if (tr.GetComponent<TrashSpawnConfig>() != null)
+                    {
+                        candidates.Add(tr);
+                    }
+                }
+            }
+
+            if (candidates.Count > 0)
+            {
+                trashSpawnPoints = candidates.ToArray();
+            }
+        }
+    }
+
+    private void TryStartInitialTasks()
+    {
         if (singlePaintingTaskRef != null)
         {
             int singleIdx = tasks.IndexOf(singlePaintingTaskRef);
@@ -207,13 +397,12 @@ public class TaskManager : MonoBehaviour
                     {
                         activeTasks.Add(singlePaintingTaskRef);
                         singlePaintingTaskRef.Activate(playerTransform);
+                        OnTasksChanged?.Invoke();
                     }
                 }
             }
         }
 
-        // Try to run painting at beginning of the night deterministically.
-        // Only start if not disabled and the task reports it can activate.
         if (paintingTaskRef != null)
         {
             int paintIdx = tasks.IndexOf(paintingTaskRef);
@@ -225,11 +414,8 @@ public class TaskManager : MonoBehaviour
                     {
                         activeTasks.Add(paintingTaskRef);
                         paintingTaskRef.Activate(playerTransform);
+                        OnTasksChanged?.Invoke();
                     }
-                }
-                else
-                {
-                    // intentionally silent
                 }
             }
         }
@@ -237,23 +423,19 @@ public class TaskManager : MonoBehaviour
 
     private void ScheduleNextTask()
     {
-        // If trash disabled, no timer is set.
         if (disabledTaskIndices != null && disabledTaskIndices.Contains(tasks.IndexOf(trashTaskRef)))
         {
             nextTaskTimer = 0f;
             return;
         }
 
-        // Use trash task's configured min/max range to schedule next
         float minT = Mathf.Max(0f, trashMinTimeToStart);
         float maxT = Mathf.Max(minT, trashMaxTimeToStart);
-
-        nextTaskTimer = Random.Range(minT, maxT);
+        nextTaskTimer = UnityEngine.Random.Range(minT, maxT);
     }
 
     private void Update()
     {
-        // Tick active tasks concurrently
         if (activeTasks != null && activeTasks.Count > 0)
         {
             for (int i = activeTasks.Count - 1; i >= 0; i--)
@@ -262,6 +444,7 @@ public class TaskManager : MonoBehaviour
                 if (t == null)
                 {
                     activeTasks.RemoveAt(i);
+                    OnTasksChanged?.Invoke();
                     continue;
                 }
 
@@ -270,72 +453,42 @@ public class TaskManager : MonoBehaviour
                 if (t.IsCompleted)
                 {
                     completedTasks.Add(t.TaskName);
-                    var checker = FindAnyObjectByType<TaskChecker>();
+                    var checker = UnityEngine.Object.FindAnyObjectByType<TaskChecker>();
                     if (checker != null) checker.CheckCompletedTasks();
 
-                    // mark non-repeatable tasks as disabled based on their concrete type
                     int idx = tasks.IndexOf(t);
                     if (idx >= 0)
                     {
-                        if (t is PaintingTask && !paintingRepeat)
-                        {
-                            disabledTaskIndices.Add(idx);
-                        }
-                        if (t is TrashTask && !trashRepeat)
-                        {
-                            disabledTaskIndices.Add(idx);
-                        }
+                        if (t is PaintingTask && !paintingRepeat) disabledTaskIndices.Add(idx);
+                        if (t is TrashTask && !trashRepeat) disabledTaskIndices.Add(idx);
                     }
 
                     t.Deactivate();
                     activeTasks.RemoveAt(i);
+                    OnTasksChanged?.Invoke();
                 }
             }
         }
 
-        // Always tick the trash timer so it can run regardless of other tasks
         if (nextTaskTimer > 0f)
         {
             nextTaskTimer -= Time.deltaTime;
-            if (nextTaskTimer <= 0f)
-            {
-                nextTaskTimer = 0f;
-            }
+            if (nextTaskTimer <= 0f) nextTaskTimer = 0f;
         }
 
-        // If timer expired, attempt to start trash (concurrent with other tasks allowed)
         if (nextTaskTimer <= 0f)
         {
-            // Attempt to start trash now. If activated, schedule the next timer immediately (cooldown on spawn).
-            if (TryStartTrashFromTimer())
-            {
-                // schedule next attempt (either cooldown or next window)
-                ScheduleNextTask();
-            }
-            else
-            {
-                // nothing started - schedule a retry
-                ScheduleNextTask();
-            }
+            if (TryStartTrashFromTimer()) ScheduleNextTask();
+            else ScheduleNextTask();
         }
     }
 
-    // Helper extracted from previous code: tries to start trash using available groups or legacy points.
-    // Returns true if the trash task was activated.
     private bool TryStartTrashFromTimer()
     {
         int trashIdx = tasks.IndexOf(trashTaskRef);
-        if (trashTaskRef == null || trashIdx < 0)
-        {
-            return false;
-        }
+        if (trashTaskRef == null || trashIdx < 0) return false;
+        if (disabledTaskIndices != null && disabledTaskIndices.Contains(trashIdx)) return false;
 
-        if (disabledTaskIndices != null && disabledTaskIndices.Contains(trashIdx))
-        {
-            return false;
-        }
-
-        // Build list of candidate groups that actually contain at least one non-null transform
         var groups = new List<Transform[]>();
         if (HasNonNull(trashSpawnGroupA)) groups.Add(trashSpawnGroupA);
         if (HasNonNull(trashSpawnGroupB)) groups.Add(trashSpawnGroupB);
@@ -345,8 +498,7 @@ public class TaskManager : MonoBehaviour
         string groupName = null;
         if (groups.Count > 0)
         {
-            chosenGroup = groups[Random.Range(0, groups.Count)];
-            // identify which concrete group we picked for naming
+            chosenGroup = groups[UnityEngine.Random.Range(0, groups.Count)];
             if (chosenGroup == trashSpawnGroupA) groupName = "Group A";
             else if (chosenGroup == trashSpawnGroupB) groupName = "Group B";
             else if (chosenGroup == trashSpawnGroupC) groupName = "Group C";
@@ -361,34 +513,23 @@ public class TaskManager : MonoBehaviour
             }
         }
 
-        if (chosenGroup == null || chosenGroup.Length == 0)
-        {
-            return false;
-        }
+        if (chosenGroup == null || chosenGroup.Length == 0) return false;
 
-        // remember last chosen group name for external readers (designer scripts)
         LastTrashGroupName = groupName;
+        if (trashTaskRef is TrashTask tt) tt.SetPlannedGroup(chosenGroup, groupName);
 
-        if (trashTaskRef is TrashTask tt)
-        {
-            tt.SetPlannedGroup(chosenGroup, groupName);
-        }
-
-        // Verify the task can activate (plannedGroup will be considered) and activate it
         if (trashTaskRef.CanActivate(playerTransform))
         {
-            // ensure we don't add the same task multiple times
             if (!activeTasks.Contains(trashTaskRef))
             {
                 activeTasks.Add(trashTaskRef);
                 trashTaskRef.Activate(playerTransform);
-
-                // If trash is non-repeatable, mark it disabled immediately after activation
                 if (!trashRepeat)
                 {
                     if (disabledTaskIndices == null) disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
                     disabledTaskIndices.Add(trashIdx);
                 }
+                OnTasksChanged?.Invoke();
             }
             return true;
         }
@@ -399,7 +540,6 @@ public class TaskManager : MonoBehaviour
         }
     }
 
-    // Helper to ensure a Transform[] contains at least one non-null transform
     private bool HasNonNull(Transform[] arr)
     {
         if (arr == null || arr.Length == 0) return false;
@@ -407,7 +547,6 @@ public class TaskManager : MonoBehaviour
         return false;
     }
 
-    // Helper to produce a readable description of a chosen group for logging
     private string DescribeGroup(Transform[] grp)
     {
         if (grp == null) return "[Group=null]";
@@ -420,7 +559,6 @@ public class TaskManager : MonoBehaviour
         return $"[Group entries={grp.Length}] " + string.Join(", ", names.ToArray());
     }
 
-    // Public debug methods to force tasks immediately (useful while iterating)
     [ContextMenu("Trigger Trash Now")]
     public void DebugTriggerTrashNow()
     {
@@ -436,6 +574,7 @@ public class TaskManager : MonoBehaviour
             {
                 activeTasks.Add(paintingTaskRef);
                 paintingTaskRef.Activate(playerTransform);
+                OnTasksChanged?.Invoke();
             }
         }
     }
@@ -447,7 +586,6 @@ public class TaskManager : MonoBehaviour
             return playerManager.inputActions.Player.Interact.triggered;
         }
 
-        // Fallback to keyboard 'E' using the new Input System (rare fallback)
         var kb = Keyboard.current;
         return kb != null && kb.eKey.wasPressedThisFrame;
     }

@@ -222,8 +222,10 @@ public class Door : MonoBehaviour
             }
         }
 
-        // If PlayerManager exists, signal it to leave any interaction view (mirrors previous behaviour)
-        if (playerManager != null)
+        // Only signal PlayerInteraction to leave if the player was actually in an interaction view.
+        // Previously we set externalLeaveRequested unconditionally which could cause the next interaction
+        // to immediately exit (bug: BreakerBox opened then instantly closed). Check inInteractionView first.
+        if (playerManager != null && playerManager.inInteractionView)
         {
             playerManager.externalLeaveRequested = true;
             if (debugLogs) Debug.Log($"[Door:{name}] Requested external leave on PlayerInteraction.");

@@ -386,6 +386,37 @@ public class BreakerBox : MonoBehaviour, IInteraction
     {
         //Debug.Log("[BreakerBox] LeaveInteraction called on " + name);
         StartCoroutine(LeaveRoutine());
+
+        // enforce lockout while the camera transitions back to the player to prevent movement/camera snaps
+        if (playerManager != null)
+        {
+            StartCoroutine(LockoutDuringLeave(playerManager, transitionTime));
+        }
+    }
+
+    private IEnumerator LockoutDuringLeave(PlayerManager manager, float duration)
+    {
+        if (manager == null) yield break;
+
+        // Disable camera input for the duration to avoid snapping when we re-enable controls.
+        manager.DisableCameraForSeconds(duration);
+
+        // Clear stray leave flag
+        manager.externalLeaveRequested = false;
+
+        // Disable the PlayerManager component to prevent movement and module updates during the transition.
+        manager.enabled = false;
+
+        // Wait for the visual transition to complete
+        yield return new WaitForSeconds(duration);
+
+        // Re-enable PlayerManager and resume camera input; restore interaction flag state.
+        if (manager != null)
+        {
+            manager.enabled = true;
+            manager.ResumeCamera();
+            manager.inInteractionView = false;
+        }
     }
 
     private IEnumerator LeaveRoutine()
