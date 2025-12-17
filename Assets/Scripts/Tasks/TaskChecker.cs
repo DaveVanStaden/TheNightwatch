@@ -83,13 +83,21 @@ public class TaskChecker : MonoBehaviour
             string display;
 
             // Prefer concrete-type detection for active tasks so wording cannot be confused with completed wording.
-            if (task is PaintingTask)
+            if (task is PaintingTask ptask)
             {
-                display = "Fix Paintings";
+                // show cleaned/total chosen paintings (cleaned increases as player returns paintings)
+                int total = ptask.TotalChosen;
+                int remaining = ptask.RemainingToReturn;
+                int cleaned = Mathf.Clamp(total - remaining, 0, total);
+                display = $"Fix Paintings ({cleaned}/{total})";
             }
-            else if (task is TrashTask)
+            else if (task is TrashTask ttask)
             {
-                display = "Clean Trash";
+                // show cleaned/total spawned trash (cleaned increases as player picks up trash)
+                int total = ttask.TotalSpawned;
+                int remaining = ttask.RemainingTrash;
+                int cleaned = Mathf.Clamp(total - remaining, 0, total);
+                display = $"Clean Trash ({cleaned}/{total})";
             }
             else if (task is SinglePaintingFallTask)
             {

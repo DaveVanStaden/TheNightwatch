@@ -91,6 +91,10 @@ public class TaskManager : MonoBehaviour
 
     [HideInInspector] public bool specialPhoneCallStarted = false;
 
+    [Header("Tutorial")]
+    [Tooltip("If true, the SinglePaintingFall task must be completed before trash timers/other scheduled tasks may start.")]
+    public bool requireSinglePaintingFirst = true;
+
     // runtime
     public List<ITask> tasks = new();
     private List<ITask> activeTasks = new();
@@ -99,6 +103,13 @@ public class TaskManager : MonoBehaviour
     public IReadOnlyList<ITask> ActiveTasks => activeTasks.AsReadOnly();
 
     public event Action OnTasksChanged;
+    
+    // Public helper so task implementations (non-MonoBehaviour) can notify listeners.
+    // Events can only be invoked from the declaring type, so tasks must call this.
+    public void NotifyTasksChanged()
+    {
+        OnTasksChanged?.Invoke();
+    }
 
     // runtime direct refs
     private ITask paintingTaskRef;
@@ -405,6 +416,12 @@ public class TaskManager : MonoBehaviour
 
         if (paintingTaskRef != null)
         {
+            // If tutorial gating is enabled, do not start painting task until the single painting mini-task completes.
+            if (requireSinglePaintingFirst && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
+            {
+                return;
+            }
+
             int paintIdx = tasks.IndexOf(paintingTaskRef);
             if (paintIdx >= 0 && (disabledTaskIndices == null || !disabledTaskIndices.Contains(paintIdx)))
             {
@@ -470,6 +487,13 @@ public class TaskManager : MonoBehaviour
             }
         }
 
+        // If tutorial gating is enabled, pause scheduled task timers until the single painting mini-task completes.
+        if (requireSinglePaintingFirst && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
+        {
+            // Do not decrement nextTaskTimer or auto-start trash while the tutorial task remains incomplete.
+            return;
+        }
+
         if (nextTaskTimer > 0f)
         {
             nextTaskTimer -= Time.deltaTime;
@@ -485,6 +509,13 @@ public class TaskManager : MonoBehaviour
 
     private bool TryStartTrashFromTimer()
     {
+        // If tutorial gating is enabled, do not start trash until the single painting mini-task is completed.
+        if (requireSinglePaintingFirst && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
+        {
+            // Defer starting trash until tutorial task finished.
+            return false;
+        }
+
         int trashIdx = tasks.IndexOf(trashTaskRef);
         if (trashTaskRef == null || trashIdx < 0) return false;
         if (disabledTaskIndices != null && disabledTaskIndices.Contains(trashIdx)) return false;
