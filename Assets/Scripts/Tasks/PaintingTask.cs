@@ -50,6 +50,13 @@ public class PaintingTask : ITask
     // Track how many chosen paintings still need to be returned before task completes
     private int remainingToReturn = 0;
 
+    // store initial chosen count so UI can display total
+    private int initialChosenCount = 0;
+
+    // Expose read-only counts for UI
+    public int RemainingToReturn => remainingToReturn;
+    public int TotalChosen => initialChosenCount;
+
     public override void Initialize(TaskManager manager)
     {
         // store manager reference and pick up configured task name
@@ -79,6 +86,7 @@ public class PaintingTask : ITask
         states.Clear();
         completed = false;
         remainingToReturn = 0;
+        initialChosenCount = 0;
 
         if (manager == null || manager.paintingTargets == null)
         {
@@ -177,11 +185,18 @@ public class PaintingTask : ITask
         // remainingToReturn equals number of chosen paintings that must be returned
         remainingToReturn = states.Count;
 
+        // record initial count for UI
+        initialChosenCount = states.Count;
+
+        // notify UI that task started / counts changed
+        manager?.NotifyTasksChanged();
+
         // if nothing created, mark completed
         if (states.Count == 0)
         {
             Debug.Log("[PaintingTask] No states created; marking completed");
             completed = true;
+            manager?.NotifyTasksChanged();
         }
     }
 
@@ -229,6 +244,8 @@ public class PaintingTask : ITask
                         s.completed = true;
                         remainingToReturn = Mathf.Max(0, remainingToReturn - 1);
                         Debug.Log($"[PaintingTask] Painting {s.painting.name} returned and completed; remainingToReturn={remainingToReturn}");
+                        // notify UI of progress change
+                        manager?.NotifyTasksChanged();
                     }
                 }
                 continue;
@@ -253,6 +270,7 @@ public class PaintingTask : ITask
         {
             completed = true;
             Debug.Log("[PaintingTask] All chosen paintings returned - task completed");
+            manager?.NotifyTasksChanged();
         }
     }
 
@@ -263,6 +281,8 @@ public class PaintingTask : ITask
         states.Clear();
         completed = false;
         remainingToReturn = 0;
+        initialChosenCount = 0;
+        manager?.NotifyTasksChanged();
     }
 
     public override bool IsCompleted => completed;
