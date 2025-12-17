@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -39,6 +39,10 @@ public class BreakerButton : MonoBehaviour
     [Tooltip("Animator to use when toggling the switch")]
     [SerializeField] Animator animator;
 
+    [Header("Behavior")]
+    [Tooltip("If true this switch remains interactable even when global power is out (use for main power lever).")]
+    [SerializeField] private bool ignoreGlobalPowerLock = false;
+
     [Header("Events")]
     public UnityEvent<bool> onToggled; // bool = new state
 
@@ -52,13 +56,75 @@ public class BreakerButton : MonoBehaviour
     // cached instance materials for groupLightRenderer
     private Material[] groupInstanceMaterials;
 
+    // cached collider for enabling/disabling interaction when global power changes
+    private Collider cachedCollider;
+
     private void Awake()
     {
         originalScale = transform.localScale;
         isOn = startsOn;
+        cachedCollider = GetComponent<Collider>();
+
         CacheAndInstanceMaterials();
         CacheAndInstanceGroupMaterials();
+
+        // if global power is already out at startup, disable interaction unless this switch ignores the global lock
+        var elec = Object.FindAnyObjectByType<ElectricityLogic>();
+        if (elec != null && elec.IsPowerOut && cachedCollider != null && !ignoreGlobalPowerLock)
+        {
+            cachedCollider.enabled = false;
+        }
+
         ApplyState(initial: true);
+    }
+
+    private void OnEnable()
+    {
+        // Subscribe to global power events so this button becomes unavailable when power is out,
+        // and re-enabled when power is restored.
+        var elec = Object.FindAnyObjectByType<ElectricityLogic>();
+        if (elec != null)
+        {
+            elec.onPowerOut.AddListener(OnGlobalPowerOut);
+            elec.onPowerRestored.AddListener(OnGlobalPowerRestored);
+        }
+    }
+
+    private void OnDisable()
+    {
+        var elec = Object.FindAnyObjectByType<ElectricityLogic>();
+        if (elec != null)
+        {
+            elec.onPowerOut.RemoveListener(OnGlobalPowerOut);
+            elec.onPowerRestored.RemoveListener(OnGlobalPowerRestored);
+        }
+    }
+
+    private void OnGlobalPowerOut()
+    {
+        // Make this switch unavailable for interaction unless it's explicitly allowed to ignore the global lock.
+        if (cachedCollider != null && !ignoreGlobalPowerLock) cachedCollider.enabled = false;
+
+        // If this is the main power switch (ignoreGlobalPowerLock==true) and it's currently ON,
+        // toggle it OFF so the lever visually reflects the global power loss.
+        // Use Toggle() so audio/animation/visual feedback run as normal.
+        if (ignoreGlobalPowerLock && isOn)
+        {
+            // Toggle will run even if collider is enabled; for main switch collider stays enabled.
+            Toggle();
+            // Toggle already calls ApplyState, audio, animation and onToggled.
+            // We early-return to avoid calling ApplyState twice.
+            return;
+        }
+
+        ApplyState();
+    }
+
+    private void OnGlobalPowerRestored()
+    {
+        // Re-enable interaction and re-apply state (turn group on if this switch is on).
+        if (cachedCollider != null) cachedCollider.enabled = true;
+        ApplyState();
     }
 
     private void CacheAndInstanceMaterials()
@@ -89,82 +155,57 @@ public class BreakerButton : MonoBehaviour
 
     private void OnValidate()
     {
-        // Ensure there's a collider (editor-time hint)
         var col = GetComponent<Collider>();
         if (col == null)
         {
-            Debug.LogWarning($"BreakerButton '{name}' has no Collider — add one so it can be clicked (BoxCollider, MeshCollider, etc.).", this);
-        }
-        if (powerGroup == null)
-        {
-            // not an error, but remind
-            //Debug.Log($"BreakerButton '{name}' has no PowerGroups assigned. Assign in inspector to control lights.", this);
+            Debug.LogWarning($"BreakerButton '{name}' has no Collider â€” add one so it can be clicked (BoxCollider, MeshCollider, etc.).", this);
         }
     }
 
     private void ApplyState(bool initial = false)
     {
-        // Apply to PowerGroups (existing behavior)
+        // Respect global power: PowerGroups should already be handling global power via ElectricityLogic subscriptions.
         if (powerGroup != null)
         {
+            // When global power is out PowerGroups will force-off; when available, respect this button's isOn.
             if (isOn)
                 powerGroup.TurnOnLights();
             else
                 powerGroup.TurnOffLights();
         }
 
-        // Determine group active state. Prefer querying PowerGroups, fallback to local toggle.
         bool groupActive = powerGroup != null ? powerGroup.AnyLightOn() : isOn;
-
-        // Update indicator (prefer material swap; fallback changes Light.enabled)
         UpdateGroupLightState(groupActive, instantly: initial);
 
-        // If the mapped gameobjects are lights, also toggle Light.enabled (safer if you used Light components)
-        // The PowerGroups may already set GameObject active; this just ensures Light.enabled is also set where appropriate.
-        if (powerGroup != null)
-        {
-            // PowerGroups stores GameObjects — try to set Light.enabled on children where applicable.
-            foreach (var go in powerGroup.GetType().GetField("Lights", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) == null
-                     ? powerGroup.GetComponentsInChildren<Transform>(true) // fallback - do nothing meaningful
-                     : new Transform[0])
-            {
-                // nothing - kept intentionally to avoid heavy reflection; primary behavior remains PowerGroups.SetActive
-            }
-        }
-
-        // Optionally update visual state on start
         if (initial)
         {
-            // no animation on initial apply
             UpdateRendererColor(isOn ? feedbackColor : Color.white, instantly: true);
         }
     }
 
     public void Toggle()
     {
-        // Public entrypoint used by raycasts / UI
+        // allow toggling if collider enabled OR if this button ignores the global lock
+        if (cachedCollider != null && !cachedCollider.enabled && !ignoreGlobalPowerLock)
+            return;
+
         isOn = !isOn;
         Debug.Log($"[BreakerButton] '{name}' toggled -> {isOn}");
 
-        // Apply power change
         ApplyState();
 
-        // Play audio
         if (clickAudio != null)
         {
-            if (!isOn) clickAudio.clip = offSound;
-            else clickAudio.clip = onSound;
+            clickAudio.clip = isOn ? onSound : offSound;
             clickAudio.pitch = Random.Range(0.95f, 1.05f);
             clickAudio.PlayOneShot(clickAudio.clip);
         }
 
-        // Start visual feedback
         StopAllCoroutines();
         StartCoroutine(PressAnimation());
         if (feedbackRenderer != null)
             StartCoroutine(FlashColorCoroutine());
 
-        // Invoke inspector-event
         onToggled?.Invoke(isOn);
         ToggleAnimation();
     }
@@ -174,7 +215,6 @@ public class BreakerButton : MonoBehaviour
         Vector3 pressed = originalScale * pressScale;
         float half = pressDuration * 0.5f;
         float t = 0f;
-        // press
         while (t < half)
         {
             t += Time.deltaTime;
@@ -182,8 +222,6 @@ public class BreakerButton : MonoBehaviour
             yield return null;
         }
         transform.localScale = pressed;
-
-        // release
         t = 0f;
         while (t < half)
         {
@@ -212,7 +250,6 @@ public class BreakerButton : MonoBehaviour
             yield return null;
         }
 
-        // revert
         elapsed = 0f;
         float revertTime = feedbackColorTime * 0.5f;
         while (elapsed < revertTime)
@@ -227,7 +264,6 @@ public class BreakerButton : MonoBehaviour
             yield return null;
         }
 
-        // ensure final values reset
         for (int i = 0; i < instanceMaterials.Length; i++)
         {
             if (instanceMaterials[i].HasProperty("_Color"))
@@ -235,71 +271,52 @@ public class BreakerButton : MonoBehaviour
         }
     }
 
-    // Update the group indicator (Renderer material swap preferred; fallback toggles Light.enabled).
     private void UpdateGroupLightState(bool on, bool instantly = false)
     {
-        // 1) If a Material pair is provided, prefer swapping materials on the renderer.
         if (groupLightRenderer != null && groupOnMaterial != null && groupOffMaterial != null)
         {
             Material src = on ? groupOnMaterial : groupOffMaterial;
-            // replace all material slots with the selected material (create instances so runtime edits won't change the asset)
             var newMats = new Material[groupLightRenderer.sharedMaterials.Length];
             for (int i = 0; i < newMats.Length; i++)
                 newMats[i] = new Material(src);
             groupLightRenderer.materials = newMats;
-
-            // update cached instances reference
-            groupInstanceMaterials = groupLightRenderer.materials;
         }
         else
         {
-            // No materials set — fallback behavior is to enable/disable the Unity Light to indicate state.
             if (groupLight != null)
-            {
                 groupLight.enabled = on;
-            }
         }
 
-        // Also ensure Light reflects state if present and materials were used only for renderer.
-        if (groupLight != null && (groupLightRenderer == null || (groupOnMaterial != null && groupOffMaterial != null)))
-        {
-            // If materials are used for the renderer we still keep the Light enabled/disabled to match the state.
+        if (groupLight != null)
             groupLight.enabled = on;
-        }
     }
 
-    // Optional helper so BreakerBox or other callers can call it directly (same as Toggle).
     public void OnPressed()
     {
         Toggle();
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        if (powerGroup != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, powerGroup.transform.position);
-            Gizmos.DrawWireSphere(powerGroup.transform.position, 0.25f);
-        }
-    }
-    // Add this private method to fix CS0103: The name 'UpdateRendererColor' does not exist in the current context
-
     private void UpdateRendererColor(Color color, bool instantly = false)
     {
-        if (instanceMaterials == null || instanceMaterials.Length == 0)
-            return;
-
+        if (instanceMaterials == null || instanceMaterials.Length == 0) return;
         for (int i = 0; i < instanceMaterials.Length; i++)
         {
             if (instanceMaterials[i].HasProperty("_Color"))
-            {
                 instanceMaterials[i].color = color;
-            }
         }
     }
+
     public void ToggleAnimation()
     {
-        animator.SetBool(name, isOn);
+        if (animator == null) return;
+        try
+        {
+            // legacy behavior kept: animator boolean parameter named same as GameObject used previously
+            animator.SetBool(name, isOn);
+        }
+        catch
+        {
+            // swallow any animator errors to avoid spamming console
+        }
     }
 }

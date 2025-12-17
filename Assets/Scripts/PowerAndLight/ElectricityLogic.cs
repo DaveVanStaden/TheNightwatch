@@ -118,6 +118,43 @@ public class ElectricityLogic : MonoBehaviour
         Debug.Log("[ElectricityLogic] ResetBreakerBox called - power restored.");
     }
 
+    /// <summary>
+    /// Force the system into "power out" state immediately and invoke onPowerOut.
+    /// Designers can call this when a breaker button or other mechanic should cut global power.
+    /// </summary>
+    public void ForcePowerOut()
+    {
+        if (IsPowerOut) return;
+        PowerLevel = 0f;
+        IsPowerOut = true;
+        onPowerOut?.Invoke();
+        Debug.Log("[ElectricityLogic] ForcePowerOut called - power forced to 0%.");
+    }
+
+    /// <summary>
+    /// Set the power level (0..100). This will update IsPowerOut and invoke onPowerOut / onPowerRestored
+    /// appropriately when crossing the 0 threshold.
+    /// </summary>
+    public void SetPowerLevelPercent(float percent)
+    {
+        float prev = PowerLevel;
+        bool wasOut = IsPowerOut;
+
+        PowerLevel = Mathf.Clamp(percent, 0f, 100f);
+        IsPowerOut = PowerLevel <= 0f;
+
+        if (IsPowerOut && !wasOut)
+        {
+            onPowerOut?.Invoke();
+            Debug.Log("[ElectricityLogic] SetPowerLevelPercent -> power depleted -> onPowerOut invoked.");
+        }
+        else if (!IsPowerOut && wasOut)
+        {
+            onPowerRestored?.Invoke();
+            Debug.Log("[ElectricityLogic] SetPowerLevelPercent -> power restored -> onPowerRestored invoked.");
+        }
+    }
+
     // Optional helper: returns current percentage 0..100
     public float PowerPercent => PowerLevel;
 }

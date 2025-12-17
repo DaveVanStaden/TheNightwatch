@@ -21,6 +21,8 @@ public class PlayerManager : MonoBehaviour
     [Header("Interaction Settings")]
     public float currentLayer = 0;
     public float interactionRange = 100f;
+    [Tooltip("Radius used by interaction fallbacks (SphereCast / OverlapSphere) to detect nearby interactables.")]
+    public float interactionSphereRadius = 1f;
 
     [Header("Headbob Settings")]
     public float walkBobSpeed = 14f;
