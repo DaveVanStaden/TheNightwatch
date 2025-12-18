@@ -362,7 +362,7 @@ Transform:
   m_GameObject: {fileID: 388331264}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.62, y: 4.33, z: -0.04}
+  m_LocalPosition: {x: -9.611899, y: 4.33, z: -0.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1847,7 +1847,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7473594579667371609, guid: d79744c98e1584141bd2b16070696553, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.84
+      value: -7.8318996
       objectReference: {fileID: 0}
     - target: {fileID: 7473594579667371609, guid: d79744c98e1584141bd2b16070696553, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1933,14 +1933,6 @@ PrefabInstance:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 460481664}
-    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: paintingTargets.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: trashSpawnPoints.Array.size
-      value: 18
-      objectReference: {fileID: 0}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'paintingTargets.Array.data[0]'
       value: 
@@ -2042,38 +2034,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 858240912}
     - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: PCAudio
-      value: 
-      objectReference: {fileID: 6787768}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: PCHumAudio
-      value: 
-      objectReference: {fileID: 2134729106}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: monitor1audio
-      value: 
-      objectReference: {fileID: 100140429}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: monitor2audio
-      value: 
-      objectReference: {fileID: 665178066}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: monitor3audio
-      value: 
-      objectReference: {fileID: 61076559}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: monitorHumAudio
-      value: 
-      objectReference: {fileID: 1754169037}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: lights.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: monitors.Array.size
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'lights.Array.data[0]'
       value: 
       objectReference: {fileID: 525465267}
@@ -2093,10 +2053,6 @@ PrefabInstance:
       propertyPath: 'monitors.Array.data[2]'
       value: 
       objectReference: {fileID: 978607262}
-    - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: audioSources.Array.size
-      value: 8
-      objectReference: {fileID: 0}
     - target: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'audioSources.Array.data[0]'
       value: 
@@ -2177,10 +2133,6 @@ PrefabInstance:
       propertyPath: playerManager
       value: 
       objectReference: {fileID: 2068836945279242157}
-    - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: statues.Array.size
-      value: 4
-      objectReference: {fileID: 0}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[0]'
       value: 

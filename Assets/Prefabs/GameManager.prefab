@@ -132,7 +132,11 @@ MonoBehaviour:
   shadowMaxChance: 0.5
   shadowTimeToMax: 10
   shadowSpawnRadius: 30
-  statues: []
+  statues:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   statueFollowSanityThreshold: 50
   statueRequireNotSeen: 1
   cameraEntityPrefab: {fileID: 2597743189431292429, guid: 09490b6244ca91945b46228d2d7e09c3, type: 3}
@@ -212,6 +216,7 @@ MonoBehaviour:
   trashGroupCTag: TrashGroupC
   specialPhoneUseCall: 0
   specialPhoneCallStarted: 0
+  requireSinglePaintingFirst: 1
   completedTasks: []
 --- !u!114 &7397186432879180287
 MonoBehaviour:
