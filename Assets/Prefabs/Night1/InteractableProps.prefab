@@ -721,16 +721,28 @@ PrefabInstance:
       value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.85858
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.85858
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.85858
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -12.293
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.646
+      value: 5.4163
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 59.089
+      value: 59.115
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2695,7 +2707,7 @@ MonoBehaviour:
   groupOnMaterial: {fileID: -165295614543538365, guid: 770f62399db2f724698ef8fe3f4dc35f, type: 3}
   groupOffMaterial: {fileID: 1788269377728665300, guid: e5a2ab43d8b7f4a4e885733295f7a88c, type: 3}
   animator: {fileID: 5391498807641606594}
-  ignoreGlobalPowerLock: 0
+  ignoreGlobalPowerLock: 1
   onToggled:
     m_PersistentCalls:
       m_Calls: []
