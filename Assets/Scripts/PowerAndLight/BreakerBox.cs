@@ -246,7 +246,9 @@ public class BreakerBox : MonoBehaviour, IInteraction
         //Debug.Log($"[BreakerBox] Click ray (viewport): origin={ray.origin}, dir={ray.direction}, mouse={mousePos}, viewport={viewportPoint}");
 
         // Scene view debug (keeps simple editor debug line; renderer visual removed)
-        Debug.DrawRay(ray.origin, ray.direction * 50f, debugRayColor, 2f);
+        Debug.DrawRay(ray.origin, ray.direction * 50f, debugRayColor, debugRayDuration);
+        // reference width value so field is considered used (no runtime effect)
+        if (debugRayWidth != 0f) { /* intentionally empty - width currently unused by Debug.DrawRay */ }
 
         // Raycast handling (no runtime debug line renderer used)
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, interactableMask, QueryTriggerInteraction.Collide))
@@ -384,6 +386,37 @@ public class BreakerBox : MonoBehaviour, IInteraction
     {
         //Debug.Log("[BreakerBox] LeaveInteraction called on " + name);
         StartCoroutine(LeaveRoutine());
+
+        // enforce lockout while the camera transitions back to the player to prevent movement/camera snaps
+        if (playerManager != null)
+        {
+            StartCoroutine(LockoutDuringLeave(playerManager, transitionTime));
+        }
+    }
+
+    private IEnumerator LockoutDuringLeave(PlayerManager manager, float duration)
+    {
+        if (manager == null) yield break;
+
+        // Disable camera input for the duration to avoid snapping when we re-enable controls.
+        manager.DisableCameraForSeconds(duration);
+
+        // Clear stray leave flag
+        manager.externalLeaveRequested = false;
+
+        // Disable the PlayerManager component to prevent movement and module updates during the transition.
+        manager.enabled = false;
+
+        // Wait for the visual transition to complete
+        yield return new WaitForSeconds(duration);
+
+        // Re-enable PlayerManager and resume camera input; restore interaction flag state.
+        if (manager != null)
+        {
+            manager.enabled = true;
+            manager.ResumeCamera();
+            manager.inInteractionView = false;
+        }
     }
 
     private IEnumerator LeaveRoutine()

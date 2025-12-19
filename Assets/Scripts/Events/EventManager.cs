@@ -60,6 +60,29 @@ public class EventManager : MonoBehaviour
     [Tooltip("If true, statue heads only move when the player is NOT looking (visibility check).")]
     public bool statueRequireNotSeen = false;
 
+    [Header("CameraEvent (Camera entity on monitors)")]
+    [Tooltip("Prefab with CameraEntity component. Will be instantiated at targeted camera spawn and kept hidden until that group is selected.")]
+    public GameObject cameraEntityPrefab;
+    [Tooltip("Sanity threshold below which the camera entity event may occur.")]
+    public float cameraEventSanityThreshold = 60f;
+    [Tooltip("Cooldown in seconds after camera event spawns before it can spawn again.")]
+    public float cameraEventCooldownSeconds = 120f;
+    [Tooltip("Multiplier applied to baseChancePerSecond while player is on the cameras (increases chance).")]
+    public float cameraEventChanceMultiplierOnCamera = 5f;
+    [Tooltip("Sanity drained per second while the camera entity is active.")]
+    public float cameraEntitySanityDrainPerSecond = 5f;
+
+    [Header("BreakerCrashEvent")]
+    [Tooltip("Sanity threshold below which the breaker-crash event may occur.")]
+    public float breakerEventSanityThreshold = 60f;
+    [Tooltip("Minimum randomized cooldown (seconds) after a breaker-crash before it can happen again.")]
+    public float breakerEventMinCooldownSeconds = 60f;
+    [Tooltip("Maximum randomized cooldown (seconds) after a breaker-crash before it can happen again.")]
+    public float breakerEventMaxCooldownSeconds = 180f;
+
+    // list of CamGroup instances discovered at Awake (populated early so non-Mono modules can read it)
+    [HideInInspector] public List<CamGroup> allCamGroups = new List<CamGroup>();
+
     // internal
     private List<IEventModule> modules = new List<IEventModule>();
 
@@ -68,10 +91,19 @@ public class EventManager : MonoBehaviour
 
     void Awake()
     {
+        // populate CamGroup list early (modules are created immediately afterwards and may use it)
+        allCamGroups = new List<CamGroup>(FindObjectsByType<CamGroup>(FindObjectsSortMode.None));
+
         // create modules here. Keep EventManager minimal by delegating logic into modules.
         modules.Add(new PaintingEventModule(this));
         modules.Add(new ShadowSpawnEventModule(this));
         modules.Add(new StatueEventModule(this));
+
+        // camera event module
+        modules.Add(new CameraEventModule(this));
+
+        // breaker box crash module (randomly toggles a single ON BreakerButton once)
+        modules.Add(new BreakerEventModule(this));
 
         // debug: list modules created
         var names = new System.Collections.Generic.List<string>();

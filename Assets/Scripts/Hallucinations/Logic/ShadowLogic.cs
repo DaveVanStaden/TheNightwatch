@@ -7,10 +7,9 @@ public class ShadowLogic : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Transform playerTransform;
-    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private NavMeshAgent agent;                                            
 
     [Header("Settings")]
-    [SerializeField] private float minMoveDistance = 30f;
     // [SerializeField] private float minPlayerDistance = 20f; // legacy - replaced by below
     [SerializeField, Tooltip("Distance at which the AI will trigger a reposition (player proximity trigger)")]
     private float repositionTriggerDistance = 20f;
@@ -50,8 +49,6 @@ public class ShadowLogic : MonoBehaviour
     [SerializeField] private float huntMaxSpeed = 10f;
 
     private Vector3 peekDestination;
-    private bool isVisible = false;
-    private HashSet<Light> disabledLights = new HashSet<Light>();
 
     private float outOfSightTimer = 0f;
     [SerializeField]private float outOfSightThreshold = 15f;
@@ -67,12 +64,16 @@ public class ShadowLogic : MonoBehaviour
     private bool isAttacking = false;
     private float attackWindupTimer = 0f;
     private const float attackWindupDuration = 0.5f;
+    [SerializeField, Tooltip("Damage (HP) applied to the player when the shadow's attack connects")]
+    private int attackDamage = 20;
+    [SerializeField, Tooltip("Seconds to wait between consecutive attacks (cooldown)")]
+    private float attackCooldownSeconds = 1f;
+    private float attackCooldownTimer = 0f;
 
     // Reposition / lifetime counters
     private int repositionsDone = 0;
     [SerializeField, Tooltip("Maximum number of reposition attempts before this shadow despawns.")]
     private int repositionsBeforeDestroy = 4;
-    private bool destroyScheduled = false;
     private bool initialPeekDone = false;
     private bool repositionPending = false;
 
@@ -113,7 +114,6 @@ public class ShadowLogic : MonoBehaviour
 
     private Vector3 lastHumanPosition;
     private Vector3 lastSafePosition;
-    private bool isSafePositionLocked = false;
 
     // Flicker management
     private readonly Dictionary<Light, Coroutine> flickerCoroutines = new Dictionary<Light, Coroutine>();
@@ -152,8 +152,11 @@ public class ShadowLogic : MonoBehaviour
         playerManager = playerTransform != null ? playerTransform.GetComponent<PlayerManager>() : null;
         if (playerManager == null)
         {
-            // try a scene-wide find of the PlayerManager (Unity object)
-            playerManager = FindObjectOfType<PlayerManager>();
+            // Replace this line in Awake and Update:
+            // playerManager = FindObjectOfType<PlayerManager>();
+
+            // With this line:
+            playerManager = Object.FindFirstObjectByType<PlayerManager>();
         }
         playerCameraLook = playerManager != null ? playerManager.cameraLookModule : null;
 
@@ -180,11 +183,19 @@ public class ShadowLogic : MonoBehaviour
         if (playerTransform == null || agent == null || playerStats == null)
             return;
 
+        // --- ATTACK COOLDOWN TICK ---
+        // Always decrement attack cooldown each frame so the timer advances while hunting.
+        if (attackCooldownTimer > 0f)
+        {
+            attackCooldownTimer -= Time.deltaTime;
+            if (attackCooldownTimer < 0f) attackCooldownTimer = 0f;
+        }
+
         // try to resolve playerManager/playerCameraLook at runtime if missing (no Unity API for PlayerCameraLook)
         if (playerManager == null && playerTransform != null)
             playerManager = playerTransform.GetComponent<PlayerManager>();
         if (playerManager == null)
-            playerManager = FindObjectOfType<PlayerManager>();
+            playerManager = Object.FindFirstObjectByType<PlayerManager>();
         if (playerCameraLook == null && playerManager != null)
             playerCameraLook = playerManager.cameraLookModule;
 
@@ -211,7 +222,6 @@ public class ShadowLogic : MonoBehaviour
             huntTimer += Time.deltaTime;
             if (huntTimer >= huntMaxDurationSeconds)
             {
-                Debug.Log("[ShadowLogic] Hunt max duration exceeded — despawning shadow.");
                 Destroy(gameObject);
                 return;
             }
@@ -246,7 +256,6 @@ public class ShadowLogic : MonoBehaviour
         if (!repositionScheduled && !repositionLocked && IsPlayerLookingAtMe() && !IsMoving() && IsPlayerLineOfSightClear())
         {
             playerStats.ChangeSanity(-sanityDrainPerSecond * Time.deltaTime);
-            Debug.Log("[ShadowLogic] Draining sanity! " + playerStats.Sanity);
         }
 
         // HUNT LOGIC: If sanity < threshold, only hunt/attack, no repositioning or avoidance
@@ -257,7 +266,6 @@ public class ShadowLogic : MonoBehaviour
             {
                 isHunting = true;
                 huntTimer = 0f; // start tracking hunt duration
-                Debug.Log("[ShadowLogic] HUNT MODE: Player is being hunted!");
             }
 
             HuntPlayer(); // Move toward attack position
@@ -274,9 +282,12 @@ public class ShadowLogic : MonoBehaviour
 
                 if (!isAttacking)
                 {
-                    isAttacking = true;
-                    attackWindupTimer = 0f;
-                    Debug.Log("[ShadowLogic] Attack windup started!");
+                    // Only begin a new attack if cooldown elapsed
+                    if (attackCooldownTimer <= 0f)
+                    {
+                        isAttacking = true;
+                        attackWindupTimer = 0f;
+                    }
                 }
                 else
                 {
@@ -286,35 +297,42 @@ public class ShadowLogic : MonoBehaviour
                         float currentDistance = Vector3.Distance(transform.position, playerTransform.position);
                         if (currentDistance <= killRange)
                         {
-                            Debug.Log("player got hit and dies");
-                            // TODO: call player death / damage logic here if needed
+                            // Apply damage to player on successful hit
+                            if (playerStats != null)
+                            {
+                                playerStats.ChangeHP(-attackDamage);
+                            }
+                            else
+                            {
+                                var ps = Object.FindFirstObjectByType<PlayerStats>();
+                                if (ps != null) ps.ChangeHP(-attackDamage);
+                            }
+
+                            // start attack cooldown to prevent immediate re-hit
+                            attackCooldownTimer = attackCooldownSeconds;
 
                             // After a successful hit:
-                            // - If player's sanity is <= 0, continue attacking (don't reposition).
-                            // - Otherwise, stop hunting and pick a new peek position before attacking again.
+                            // - Do NOT reposition immediately. Continue hunting/attempting attacks until the player escapes long enough.
                             isAttacking = false;
                             attackWindupTimer = 0f;
 
                             if (playerStats != null && playerStats.Sanity <= 0)
                             {
-                                // keep attacking
+                                // If sanity <= 0 keep attacking and remain stopped to allow repeated hits
                                 isHunting = true;
-                                // keep agent stopped so repeated attacks can happen
                                 if (agent != null) agent.isStopped = true;
                             }
                             else
                             {
-                                // reposition before attacking again
-                                isHunting = false;
+                                // For sane players: keep hunting/attempting — resume movement so the shadow can re-engage.
+                                isHunting = true;
                                 if (agent != null) agent.isStopped = false;
-                                FindPeekPosition();
-                                // After calling FindPeekPosition(), set the suppress timer
-                                huntSuppressTimer = huntSuppressDuration;
+                                // DO NOT call FindPeekPosition() or set huntSuppressTimer here anymore.
+                                // This change keeps the shadow in active chase/attack mode until the player escapes long enough.
                             }
                         }
                         else
                         {
-                            Debug.Log("[ShadowLogic] Attack missed, player moved away! Repositioning before next attack.");
                             // After a miss, stop hunting and force a reposition before attempting to attack again
                             isAttacking = false;
                             isHunting = false;
@@ -332,7 +350,6 @@ public class ShadowLogic : MonoBehaviour
                 // Player moved out of attack range, cancel attack and resume movement
                 if (isAttacking)
                 {
-                    Debug.Log("[ShadowLogic] Attack cancelled, player moved out of range.");
                     isAttacking = false;
                     attackWindupTimer = 0f;
                 }
@@ -351,14 +368,8 @@ public class ShadowLogic : MonoBehaviour
             attackWindupTimer = 0f;
             if (agent != null)
                 agent.isStopped = false;
-            Debug.Log("[ShadowLogic] Repositioning: Player sanity recovered.");
         }
         StandardAIUpdate(); // Only runs when not hunting
-
-        if (huntSuppressTimer > 0f)
-            huntSuppressTimer -= Time.deltaTime;
-
-
     }
 
     /// <summary>
@@ -371,7 +382,6 @@ public class ShadowLogic : MonoBehaviour
     {
         if (playerTransform == null)
         {
-            Debug.LogWarning("[ShadowLogic] FindPeekPosition: playerTransform is null.");
             return;
         }
 
@@ -419,7 +429,6 @@ public class ShadowLogic : MonoBehaviour
         if (foundAny)
         {
             SetPeekDestination(bestCandidate, "FindPeekPosition (around player)");
-            Debug.Log("[ShadowLogic] Moving to peek position near player at " + bestCandidate);
         }
         else
         {
@@ -429,13 +438,11 @@ public class ShadowLogic : MonoBehaviour
             if (NavMesh.SamplePosition(fallbackTry, out fallbackHit, Mathf.Max(4f, jitterRadius + 2f), NavMesh.AllAreas))
             {
                 SetPeekDestination(fallbackHit.position, "FindPeekPosition fallback behind player");
-                Debug.LogWarning("[ShadowLogic] No ideal peek found; using fallback behind player.");
             }
             else
             {
                 // last resort: stay close to current position
                 SetPeekDestination(transform.position, "FindPeekPosition none");
-                Debug.LogWarning("[ShadowLogic] No valid stalk position found near player, staying put.");
             }
         }
     }
@@ -454,8 +461,6 @@ public class ShadowLogic : MonoBehaviour
             // mark that a reposition has been requested — count it when movement actually starts
             repositionPending = initialPeekDone; // don't count the initial placement
 
-            Debug.Log($"[ShadowLogic] SetPeekDestination: {debugContext ?? "none"} -> peekDestination={peekDestination} (repositionPending={repositionPending}, repositionScheduled={repositionScheduled}, repositionLocked={repositionLocked})");
-
             // Try to start movement immediately if cooldown is not active and agent available.
             // This helps cases where timing/order differences on other machines prevented the StandardAIUpdate path
             // from starting the TrySetDestinationCoroutine.
@@ -469,12 +474,10 @@ public class ShadowLogic : MonoBehaviour
                 if (NavMesh.SamplePosition(peekDestination, out hit, 2.0f, NavMesh.AllAreas))
                 {
                     moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(hit.position));
-                    Debug.Log($"[ShadowLogic] Immediate TrySetDestinationCoroutine -> navHit at {hit.position}");
                 }
                 else
                 {
                     moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(peekDestination));
-                    Debug.Log($"[ShadowLogic] Immediate TrySetDestinationCoroutine -> raw peekDestination {peekDestination} (NavMesh.SamplePosition failed)");
                 }
 
                 // Ensure we're visually hidden while moving
@@ -495,8 +498,8 @@ public class ShadowLogic : MonoBehaviour
             playerTransform.position + Vector3.up * 0.2f
         };
 
-        int mask = LayerMask.GetMask("Walls", "Obstacles") | LayerMask.GetMask("Player"); // Adjust as needed
-
+        // Use a full-raycast so we detect tagged doors even if they aren't on Walls/Obstacles layers.
+        RaycastHit[] hits;
         foreach (var point in playerPoints)
         {
             Vector3 origin = fromPosition + Vector3.up * 1.0f;
@@ -505,15 +508,41 @@ public class ShadowLogic : MonoBehaviour
 
             Debug.DrawLine(origin, point, Color.red, 0.5f);
 
-            RaycastHit[] hits = Physics.RaycastAll(origin, dir, dist, mask);
+            // Get all hits (include triggers so Door colliders set as triggers are detected)
+            hits = Physics.RaycastAll(origin, dir, dist, ~0, QueryTriggerInteraction.Collide);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var hit in hits)
             {
+                // If we hit the player first, that point is visible
                 if (hit.collider.CompareTag("Player"))
                     return true;
-                else if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Player"))
+
+                // Treat any Door (or Door on parent) as a blocker
+                if (IsColliderDoor(hit.collider))
+                {
+                    // this point is blocked by a door, try next point
+                    break;
+                }
+
+                // If we hit anything else before the player, that point is blocked.
+                if (!hit.collider.CompareTag("Player"))
                     break;
             }
+        }
+        return false; // All points are blocked
+    }
+
+    // Helper: returns true if the collider or any of its parents should be treated as a Door/blocker
+    private bool IsColliderDoor(Collider col)
+    {
+        if (col == null) return false;
+        Transform t = col.transform;
+        while (t != null)
+        {
+            if (t.CompareTag("Door")) return true;
+            // also treat objects with a Door component as doors
+            if (t.GetComponent<Door>() != null) return true;
+            t = t.parent;
         }
         return false;
     }
@@ -521,7 +550,10 @@ public class ShadowLogic : MonoBehaviour
     // Flicker implementation: manage coroutines per-light
     private void ManageNearbyLights()
     {
-        var lights = FindObjectsOfType<Light>();
+        // Replace this line in ManageNearbyLights():
+        // var lights = FindObjectsOfType<Light>();
+        // With the following line:
+        var lights = Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
         var inRange = new HashSet<Light>();
 
         foreach (var light in lights)
@@ -648,16 +680,22 @@ public class ShadowLogic : MonoBehaviour
 
     private void EnableRenderer()
     {
-        var meshRenderer = GetComponent<MeshRenderer>();
+        var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = true;
+        var particles = GetComponentInChildren<ParticleSystem>();
+        if (particles != null)
+            particles.Play();
     }
 
     private void DisableRenderer()
     {
-        var meshRenderer = GetComponent<MeshRenderer>();
+        var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = false;
+        var particles = GetComponentInChildren<ParticleSystem>();
+        if (particles != null)
+            particles.Stop();
     }
 
     private bool CanSeePlayer()
@@ -670,25 +708,32 @@ public class ShadowLogic : MonoBehaviour
         playerTransform.position + Vector3.up * 0.2f  // feet
         };
 
-        int mask = LayerMask.GetMask("Walls", "Obstacles") | LayerMask.GetMask("Player"); // Use same mask
-
+        // Use full-raycasts so doors (tagged "Door") will be detected even if they're not on Walls/Obstacles layers
         foreach (var point in playerPoints)
         {
             Vector3 origin = transform.position + Vector3.up * 1.0f;
             Vector3 dir = (point - origin).normalized;
             float dist = Vector3.Distance(origin, point) + 1.0f; // Add buffer
 
-            RaycastHit[] hits = Physics.RaycastAll(origin, dir, dist, mask);
+            RaycastHit[] hits = Physics.RaycastAll(origin, dir, dist, ~0, QueryTriggerInteraction.Collide);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var hit in hits)
             {
+                if (hit.collider == null) continue;
+
                 if (hit.collider.CompareTag("Player"))
                     return true;
-                else if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Player"))
+
+                // If we hit a door (or door on parent) before the player, the point is blocked
+                if (IsColliderDoor(hit.collider))
+                    break;
+
+                // Any other non-player hit blocks this point
+                if (!hit.collider.CompareTag("Player"))
                     break;
             }
         }
-        return false; // All points are blocked
+        return false; // All points blocked
     }
 
     private bool IsPlayerLookingAtMe()
@@ -721,7 +766,6 @@ public class ShadowLogic : MonoBehaviour
         Vector3 toHallucination = (transform.position - origin).normalized;
         Debug.DrawRay(origin, toHallucination * 5f, Color.yellow, 0.05f);
         float dot = Vector3.Dot(cameraForward, toHallucination);
-        //Debug.Log($"[ShadowLogic] Dot: {dot}");
         return dot > 0.85f;
     }
 
@@ -750,15 +794,36 @@ public class ShadowLogic : MonoBehaviour
         float distance = toHallucination.magnitude;
         if (distance <= 0.01f) return true;
 
-        // Only consider walls/obstacles as blocking. Adjust mask if you need additional blockers.
-        int mask = LayerMask.GetMask("Walls", "Obstacles");
-        RaycastHit hit;
-        if (Physics.Raycast(origin, toHallucination.normalized, out hit, distance, mask))
+        // RaycastAll so we can detect doors by tag even if not on Walls/Obstacles layers.
+        RaycastHit[] hits = Physics.RaycastAll(origin, toHallucination.normalized, distance, ~0, QueryTriggerInteraction.Collide);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        int wallsLayer = LayerMask.NameToLayer("Walls");
+        int obstaclesLayer = LayerMask.NameToLayer("Obstacles");
+
+        foreach (var hit in hits)
         {
-            // Something blocking the view (wall/obstacle) before reaching the hallucination
-            return false;
+            if (hit.collider == null) continue;
+
+            // Ignore hits on the shadow itself
+            if (hit.collider.gameObject == gameObject) continue;
+
+            // Doors explicitly block line of sight (look for tag/component on collider or parent)
+            if (IsColliderDoor(hit.collider))
+                return false;
+
+            int hitLayer = hit.collider.gameObject.layer;
+            if (hitLayer == wallsLayer || hitLayer == obstaclesLayer)
+                return false;
+
+            // If we hit the player collider, nothing blocks the view
+            if (hit.collider.CompareTag("Player"))
+                return true;
+
+            // otherwise continue scanning (some other object that isn't Walls/Obstacles or Door)
         }
 
+        // No blocking wall/obstacle/door found
         return true;
     }
 
@@ -849,11 +914,9 @@ public class ShadowLogic : MonoBehaviour
             {
                 repositionPending = false;
                 repositionsDone++;
-                Debug.Log($"[ShadowLogic] Reposition #{repositionsDone} started.");
 
                 if (repositionsDone > repositionsBeforeDestroy)
                 {
-                    Debug.Log("[ShadowLogic] Max repositions exceeded — despawning shadow before moving.");
                     Destroy(gameObject);
                     return;
                 }
@@ -862,44 +925,25 @@ public class ShadowLogic : MonoBehaviour
             // If a reposition is scheduled (cooldown active), stay hidden and do not set destination yet.
             if (!repositionScheduled && !repositionLocked)
             {
-                // Diagnostics: log agent state before issuing destination so we can see why it may not move.
-                if (agent == null)
+                // Safety: ensure agent is allowed to move
+                agent.isStopped = false;
+                agent.updatePosition = true;
+
+                // Prefer snapping target to NavMesh before setting destination
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(peekDestination, out hit, 2.0f, NavMesh.AllAreas))
                 {
-                    Debug.LogWarning("[ShadowLogic] Agent is null when trying to SetDestination.");
+                    // start recovery coroutine instead of a single SetDestination call
+                    if (moveRecoveryCoroutine != null)
+                        StopCoroutine(moveRecoveryCoroutine);
+                    moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(hit.position));
                 }
                 else
                 {
-                    bool onNavMesh = true;
-#if UNITY_2020_1_OR_NEWER
-                        onNavMesh = agent.isOnNavMesh;
-#endif
-                    Debug.Log($"[ShadowLogic] Attempting SetDestination. enabled={agent.enabled}, onNavMesh={onNavMesh}, isStopped={agent.isStopped}, hasPath={agent.hasPath}, pathPending={agent.pathPending}, speed={agent.speed}, updatePosition={agent.updatePosition}");
-
-                    // Safety: ensure agent is allowed to move
-                    agent.isStopped = false;
-                    agent.updatePosition = true;
-
-                    // Prefer snapping target to NavMesh before setting destination
-                    NavMeshHit hit;
-                    if (NavMesh.SamplePosition(peekDestination, out hit, 2.0f, NavMesh.AllAreas))
-                    {
-                        // start recovery coroutine instead of a single SetDestination call
-                        if (moveRecoveryCoroutine != null)
-                            StopCoroutine(moveRecoveryCoroutine);
-                        moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(hit.position));
-                        Debug.Log($"[ShadowLogic] Requested TrySetDestinationCoroutine -> navHit at {hit.position}");
-                    }
-                    else
-                    {
-                        // start recovery coroutine instead of a single SetDestination call
-                        if (moveRecoveryCoroutine != null)
-                            StopCoroutine(moveRecoveryCoroutine);
-                        moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(peekDestination));
-                        Debug.Log($"[ShadowLogic] Requested TrySetDestinationCoroutine -> raw peekDestination {peekDestination} (NavMesh.SamplePosition failed)");
-                    }
-
-                    // Log result of attempting to set destination
-                    Debug.Log($"[ShadowLogic] After SetDestination: hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}");
+                    // start recovery coroutine instead of a single SetDestination call
+                    if (moveRecoveryCoroutine != null)
+                        StopCoroutine(moveRecoveryCoroutine);
+                    moveRecoveryCoroutine = StartCoroutine(TrySetDestinationCoroutine(peekDestination));
                 }
 
                 DisableRenderer();
@@ -1036,9 +1080,6 @@ public class ShadowLogic : MonoBehaviour
 
         // Restore lights immediately so lighting state isn't left dark while hidden
         RestoreLightsImmediately();
-
-        if (playerStats != null)
-            Debug.Log($"[ShadowLogic] Reposition scheduled in {repositionTimer:F1}s (repositionsDone={repositionsDone}/{repositionsBeforeDestroy}).");
     }
 
     // Try to move to a safe position near the last known human position
@@ -1062,11 +1103,9 @@ public class ShadowLogic : MonoBehaviour
         if (NavMesh.SamplePosition(targetPosition, out hit, 2.0f, NavMesh.AllAreas))
         {
             agent.Warp(hit.position);
-            Debug.Log("[ShadowLogic] Warped to safe position: " + hit.position);
         }
         else
         {
-            Debug.LogWarning("[ShadowLogic] Couldn't warp to safe position, moving normally.");
             agent.SetDestination(targetPosition);
         }
 
@@ -1079,11 +1118,8 @@ public class ShadowLogic : MonoBehaviour
     {
         if (agent == null)
         {
-            Debug.LogWarning("[ShadowLogic] TrySetDestinationCoroutine: agent is null.");
             yield break;
         }
-
-        Debug.Log($"[ShadowLogic] TrySetDestinationCoroutine started for rawTarget={rawTarget}");
 
         // Try a few times to set a path and detect movement
         for (int attempt = 0; attempt < Mathf.Max(1, moveRecoveryAttempts); attempt++)
@@ -1099,19 +1135,14 @@ public class ShadowLogic : MonoBehaviour
             bool snapped = NavMesh.SamplePosition(rawTarget, out hit, 2.0f, NavMesh.AllAreas);
             if (snapped) dest = hit.position;
 
-            Debug.Log($"[ShadowLogic] Attempt #{attempt + 1}: preparing SetDestination. dest={dest}, snapped={snapped}, agent.enabled={agent.enabled}, isStopped={agent.isStopped}, hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}");
-
-            // call SetDestination and log immediately
-            bool setCalled = false;
+            // call SetDestination
             try
             {
                 agent.SetDestination(dest);
-                setCalled = true;
-                Debug.Log($"[ShadowLogic] Called agent.SetDestination({dest})");
             }
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
-                Debug.LogError($"[ShadowLogic] agent.SetDestination threw: {ex}");
+                // ignore - keep trying
             }
 
             // wait a short time for Unity to compute a path
@@ -1129,7 +1160,6 @@ public class ShadowLogic : MonoBehaviour
                 // If agent reports a path and is moving, success
                 if (hasPath && velSqr > 0.01f)
                 {
-                    Debug.Log("[ShadowLogic] Destination accepted and agent moving.");
                     moveRecoveryCoroutine = null;
                     yield break;
                 }
@@ -1137,7 +1167,6 @@ public class ShadowLogic : MonoBehaviour
                 // If remainingDistance indicates movement is happening (sometimes velocity is small), accept that too
                 if (hasPath && remDist > agent.stoppingDistance + 0.1f)
                 {
-                    Debug.Log("[ShadowLogic] Destination accepted (remainingDistance indicates en route).");
                     moveRecoveryCoroutine = null;
                     yield break;
                 }
@@ -1145,36 +1174,31 @@ public class ShadowLogic : MonoBehaviour
                 yield return null;
             }
 
-            Debug.LogWarning($"[ShadowLogic] SetDestination did not produce movement on attempt {attempt + 1}. hasPath={agent.hasPath}, pathPending={agent.pathPending}, remainingDistance={agent.remainingDistance}, velocity={agent.velocity}");
-
             // If aggressive recovery enabled, try sampling outward and warp to navmesh then retry
             if (enableAggressiveRecovery)
             {
                 float searchRadius = Mathf.Min(warpSearchRadiusStart + attempt * warpSearchRadiusStep, warpSearchMaxRadius);
                 if (NavMesh.SamplePosition(rawTarget, out hit, searchRadius, NavMesh.AllAreas))
                 {
-                    Debug.Log($"[ShadowLogic] Found NavMesh at {hit.position} using radius {searchRadius}, attempting agent.Warp.");
                     bool warped = false;
                     try
                     {
                         warped = agent.Warp(hit.position);
                     }
-                    catch (System.Exception ex)
+                    catch (System.Exception)
                     {
-                        Debug.LogWarning($"[ShadowLogic] agent.Warp threw: {ex}");
+                        // ignore
                     }
 
                     if (warped)
                     {
-                        Debug.Log("[ShadowLogic] agent.Warp succeeded. Reissuing SetDestination to same pos.");
                         try
                         {
                             agent.SetDestination(hit.position);
-                            Debug.Log($"[ShadowLogic] Called agent.SetDestination after warp ({hit.position})");
                         }
-                        catch (System.Exception ex)
+                        catch (System.Exception)
                         {
-                            Debug.LogError($"[ShadowLogic] agent.SetDestination after warp threw: {ex}");
+                            // ignore
                         }
 
                         // small yield to let agent state update
@@ -1182,19 +1206,10 @@ public class ShadowLogic : MonoBehaviour
 
                         if (agent.hasPath && agent.velocity.sqrMagnitude > 0.01f)
                         {
-                            Debug.Log("[ShadowLogic] After warp agent moving.");
                             moveRecoveryCoroutine = null;
                             yield break;
                         }
                     }
-                    else
-                    {
-                        Debug.LogWarning("[ShadowLogic] agent.Warp failed or returned false.");
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"[ShadowLogic] NavMesh.SamplePosition failed within radius {searchRadius} for target {rawTarget}.");
                 }
             }
 
@@ -1202,7 +1217,6 @@ public class ShadowLogic : MonoBehaviour
             yield return new WaitForSeconds(moveRecoveryDelay);
         }
 
-        Debug.LogError("[ShadowLogic] Move recovery exhausted — could not start moving to peekDestination. Last target: " + rawTarget);
         moveRecoveryCoroutine = null;
     }
 }

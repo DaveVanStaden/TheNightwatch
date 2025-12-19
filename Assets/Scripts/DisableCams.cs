@@ -4,6 +4,7 @@ public class DisableCams : MonoBehaviour
 {
     bool AreCamsOn = true;
     private SecurityCamera[] cams;
+    [SerializeField] ManualCameraRenderer[] additionalRenderers;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -44,6 +45,13 @@ public class DisableCams : MonoBehaviour
                     cam.camLight.enabled = false;
                 }
             }
+            if (additionalRenderers != null)
+            {
+                foreach (ManualCameraRenderer cam in additionalRenderers)
+                {
+                    cam.GetComponent<ManualCameraRenderer>().enabled = false;
+                }
+            }
         }
         else
         {
@@ -57,6 +65,13 @@ public class DisableCams : MonoBehaviour
                     {
                         cam.camLight.enabled = true;
                     }
+                }
+            }
+            if (additionalRenderers != null)
+            {
+                foreach (ManualCameraRenderer cam in additionalRenderers)
+                {
+                    cam.GetComponent<ManualCameraRenderer>().enabled = true;
                 }
             }
         }
