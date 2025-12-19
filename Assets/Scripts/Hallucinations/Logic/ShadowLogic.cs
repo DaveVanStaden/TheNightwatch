@@ -64,6 +64,11 @@ public class ShadowLogic : MonoBehaviour
     private bool isAttacking = false;
     private float attackWindupTimer = 0f;
     private const float attackWindupDuration = 0.5f;
+    [SerializeField, Tooltip("Damage (HP) applied to the player when the shadow's attack connects")]
+    private int attackDamage = 20;
+    [SerializeField, Tooltip("Seconds to wait between consecutive attacks (cooldown)")]
+    private float attackCooldownSeconds = 1f;
+    private float attackCooldownTimer = 0f;
 
     // Reposition / lifetime counters
     private int repositionsDone = 0;
@@ -178,6 +183,14 @@ public class ShadowLogic : MonoBehaviour
         if (playerTransform == null || agent == null || playerStats == null)
             return;
 
+        // --- ATTACK COOLDOWN TICK ---
+        // Always decrement attack cooldown each frame so the timer advances while hunting.
+        if (attackCooldownTimer > 0f)
+        {
+            attackCooldownTimer -= Time.deltaTime;
+            if (attackCooldownTimer < 0f) attackCooldownTimer = 0f;
+        }
+
         // try to resolve playerManager/playerCameraLook at runtime if missing (no Unity API for PlayerCameraLook)
         if (playerManager == null && playerTransform != null)
             playerManager = playerTransform.GetComponent<PlayerManager>();
@@ -269,8 +282,12 @@ public class ShadowLogic : MonoBehaviour
 
                 if (!isAttacking)
                 {
-                    isAttacking = true;
-                    attackWindupTimer = 0f;
+                    // Only begin a new attack if cooldown elapsed
+                    if (attackCooldownTimer <= 0f)
+                    {
+                        isAttacking = true;
+                        attackWindupTimer = 0f;
+                    }
                 }
                 else
                 {
@@ -280,29 +297,38 @@ public class ShadowLogic : MonoBehaviour
                         float currentDistance = Vector3.Distance(transform.position, playerTransform.position);
                         if (currentDistance <= killRange)
                         {
-                            // TODO: call player death / damage logic here if needed
+                            // Apply damage to player on successful hit
+                            if (playerStats != null)
+                            {
+                                playerStats.ChangeHP(-attackDamage);
+                            }
+                            else
+                            {
+                                var ps = Object.FindFirstObjectByType<PlayerStats>();
+                                if (ps != null) ps.ChangeHP(-attackDamage);
+                            }
+
+                            // start attack cooldown to prevent immediate re-hit
+                            attackCooldownTimer = attackCooldownSeconds;
 
                             // After a successful hit:
-                            // - If player's sanity is <= 0, continue attacking (don't reposition).
-                            // - Otherwise, stop hunting and pick a new peek position before attacking again.
+                            // - Do NOT reposition immediately. Continue hunting/attempting attacks until the player escapes long enough.
                             isAttacking = false;
                             attackWindupTimer = 0f;
 
                             if (playerStats != null && playerStats.Sanity <= 0)
                             {
-                                // keep attacking
+                                // If sanity <= 0 keep attacking and remain stopped to allow repeated hits
                                 isHunting = true;
-                                // keep agent stopped so repeated attacks can happen
                                 if (agent != null) agent.isStopped = true;
                             }
                             else
                             {
-                                // reposition before attacking again
-                                isHunting = false;
+                                // For sane players: keep hunting/attempting — resume movement so the shadow can re-engage.
+                                isHunting = true;
                                 if (agent != null) agent.isStopped = false;
-                                FindPeekPosition();
-                                // After calling FindPeekPosition(), set the suppress timer
-                                huntSuppressTimer = huntSuppressDuration;
+                                // DO NOT call FindPeekPosition() or set huntSuppressTimer here anymore.
+                                // This change keeps the shadow in active chase/attack mode until the player escapes long enough.
                             }
                         }
                         else
@@ -344,11 +370,6 @@ public class ShadowLogic : MonoBehaviour
                 agent.isStopped = false;
         }
         StandardAIUpdate(); // Only runs when not hunting
-
-        if (huntSuppressTimer > 0f)
-            huntSuppressTimer -= Time.deltaTime;
-
-
     }
 
     /// <summary>
@@ -477,8 +498,8 @@ public class ShadowLogic : MonoBehaviour
             playerTransform.position + Vector3.up * 0.2f
         };
 
-        int mask = LayerMask.GetMask("Walls", "Obstacles") | LayerMask.GetMask("Player"); // Adjust as needed
-
+        // Use a full-raycast so we detect tagged doors even if they aren't on Walls/Obstacles layers.
+        RaycastHit[] hits;
         foreach (var point in playerPoints)
         {
             Vector3 origin = fromPosition + Vector3.up * 1.0f;
@@ -487,17 +508,43 @@ public class ShadowLogic : MonoBehaviour
 
             Debug.DrawLine(origin, point, Color.red, 0.5f);
 
-            RaycastHit[] hits = Physics.RaycastAll(origin, dir, dist, mask);
+            // Get all hits (include triggers so Door colliders set as triggers are detected)
+            hits = Physics.RaycastAll(origin, dir, dist, ~0, QueryTriggerInteraction.Collide);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var hit in hits)
             {
+                // If we hit the player first, that point is visible
                 if (hit.collider.CompareTag("Player"))
                     return true;
-                else if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Player"))
+
+                // Treat any Door (or Door on parent) as a blocker
+                if (IsColliderDoor(hit.collider))
+                {
+                    // this point is blocked by a door, try next point
+                    break;
+                }
+
+                // If we hit anything else before the player, that point is blocked.
+                if (!hit.collider.CompareTag("Player"))
                     break;
             }
         }
         return false; // All points are blocked
+    }
+
+    // Helper: returns true if the collider or any of its parents should be treated as a Door/blocker
+    private bool IsColliderDoor(Collider col)
+    {
+        if (col == null) return false;
+        Transform t = col.transform;
+        while (t != null)
+        {
+            if (t.CompareTag("Door")) return true;
+            // also treat objects with a Door component as doors
+            if (t.GetComponent<Door>() != null) return true;
+            t = t.parent;
+        }
+        return false;
     }
 
     // Flicker implementation: manage coroutines per-light
@@ -633,16 +680,22 @@ public class ShadowLogic : MonoBehaviour
 
     private void EnableRenderer()
     {
-        var meshRenderer = GetComponent<MeshRenderer>();
+        var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = true;
+        var particles = GetComponentInChildren<ParticleSystem>();
+        if (particles != null)
+            particles.Play();
     }
 
     private void DisableRenderer()
     {
-        var meshRenderer = GetComponent<MeshRenderer>();
+        var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = false;
+        var particles = GetComponentInChildren<ParticleSystem>();
+        if (particles != null)
+            particles.Stop();
     }
 
     private bool CanSeePlayer()
@@ -655,25 +708,32 @@ public class ShadowLogic : MonoBehaviour
         playerTransform.position + Vector3.up * 0.2f  // feet
         };
 
-        int mask = LayerMask.GetMask("Walls", "Obstacles") | LayerMask.GetMask("Player"); // Use same mask
-
+        // Use full-raycasts so doors (tagged "Door") will be detected even if they're not on Walls/Obstacles layers
         foreach (var point in playerPoints)
         {
             Vector3 origin = transform.position + Vector3.up * 1.0f;
             Vector3 dir = (point - origin).normalized;
             float dist = Vector3.Distance(origin, point) + 1.0f; // Add buffer
 
-            RaycastHit[] hits = Physics.RaycastAll(origin, dir, dist, mask);
+            RaycastHit[] hits = Physics.RaycastAll(origin, dir, dist, ~0, QueryTriggerInteraction.Collide);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var hit in hits)
             {
+                if (hit.collider == null) continue;
+
                 if (hit.collider.CompareTag("Player"))
                     return true;
-                else if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Player"))
+
+                // If we hit a door (or door on parent) before the player, the point is blocked
+                if (IsColliderDoor(hit.collider))
+                    break;
+
+                // Any other non-player hit blocks this point
+                if (!hit.collider.CompareTag("Player"))
                     break;
             }
         }
-        return false; // All points are blocked
+        return false; // All points blocked
     }
 
     private bool IsPlayerLookingAtMe()
@@ -734,15 +794,36 @@ public class ShadowLogic : MonoBehaviour
         float distance = toHallucination.magnitude;
         if (distance <= 0.01f) return true;
 
-        // Only consider walls/obstacles as blocking. Adjust mask if you need additional blockers.
-        int mask = LayerMask.GetMask("Walls", "Obstacles");
-        RaycastHit hit;
-        if (Physics.Raycast(origin, toHallucination.normalized, out hit, distance, mask))
+        // RaycastAll so we can detect doors by tag even if not on Walls/Obstacles layers.
+        RaycastHit[] hits = Physics.RaycastAll(origin, toHallucination.normalized, distance, ~0, QueryTriggerInteraction.Collide);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        int wallsLayer = LayerMask.NameToLayer("Walls");
+        int obstaclesLayer = LayerMask.NameToLayer("Obstacles");
+
+        foreach (var hit in hits)
         {
-            // Something blocking the view (wall/obstacle) before reaching the hallucination
-            return false;
+            if (hit.collider == null) continue;
+
+            // Ignore hits on the shadow itself
+            if (hit.collider.gameObject == gameObject) continue;
+
+            // Doors explicitly block line of sight (look for tag/component on collider or parent)
+            if (IsColliderDoor(hit.collider))
+                return false;
+
+            int hitLayer = hit.collider.gameObject.layer;
+            if (hitLayer == wallsLayer || hitLayer == obstaclesLayer)
+                return false;
+
+            // If we hit the player collider, nothing blocks the view
+            if (hit.collider.CompareTag("Player"))
+                return true;
+
+            // otherwise continue scanning (some other object that isn't Walls/Obstacles or Door)
         }
 
+        // No blocking wall/obstacle/door found
         return true;
     }
 

@@ -114,6 +114,7 @@ MonoBehaviour:
   flashlight: {fileID: 0}
   onOrOff: 0
   maxIntensity: 0.1
+  currentMaxIntensity: 0
   mainLight: 0
 --- !u!114 &2059362565967910321
 MonoBehaviour:
@@ -5350,6 +5351,7 @@ MonoBehaviour:
   flashlight: {fileID: 0}
   onOrOff: 0
   maxIntensity: 20
+  currentMaxIntensity: 0
   mainLight: 1
 --- !u!114 &3565343486201230742
 MonoBehaviour:
@@ -5609,8 +5611,8 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
+  m_Height: 3
+  m_Radius: 1
   m_SlopeLimit: 45
   m_StepOffset: 0.72
   m_SkinWidth: 0.08
@@ -5667,7 +5669,8 @@ MonoBehaviour:
   lookXLimit: 65
   useHeadBob: 1
   currentLayer: 0
-  interactionRange: 100
+  interactionRange: 2
+  interactionSphereRadius: 1
   walkBobSpeed: 12
   walkBobAmount: 0.08
   runBobSpeed: 20
@@ -5711,6 +5714,7 @@ MonoBehaviour:
   sanity: 0
   tiredness: 0
   keys: []
+  lossScreen: {fileID: 0}
 --- !u!114 &8311922647742088351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5895,7 +5899,7 @@ Transform:
   m_GameObject: {fileID: 5626061735135618401}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6015,6 +6019,7 @@ MonoBehaviour:
   flashlight: {fileID: 0}
   onOrOff: 0
   maxIntensity: 0.5
+  currentMaxIntensity: 0
   mainLight: 0
 --- !u!114 &2207728956729688577
 MonoBehaviour:
@@ -6159,6 +6164,7 @@ MonoBehaviour:
   flashlight: {fileID: 0}
   onOrOff: 0
   maxIntensity: 320
+  currentMaxIntensity: 0
   mainLight: 0
 --- !u!114 &3896770094249167024
 MonoBehaviour:
@@ -6285,7 +6291,7 @@ Transform:
   m_GameObject: {fileID: 7291050886282294014}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6383,8 +6389,8 @@ CapsuleCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
+  m_Radius: 1
+  m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8480103727110426080

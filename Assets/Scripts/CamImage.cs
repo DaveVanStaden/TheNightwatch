@@ -115,6 +115,34 @@ public class CamImage : MonoBehaviour
         }
     }
 
+    // Add this helper to immediately collapse an enlarged camera without animation.
+    // Called by CamGroupManager when switching groups so a zoomed camera doesn't block new group rendering.
+    public void CollapseInstant()
+    {
+        // ensure rect and collider are cached
+        if (rect == null) rect = GetComponent<RectTransform>();
+        if (imgCollider == null) imgCollider = GetComponent<BoxCollider2D>();
+
+        if (!isBig) return;
+
+        // stop any running animation/coroutine on this CamImage
+        StopAllCoroutines();
+
+        // restore transform/rect/collider to saved defaults
+        rect.sizeDelta = currentSize;
+        rect.anchorMin = currentAnchorMin;
+        rect.anchorMax = currentAnchorMax;
+        rect.pivot = currentPivot;
+
+        if (imgCollider != null)
+        {
+            imgCollider.size = currentCollider;
+            imgCollider.offset = colliderOffset;
+        }
+
+        isBig = false;
+    }
+
     // Expose the zoom state with a public accessor (no other changes)
     public bool IsZoomed()
     {

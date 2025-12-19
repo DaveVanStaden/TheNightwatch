@@ -3085,6 +3085,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3254562810254972414, guid: 2f2c09a6c7b0f3141bde99f46832b753, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3254562810254972414, guid: 2f2c09a6c7b0f3141bde99f46832b753, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4350140130306637093, guid: 2f2c09a6c7b0f3141bde99f46832b753, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -3150,6 +3158,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   completedText: {fileID: 6333236916197490286}
+  paintingActiveFormat: Fix <b>fallen Paintings</b> ({0}/{1})
+  paintingActiveShort: Fix <b>fallen Paintings</b>
+  paintingCompletedText: Fixed fallen Paintings
+  trashActiveFormat: Clean <b>Trash</b> ({0}/{1})
+  trashActiveShort: Clean <b>Trash</b>
+  trashCompletedText: Cleaned <b>Trash</b>
+  singlePaintingActiveText: Restore the <b>fallen Painting</b>
+  singlePaintingCompletedText: Restored the <b>fallen Painting</b>
+  tasksHeading: <u>Tasks:</u>
+  completedHeading: 'Completed tasks: '
 --- !u!224 &7139608412199901749 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4350140130306637093, guid: 2f2c09a6c7b0f3141bde99f46832b753, type: 3}

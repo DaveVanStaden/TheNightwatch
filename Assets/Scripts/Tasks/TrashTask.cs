@@ -1,18 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// Trash task implemented without MonoBehaviour so it can be driven by TaskManager.
-/// Spawn/cleanup handled by TaskManager-provided prefab + points.
-///
-/// Changes:
-/// - Supports an externally-planned spawn group via SetPlannedGroup(...) so TaskManager can choose
-///   which of the 3 groups to use when the timer expires.
-/// - Removed "player in room" restrictions. Trash spawn groups and legacy spawn list are used directly.
-/// - When a group is chosen, trash is spawned at ALL transforms in that group (skips null entries).
-/// - Legacy fallback now spawns at all legacy spawn points (keeps backward compatibility).
-/// - CanActivate no longer depends on player being outside a spawn's room.
-/// </summary>
 public class TrashTask : ITask
 {
     private string taskName = "TrashTask";
@@ -27,6 +15,9 @@ public class TrashTask : ITask
     // multiple spawned trash objects (one per spawn point in chosen group)
     private List<GameObject> spawnedTrash = new List<GameObject>();
     private bool completed = false;
+
+    // store initial spawn count so UI can display total
+    private int initialSpawnCount = 0;
 
     public override void Initialize(TaskManager manager)
     {
@@ -79,6 +70,7 @@ public class TrashTask : ITask
         // reset per-run completion flag
         completed = false;
         spawnedTrash.Clear();
+        initialSpawnCount = 0;
 
         if (manager == null || manager.trashPrefab == null) { completed = true; return; }
 
@@ -94,11 +86,15 @@ public class TrashTask : ITask
                 var go = Object.Instantiate(manager.trashPrefab, sp.position, sp.rotation);
                 spawnedTrash.Add(go);
             }
+            // store initial count
+            initialSpawnCount = spawnedTrash.Count;
+
             // Clear planned selection after use so subsequent activations behave normally
-            // Keep PlannedGroupName set while active so designer UI can read it; clear plannedGroup reference.
             plannedGroup = null;
             Debug.Log($"[TrashTask] Spawned {spawnedTrash.Count} trash from planned group");
             completed = spawnedTrash.Count == 0;
+            // notify UI
+            manager?.NotifyTasksChanged();
             return;
         }
 
@@ -121,8 +117,13 @@ public class TrashTask : ITask
                 spawnedTrash.Add(go);
             }
 
+            // store initial count
+            initialSpawnCount = spawnedTrash.Count;
+
             Debug.Log($"[TrashTask] Spawned {spawnedTrash.Count} trash from legacy points");
             completed = spawnedTrash.Count == 0;
+            // notify UI
+            manager?.NotifyTasksChanged();
             return;
         }
 
@@ -153,6 +154,12 @@ public class TrashTask : ITask
             spawnedTrash.Add(go);
         }
 
+        // store initial spawn count for UI
+        initialSpawnCount = spawnedTrash.Count;
+
+        // notify UI
+        manager?.NotifyTasksChanged();
+
         // if nothing spawned (all points were null), mark completed
         Debug.Log($"[TrashTask] Spawned {spawnedTrash.Count} trash in Activate");
         completed = spawnedTrash.Count == 0;
@@ -169,6 +176,8 @@ public class TrashTask : ITask
             if (trash == null)
             {
                 spawnedTrash.RemoveAt(i);
+                // notify UI (count decreased)
+                manager?.NotifyTasksChanged();
                 continue;
             }
 
@@ -177,6 +186,8 @@ public class TrashTask : ITask
             {
                 Object.Destroy(trash);
                 spawnedTrash.RemoveAt(i);
+                // notify UI (count decreased)
+                manager?.NotifyTasksChanged();
             }
         }
 
@@ -184,6 +195,7 @@ public class TrashTask : ITask
         if (spawnedTrash.Count == 0)
         {
             completed = true;
+            manager?.NotifyTasksChanged();
         }
     }
 
@@ -202,9 +214,15 @@ public class TrashTask : ITask
         plannedGroup = null;
         PlannedGroupName = null;
         completed = false;
+        initialSpawnCount = 0;
+        manager?.NotifyTasksChanged();
     }
 
     public override bool IsCompleted => completed;
+
+    // Expose counts for UI
+    public int RemainingTrash => spawnedTrash?.Count ?? 0;
+    public int TotalSpawned => initialSpawnCount;
 
     // Helper: returns true if the group has at least one non-null transform
     private bool HasSpawnInGroup(Transform[] group)

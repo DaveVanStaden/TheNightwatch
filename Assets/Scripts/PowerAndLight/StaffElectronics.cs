@@ -11,13 +11,16 @@ public class StaffElectronics : MonoBehaviour
     Material PCmat2;
     Material PCmat3;
 
-
     [SerializeField] Material screenOffMat;
     [SerializeField] Material lightOffMat;
     [SerializeField] GameObject[] monitors;
     [SerializeField] GameObject PC;
     [SerializeField] AudioSource[] audioSources;
-    [SerializeField] Light[] lights; 
+    [SerializeField] Light[] lights;
+
+    // store original values so we can restore/scale them when power changes
+    private float[] originalAudioVolumes;
+    private float[] originalLightIntensities;
 
     private void Start()
     {
@@ -28,21 +31,94 @@ public class StaffElectronics : MonoBehaviour
         monitor2mat = monitors[1].GetComponent<MeshRenderer>().materials[0];
         monitor3mat = monitors[2].GetComponent<MeshRenderer>().materials[0];
         monitorLightsMat = monitors[0].GetComponent<MeshRenderer>().materials[2];
+
+        // cache original audio volumes and light intensities for scaling/restoring
+        if (audioSources != null)
+        {
+            originalAudioVolumes = new float[audioSources.Length];
+            for (int i = 0; i < audioSources.Length; i++)
+                originalAudioVolumes[i] = audioSources[i] != null ? audioSources[i].volume : 1f;
+        }
+        else
+        {
+            originalAudioVolumes = new float[0];
+        }
+
+        if (lights != null)
+        {
+            originalLightIntensities = new float[lights.Length];
+            for (int i = 0; i < lights.Length; i++)
+                originalLightIntensities[i] = lights[i] != null ? lights[i].intensity : 1f;
+        }
+        else
+        {
+            originalLightIntensities = new float[0];
+        }
+
+        // Ensure starting state is ON (per design)
+        ResetPower(true);
     }
+
     public void SwapElectronics()
     {
         if (isOn)
         {
-            DisableElectronics();
+            ResetPower(false);
         }
         else
         {
-            EnableElectronics();
+            ResetPower(true);
         }
+    }
+
+    // NOTE: ResetPower now only toggles global ElectricityLogic and updates local visuals.
+    // It does NOT call BreakerButton.Toggle to avoid running each toggle routine (audio/animation)
+    // and to avoid race conditions/crashes. Instead, we re-apply breaker visual/state silently.
+    public void ResetPower(bool on)
+    {
+        // Notify ElectricityLogic so global power state and events are consistent.
+        var elec = Object.FindAnyObjectByType<ElectricityLogic>();
+        if (elec != null)
+        {
+            if (on)
+            {
+                // restore global power
+                elec.ResetBreakerBox();
+            }
+            else
+            {
+                // force global power out
+                elec.ForcePowerOut();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[StaffElectronics] ElectricityLogic not found in scene; local visuals still updated.");
+        }
+
+        // Replace this line:
+        // var breakers = FindObjectsOfType<BreakerButton>();
+        // With the following:
+        var breakers = Object.FindObjectsByType<BreakerButton>(FindObjectsSortMode.None);
+        if (breakers != null)
+        {
+            foreach (var b in breakers)
+            {
+                if (b == null) continue;
+                //b.ApplyCurrentState(silent: true);
+            }
+        }
+
+        // Update local visuals/audio/lights to match requested state
+        if (on)
+            SetPowerLevelInternal(1f);
+        else
+            SetPowerLevelInternal(0f);
     }
 
     public void EnableElectronics()
     {
+        // restore materials
         Material[] tempPCmat = PC.GetComponent<MeshRenderer>().materials;
         tempPCmat[1] = PCmat;
         tempPCmat[2] = PCmat2;
@@ -52,12 +128,11 @@ public class StaffElectronics : MonoBehaviour
         Material[] tempMats1 = monitors[0].GetComponent<MeshRenderer>().materials;
         tempMats1[0] = monitor1mat;
         tempMats1[2] = monitorLightsMat;
-
         monitors[0].GetComponent<MeshRenderer>().materials = tempMats1;
+
         Material[] tempMats2 = monitors[1].GetComponent<MeshRenderer>().materials;
         tempMats2[0] = monitor2mat;
         tempMats2[2] = monitorLightsMat;
-
         monitors[1].GetComponent<MeshRenderer>().materials = tempMats2;
 
         Material[] tempMats3 = monitors[2].GetComponent<MeshRenderer>().materials;
@@ -65,14 +140,24 @@ public class StaffElectronics : MonoBehaviour
         tempMats3[2] = monitorLightsMat;
         monitors[2].GetComponent<MeshRenderer>().materials = tempMats3;
 
-
-        foreach (var audio in audioSources)
+        // enable audio and lights and restore volumes/intensities
+        for (int i = 0; i < audioSources.Length; i++)
         {
+            var audio = audioSources[i];
+            if (audio == null) continue;
             audio.enabled = true;
+            // restore previously cached volume
+            if (i < originalAudioVolumes.Length)
+                audio.volume = originalAudioVolumes[i];
         }
-        foreach (var light in lights)
+
+        for (int i = 0; i < lights.Length; i++)
         {
+            var light = lights[i];
+            if (light == null) continue;
             light.enabled = true;
+            if (i < originalLightIntensities.Length)
+                light.intensity = originalLightIntensities[i];
         }
 
         isOn = true;
@@ -81,6 +166,7 @@ public class StaffElectronics : MonoBehaviour
 
     public void DisableElectronics()
     {
+        // set PC and monitors to off materials
         Material[] tempPCmat = PC.GetComponent<MeshRenderer>().materials;
         tempPCmat[1] = screenOffMat;
         tempPCmat[2] = lightOffMat;
@@ -94,16 +180,34 @@ public class StaffElectronics : MonoBehaviour
             tempMats[2] = lightOffMat;
             monitor.GetComponent<MeshRenderer>().materials = tempMats;
         }
+
+        // disable audio and lights
         foreach (var audio in audioSources)
         {
+            if (audio == null) continue;
             audio.enabled = false;
         }
         foreach (var light in lights)
         {
+            if (light == null) continue;
             light.enabled = false;
         }
 
         isOn = false;
         Debug.Log("Turning off Staff Electronics");
+    }
+
+    // Internal helper to apply appearance/audio based on level (kept simple: 0 = off, >0 = full on)
+    private void SetPowerLevelInternal(float level)
+    {
+        level = Mathf.Clamp01(level);
+        if (level <= 0f)
+        {
+            DisableElectronics();
+            return;
+        }
+
+        // treat any positive level as full on for current visuals/audio
+        EnableElectronics();
     }
 }

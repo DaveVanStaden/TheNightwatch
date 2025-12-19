@@ -75,8 +75,10 @@ public class EventManager : MonoBehaviour
     [Header("BreakerCrashEvent")]
     [Tooltip("Sanity threshold below which the breaker-crash event may occur.")]
     public float breakerEventSanityThreshold = 60f;
-    [Tooltip("Cooldown in seconds after a breaker-crash before it can happen again.")]
-    public float breakerEventCooldownSeconds = 120f;
+    [Tooltip("Minimum randomized cooldown (seconds) after a breaker-crash before it can happen again.")]
+    public float breakerEventMinCooldownSeconds = 60f;
+    [Tooltip("Maximum randomized cooldown (seconds) after a breaker-crash before it can happen again.")]
+    public float breakerEventMaxCooldownSeconds = 180f;
 
     // list of CamGroup instances discovered at Awake (populated early so non-Mono modules can read it)
     [HideInInspector] public List<CamGroup> allCamGroups = new List<CamGroup>();

@@ -20,6 +20,13 @@ public class PlayerStats : MonoBehaviour
     [Tooltip("Runtime list of key identifiers the player currently holds.")]
     [SerializeField] private List<string> keys = new List<string>();
 
+    [Header("Death / UI")]
+    [Tooltip("Assign the Loss screen GameObject (disabled by default). Shown and time is frozen when HP hits 0).")]
+    [SerializeField] private GameObject lossScreen;
+
+    // Internal death flag so we only run death logic once
+    private bool isDead = false;
+
     // Backwards-compatible convenience property: true if player has any key.
     public bool HasKey
     {
@@ -37,6 +44,10 @@ public class PlayerStats : MonoBehaviour
         set
         {
             hp = Mathf.Clamp(value, 0, maxHP);
+            if (hp <= 0 && !isDead)
+            {
+                HandleDeath();
+            }
         }
     }
 
@@ -71,6 +82,11 @@ public class PlayerStats : MonoBehaviour
         HP = maxHP;
         Sanity = maxSanity;
         Tiredness = 0;
+
+        isDead = false;
+
+        if (lossScreen != null)
+            lossScreen.SetActive(false);
     }
 
     // Key inventory API
@@ -117,5 +133,37 @@ public class PlayerStats : MonoBehaviour
     public void ChangeTiredness(int amount)
     {
         Tiredness += amount;
+    }
+
+    // Called once when HP reaches zero
+    private void HandleDeath()
+    {
+        isDead = true;
+        Debug.Log("[PlayerStats] Player died. Triggering loss screen and pausing time.");
+
+        // Freeze game time
+        Time.timeScale = 0f;
+
+        // Show loss UI if assigned
+        if (lossScreen != null)
+        {
+            lossScreen.SetActive(true);
+        }
+
+        // Make cursor visible/unlocked so player can interact with the loss menu
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    // Optional helper to reset death state (useful for testing / play again)
+    public void ResetDeathState()
+    {
+        if (!isDead) return;
+        isDead = false;
+        if (lossScreen != null)
+            lossScreen.SetActive(false);
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }

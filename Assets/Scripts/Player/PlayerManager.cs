@@ -21,6 +21,8 @@ public class PlayerManager : MonoBehaviour
     [Header("Interaction Settings")]
     public float currentLayer = 0;
     public float interactionRange = 100f;
+    [Tooltip("Radius used by interaction fallbacks (SphereCast / OverlapSphere) to detect nearby interactables.")]
+    public float interactionSphereRadius = 1f;
 
     [Header("Headbob Settings")]
     public float walkBobSpeed = 14f;
@@ -75,6 +77,13 @@ public class PlayerManager : MonoBehaviour
         footstepAudioSource = GetComponent<AudioSource>();
         defaultYPos = playerCamera.transform.localPosition.y;
         foreach (var m in modules) m.OnAwake();
+
+        // Ensure player death state is reset at startup (hide loss UI, unfreeze time).
+        // Try the singleton first, fallback to scene lookup.
+        var ps = PlayerStats.Instance ?? Object.FindFirstObjectByType<PlayerStats>();
+        if (ps != null)
+            ps.ResetDeathState();
+
         DisableCameraForSeconds(0.1f); // avoid snap on start
     }
 

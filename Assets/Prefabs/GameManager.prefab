@@ -85,10 +85,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StaffElectronics
   screenOffMat: {fileID: 2100000, guid: ed0d0aaf1e664494d96abe817d785ee0, type: 2}
   lightOffMat: {fileID: 2100000, guid: f40adbfc9f670fc4aa491c86f1304f37, type: 2}
-  monitors: []
+  monitors:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   PC: {fileID: 0}
-  audioSources: []
-  lights: []
+  audioSources:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  lights:
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!114 &7767526375770893696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,7 +117,7 @@ MonoBehaviour:
   paintings:
   - {fileID: 0}
   playerManager: {fileID: 0}
-  sanityThreshold: 90
+  sanityThreshold: 80
   baseChancePerSecond: 5
   timeToMaxChance: 10
   resetMinSeconds: 20
@@ -119,9 +132,22 @@ MonoBehaviour:
   shadowMaxChance: 0.5
   shadowTimeToMax: 10
   shadowSpawnRadius: 30
-  statues: []
+  statues:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   statueFollowSanityThreshold: 50
   statueRequireNotSeen: 1
+  cameraEntityPrefab: {fileID: 2597743189431292429, guid: 09490b6244ca91945b46228d2d7e09c3, type: 3}
+  cameraEventSanityThreshold: 110
+  cameraEventCooldownSeconds: 10
+  cameraEventChanceMultiplierOnCamera: 100
+  cameraEntitySanityDrainPerSecond: 1
+  breakerEventSanityThreshold: 110
+  breakerEventMinCooldownSeconds: 70
+  breakerEventMaxCooldownSeconds: 180
+  allCamGroups: []
 --- !u!114 &3701113217424796448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,23 +160,93 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab9b85220dec52645826b00f98c9de4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TaskManager
-  minTimeToNextTask: 2
-  maxTimeToNextTask: 6
   playerTransform: {fileID: 0}
   playerManager: {fileID: 0}
   paintingTargets:
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   paintingRequiredPlayerDistanceToFall: 8
   paintingInteractionDistance: 10
+  paintingMinFallCount: 1
+  paintingMaxFallCount: 3
+  paintingForceAllToFall: 0
+  paintingRepeat: 0
+  paintingMinTimeToStart: 0
+  paintingMaxTimeToStart: 2
   trashPrefab: {fileID: 2292851349818525690, guid: abaca64723d5ea949a2f6166a6247a6c, type: 3}
   trashSpawnPoints:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  trashSpawnGroupA:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  trashSpawnGroupB:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  trashSpawnGroupC:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  trashRepeat: 0
+  trashMinTimeToStart: 0
+  trashMaxTimeToStart: 2
   trashInteractionDistance: 7
   PaintingTaskName: Fixed painting
   TrashTaskName: Cleaned trash
+  specialPaintingTarget: {fileID: 0}
+  specialPhoneDelay: 10
+  specialPhoneAudioSource: {fileID: 0}
+  specialPhoneCompleteClip: {fileID: 0}
+  specialCamImage: {fileID: 0}
+  specialCamName: BigHall
+  specialPaintingTag: SpecialPainting
+  trashGroupATag: TrashGroupA
+  trashGroupBTag: TrashGroupB
+  trashGroupCTag: TrashGroupC
+  specialPhoneUseCall: 0
+  specialPhoneCallStarted: 0
+  requireSinglePaintingFirst: 1
   completedTasks: []
 --- !u!114 &7397186432879180287
 MonoBehaviour:

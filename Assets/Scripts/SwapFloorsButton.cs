@@ -82,5 +82,9 @@ public class SwapFloorsButton : MonoBehaviour
 
             isSwapped = false;
         }
+
+        // ensure the manager reapplies the selected group for the now-visible map
+        if (CamGroupManager.Instance != null)
+            CamGroupManager.Instance.ReapplyActiveGroupForVisibility();
     }
 }
