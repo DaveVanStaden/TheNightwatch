@@ -82,6 +82,16 @@ public class CamGroupManager : MonoBehaviour
         // Debug trace
         Debug.Log($"[CamGroupManager] Applying ActiveGroup = '{ActiveGroup?.name ?? "null"}'");
 
+        // Ensure any zoomed camera is collapsed instantly so it cannot block new group's rendering
+        var allCamImagesForCollapse = FindObjectsByType<CamImage>(FindObjectsSortMode.None);
+        for (int c = 0; c < allCamImagesForCollapse.Length; c++)
+        {
+            var camImg = allCamImagesForCollapse[c];
+            if (camImg == null) continue;
+            if (camImg.IsZoomed())
+                camImg.CollapseInstant();
+        }
+
         // 1) Disable all CamImage UI entries (clean slate)
         var allCamImages = FindObjectsByType<CamImage>(FindObjectsSortMode.None);
         for (int i = 0; i < allCamImages.Length; i++)
