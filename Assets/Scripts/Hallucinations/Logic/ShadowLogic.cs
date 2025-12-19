@@ -683,6 +683,9 @@ public class ShadowLogic : MonoBehaviour
         var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = true;
+        var particles = GetComponentInChildren<ParticleSystem>();
+        if (particles != null)
+            particles.Play();
     }
 
     private void DisableRenderer()
@@ -690,6 +693,9 @@ public class ShadowLogic : MonoBehaviour
         var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = false;
+        var particles = GetComponentInChildren<ParticleSystem>();
+        if (particles != null)
+            particles.Stop();
     }
 
     private bool CanSeePlayer()
