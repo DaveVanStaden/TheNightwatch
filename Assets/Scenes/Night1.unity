@@ -343,8 +343,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.0666838, y: 4.602438, z: 3.039305}
-  m_Center: {x: -2.58365, y: 0, z: -1.5769414}
+  m_Size: {x: 3.1, y: 1, z: 3.95}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!33 &388331266
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -362,7 +362,7 @@ Transform:
   m_GameObject: {fileID: 388331264}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.611899, y: 4.33, z: -0.04}
+  m_LocalPosition: {x: -11.696, y: 2.959, z: -1.237}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -380,6 +380,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45bf0fa172f99314bbe2c079b09154ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  additionalRenderers:
+  - {fileID: 1748914228}
+  - {fileID: 1269035914}
+  - {fileID: 1439468698}
 --- !u!4 &391105997 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4913922225124502025, guid: 786640a0ab924d84ba1d34cee06e4a6b, type: 3}
@@ -1435,6 +1439,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87778d3361165a144a39b88318dfeb23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &1748914228 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1639730602980890268, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+  m_PrefabInstance: {fileID: 4921537392257424806}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4500f69e06401d4b8ce9f9b705560c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!82 &1754169037 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 1802098934462289474, guid: 924eed004a024234582db290b2c4c814, type: 3}
