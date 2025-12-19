@@ -633,14 +633,14 @@ public class ShadowLogic : MonoBehaviour
 
     private void EnableRenderer()
     {
-        var meshRenderer = GetComponent<MeshRenderer>();
+        var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = true;
     }
 
     private void DisableRenderer()
     {
-        var meshRenderer = GetComponent<MeshRenderer>();
+        var meshRenderer = GetComponentInChildren<MeshRenderer>();
         if (meshRenderer != null)
             meshRenderer.enabled = false;
     }
