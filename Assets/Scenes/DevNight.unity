@@ -1174,6 +1174,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DoorParent
       objectReference: {fileID: 0}
+    - target: {fileID: 7313548099674031526, guid: 3dcf682ddfefc524097e272f41174653, type: 3}
+      propertyPath: m_TagString
+      value: Door
+      objectReference: {fileID: 0}
     - target: {fileID: 7712566487698024100, guid: 3dcf682ddfefc524097e272f41174653, type: 3}
       propertyPath: m_LocalPosition.x
       value: 16.99
@@ -2793,7 +2797,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: requireSinglePaintingFirst
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: trashSpawnGroupA.Array.size
@@ -3469,6 +3473,10 @@ PrefabInstance:
       propertyPath: animatorTriggerParameter
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 3607828385646977821, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: m_TagString
+      value: Door
+      objectReference: {fileID: 0}
     - target: {fileID: 3991133115624630330, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: powerGroup
       value: 
@@ -3489,6 +3497,10 @@ PrefabInstance:
       propertyPath: onToggled.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 543787962}
+    - target: {fileID: 4476018500775868511, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: m_TagString
+      value: Door
+      objectReference: {fileID: 0}
     - target: {fileID: 4727764433360314538, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: m_Name
       value: InteractableProps
@@ -3689,6 +3701,10 @@ PrefabInstance:
     - target: {fileID: 693337070060876902, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 693337070060876902, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: paintingActiveFormat
+      value: Fix Paintings ({0}/{1})
       objectReference: {fileID: 0}
     - target: {fileID: 930047923601195271, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
       propertyPath: audioSource
