@@ -263,9 +263,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShadowLogic
   playerTransform: {fileID: 0}
   agent: {fileID: 0}
-  minMoveDistance: 20
-  repositionTriggerDistance: 20
-  maintainDistanceFromPlayer: 30
+  repositionTriggerDistance: 12
+  maintainDistanceFromPlayer: 20
   lightDisableRadius: 25
   sampleCount: 64
   searchRadius: 30
@@ -282,10 +281,18 @@ MonoBehaviour:
   speedLowSanityThreshold: 10
   huntMinSpeed: 3
   huntMaxSpeed: 10
-  outOfSightThreshold: 15
+  outOfSightThreshold: 10
+  attackDamage: 20
+  attackCooldownSeconds: 2
   repositionsBeforeDestroy: 4
   repositionCooldownSeconds: 15
   huntMaxDurationSeconds: 30
+  enableAggressiveRecovery: 1
+  moveRecoveryAttempts: 3
+  moveRecoveryDelay: 0.2
+  warpSearchRadiusStart: 1
+  warpSearchRadiusStep: 2
+  warpSearchMaxRadius: 20
   huntSuppressDuration: 1
   lightDarkenFactor: 0.2
   lightFadeDuration: 0.05

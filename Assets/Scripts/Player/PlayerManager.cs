@@ -77,6 +77,13 @@ public class PlayerManager : MonoBehaviour
         footstepAudioSource = GetComponent<AudioSource>();
         defaultYPos = playerCamera.transform.localPosition.y;
         foreach (var m in modules) m.OnAwake();
+
+        // Ensure player death state is reset at startup (hide loss UI, unfreeze time).
+        // Try the singleton first, fallback to scene lookup.
+        var ps = PlayerStats.Instance ?? Object.FindFirstObjectByType<PlayerStats>();
+        if (ps != null)
+            ps.ResetDeathState();
+
         DisableCameraForSeconds(0.1f); // avoid snap on start
     }
 
