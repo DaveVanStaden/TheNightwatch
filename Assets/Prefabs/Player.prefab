@@ -5612,7 +5612,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 3
-  m_Radius: 1
+  m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.72
   m_SkinWidth: 0.08
@@ -5851,7 +5851,7 @@ Transform:
   m_GameObject: {fileID: 5604591879221488867}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.525, y: -0.312, z: 0.469}
+  m_LocalPosition: {x: 0.283, y: -0.312, z: 0.469}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6389,7 +6389,7 @@ CapsuleCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 0.5
   m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -6470,7 +6470,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 5559
+    m_Bits: 5567
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 03da689a905bd384cb6abd43fd1e7c17, type: 2}
   m_TargetDisplay: 0
@@ -6510,7 +6510,7 @@ MonoBehaviour:
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 9
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
@@ -6544,27 +6544,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalScale.x
-      value: 8.635329
+      value: 3.7504098
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalScale.y
-      value: 8.635327
+      value: 3.750409
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalScale.z
-      value: 8.635327
+      value: 3.750409
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.01588285
+      value: 0.153
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.035999984
+      value: 0.04
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.10523692
+      value: 0.122
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6605,6 +6605,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
       propertyPath: m_Name
       value: FlashlightModel
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2566449ecc0f9e84d9072362623e6d69, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
