@@ -140,11 +140,11 @@ MonoBehaviour:
   statueFollowSanityThreshold: 50
   statueRequireNotSeen: 1
   cameraEntityPrefab: {fileID: 2597743189431292429, guid: 09490b6244ca91945b46228d2d7e09c3, type: 3}
-  cameraEventSanityThreshold: 110
+  cameraEventSanityThreshold: 60
   cameraEventCooldownSeconds: 10
   cameraEventChanceMultiplierOnCamera: 100
   cameraEntitySanityDrainPerSecond: 1
-  breakerEventSanityThreshold: 110
+  breakerEventSanityThreshold: 92
   breakerEventMinCooldownSeconds: 70
   breakerEventMaxCooldownSeconds: 180
   allCamGroups: []
@@ -235,7 +235,7 @@ MonoBehaviour:
   PaintingTaskName: Fixed painting
   TrashTaskName: Cleaned trash
   specialPaintingTarget: {fileID: 0}
-  specialPhoneDelay: 10
+  specialPhoneDelay: 20
   specialPhoneAudioSource: {fileID: 0}
   specialPhoneCompleteClip: {fileID: 0}
   specialCamImage: {fileID: 0}

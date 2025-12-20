@@ -284,6 +284,16 @@ public class PlayerInteraction : PlayerModule
             manager.currentLayer = 0;
             return true;
         }
+        GrabPhone phone = hit.collider.GetComponent<GrabPhone>();
+        if (phone == null)
+        {
+            phone = hit.collider.GetComponentInChildren<GrabPhone>();
+        }
+        if (phone != null)
+        {
+            phone.ToFace();
+            phone = null;
+        }
 
         // Robust lookup for any IInteraction on hit collider, parents or children
         IInteraction interactable = null;

@@ -25,29 +25,43 @@ public class GrabPhone : MonoBehaviour
         speakers = GetComponent<AudioSource>();
         phone = GameObject.FindWithTag("Phone").GetComponent<AudioSource>();
     }
-
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.X) && isAttatched)
+        {
+            SkipCall();
+        }
+    }
     public IEnumerator AttatchToFace()
     {
-        transform.SetParent(targetPosition.gameObject.transform);
-        float timePassed = 0f;
-        float pos;
-        float maxTime = 1f;
-
-        while (timePassed < maxTime)
+        if (!isAttatched)
         {
-            pos = Mathf.Lerp(0f, 1f, timePassed / maxTime);
-            timePassed += Time.deltaTime;
+            transform.SetParent(targetPosition.gameObject.transform);
+            float timePassed = 0f;
+            float pos;
+            float maxTime = 1f;
 
-            transform.GetPositionAndRotation(out Vector3 initialPosition, out Quaternion initialRotation);
-            currentPosition = Vector3.Slerp(initialPosition, targetPosition.position, pos);
-            currentRotation = Quaternion.Slerp(initialRotation, targetPosition.rotation, pos);
-            transform.SetPositionAndRotation(currentPosition, currentRotation);
-            //Debug.Log("Busyyyy");
+            while (timePassed < maxTime)
+            {
+                pos = Mathf.Lerp(0f, 1f, timePassed / maxTime);
+                timePassed += Time.deltaTime;
+
+                transform.GetPositionAndRotation(out Vector3 initialPosition, out Quaternion initialRotation);
+                currentPosition = Vector3.Slerp(initialPosition, targetPosition.position, pos);
+                currentRotation = Quaternion.Slerp(initialRotation, targetPosition.rotation, pos);
+                transform.SetPositionAndRotation(currentPosition, currentRotation);
+                //Debug.Log("Busyyyy");
+                yield return null;
+            }
+            //Debug.Log("Done!");
+            StartPhoneStuff();
             yield return null;
         }
-        //Debug.Log("Done!");
-        StartPhoneStuff();
-        yield return null;
+    }
+
+    public void ToFace()
+    {
+        StartCoroutine(AttatchToFace());
     }
 
     private void StartPhoneStuff()
