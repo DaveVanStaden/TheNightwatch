@@ -19,11 +19,14 @@ public class GrabPhone : MonoBehaviour
     [SerializeField] Material offMaterial;
     public bool isAttatched = false;
 
+    private TaskManager taskManager;
+
     // Start is called before the first frame update
     void Start()
     {
         speakers = GetComponent<AudioSource>();
         phone = GameObject.FindWithTag("Phone").GetComponent<AudioSource>();
+        taskManager = FindAnyObjectByType<TaskManager>();
     }
     private void Update()
     {
@@ -106,6 +109,17 @@ public class GrabPhone : MonoBehaviour
     }
     public void SkipCall()
     {
+        // Set the flag in TaskManager to allow the tutorial painting to fall
+        if (taskManager != null)
+        {
+            taskManager.specialPhoneCallStarted = true;
+            Debug.Log("[GrabPhone] SkipCall pressed - setting specialPhoneCallStarted to true");
+        }
+        else
+        {
+            Debug.LogWarning("[GrabPhone] SkipCall pressed but TaskManager not found!");
+        }
+
         StopCoroutine(WaitToFall());
         StartCoroutine(Fall());
     }
