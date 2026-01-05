@@ -140,6 +140,9 @@ public class TaskManager : MonoBehaviour
         LastTrashGroupName = null;
         hasTriggeredPostTutorialTasks = false;
 
+        // IMPORTANT: Reset phone call flag on scene reload to allow skip button to work again
+        specialPhoneCallStarted = false;
+
         // try to find player manager if not assigned
         if (playerManager == null)
             playerManager = UnityEngine.Object.FindFirstObjectByType<PlayerManager>();
