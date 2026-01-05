@@ -542,6 +542,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45bf0fa172f99314bbe2c079b09154ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  additionalRenderers: []
 --- !u!4 &391105997 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4913922225124502025, guid: 786640a0ab924d84ba1d34cee06e4a6b, type: 3}
@@ -3288,6 +3289,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 846504943069126510, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: targetPosition
+      value: 
+      objectReference: {fileID: 1996654184}
     - target: {fileID: 1225664155590809207, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
       propertyPath: cursor
       value: 
@@ -4922,7 +4927,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9192498438500279479, guid: faae868e6762e664caa41475ea180069, type: 3}
       insertIndex: 3
       addedObject: {fileID: 782864913}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3423879587903815481, guid: faae868e6762e664caa41475ea180069, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: faae868e6762e664caa41475ea180069, type: 3}
 --- !u!1001 &7956246278355001088
 PrefabInstance:

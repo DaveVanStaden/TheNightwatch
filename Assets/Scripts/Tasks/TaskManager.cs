@@ -95,6 +95,10 @@ public class TaskManager : MonoBehaviour
     [Tooltip("If true, the SinglePaintingFall task must be completed before trash timers/other scheduled tasks may start.")]
     public bool requireSinglePaintingFirst = true;
 
+    [Header("Debug")]
+    [Tooltip("DEBUG: If true, ALL paintings (paintingTargets AND specialPaintingTarget) will drop immediately on Start, ignoring all normal activation logic.")]
+    public bool debugForceAllPaintingsDrop = false;
+
     // runtime
     public List<ITask> tasks = new();
     private List<ITask> activeTasks = new();
@@ -122,6 +126,9 @@ public class TaskManager : MonoBehaviour
 
     public string LastTrashGroupName { get; private set; }
 
+    // Track whether we've already checked for post-tutorial activation
+    private bool hasTriggeredPostTutorialTasks = false;
+
     private void Awake()
     {
         // Initialize runtime collections but do NOT clear inspector-assigned fields.
@@ -131,6 +138,7 @@ public class TaskManager : MonoBehaviour
         disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
         nextTaskTimer = 0f;
         LastTrashGroupName = null;
+        hasTriggeredPostTutorialTasks = false;
 
         // try to find player manager if not assigned
         if (playerManager == null)
@@ -175,7 +183,67 @@ public class TaskManager : MonoBehaviour
 
     private void Start()
     {
-        TryStartInitialTasks();
+        // DEBUG: Force all paintings to drop if debug flag enabled
+        if (debugForceAllPaintingsDrop)
+        {
+            DebugForceAllPaintingsToDrop();
+        }
+        else
+        {
+            TryStartInitialTasks();
+        }
+    }
+
+    private void DebugForceAllPaintingsToDrop()
+    {
+        Debug.Log("[TaskManager] DEBUG: Forcing all paintings to drop immediately!");
+
+        // Force the special painting to drop (tutorial painting)
+        if (specialPaintingTarget != null)
+        {
+            var cfg = specialPaintingTarget.GetComponent<PaintingFallConfig>();
+            Vector3 offsetWorld;
+            if (cfg != null)
+                offsetWorld = specialPaintingTarget.TransformVector(cfg.fallOffset);
+            else
+                offsetWorld = specialPaintingTarget.forward * 0.5f + Vector3.down * 1.4f;
+
+            Quaternion fallenRotation;
+            if (cfg != null)
+                fallenRotation = specialPaintingTarget.rotation * Quaternion.Euler(cfg.fallRotationEuler);
+            else
+                fallenRotation = specialPaintingTarget.rotation * Quaternion.Euler(90f, 0f, 0f);
+
+            specialPaintingTarget.position = specialPaintingTarget.position + offsetWorld;
+            specialPaintingTarget.rotation = fallenRotation;
+            Debug.Log($"[TaskManager] DEBUG: Dropped special painting '{specialPaintingTarget.name}'");
+        }
+
+        // Force all regular painting targets to drop
+        if (paintingTargets != null && paintingTargets.Count > 0)
+        {
+            foreach (var painting in paintingTargets)
+            {
+                if (painting == null) continue;
+
+                var cfg = painting.GetComponent<PaintingFallConfig>();
+                Vector3 offsetWorld;
+                if (cfg != null)
+                    offsetWorld = painting.TransformVector(cfg.fallOffset);
+                else
+                    offsetWorld = painting.forward * 0.5f + Vector3.down * 1.4f;
+
+                Quaternion fallenRotation;
+                if (cfg != null)
+                    fallenRotation = painting.rotation * Quaternion.Euler(cfg.fallRotationEuler);
+                else
+                    fallenRotation = painting.rotation * Quaternion.Euler(90f, 0f, 0f);
+
+                painting.position = painting.position + offsetWorld;
+                painting.rotation = fallenRotation;
+                Debug.Log($"[TaskManager] DEBUG: Dropped painting '{painting.name}'");
+            }
+        }
     }
 
     private void RestoreInspectorReferencesIfMissing()
@@ -414,14 +482,17 @@ public class TaskManager : MonoBehaviour
             }
         }
 
+        // Only start painting task immediately if tutorial requirement is disabled
+        if (!requireSinglePaintingFirst)
+        {
+            TryStartPaintingTask();
+        }
+    }
+
+    private void TryStartPaintingTask()
+    {
         if (paintingTaskRef != null)
         {
-            // If tutorial gating is enabled, do not start painting task until the single painting mini-task completes.
-            if (requireSinglePaintingFirst && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
-            {
-                return;
-            }
-
             int paintIdx = tasks.IndexOf(paintingTaskRef);
             if (paintIdx >= 0 && (disabledTaskIndices == null || !disabledTaskIndices.Contains(paintIdx)))
             {
@@ -432,6 +503,7 @@ public class TaskManager : MonoBehaviour
                         activeTasks.Add(paintingTaskRef);
                         paintingTaskRef.Activate(playerTransform);
                         OnTasksChanged?.Invoke();
+                        Debug.Log("[TaskManager] Painting task activated after tutorial completion");
                     }
                 }
             }
@@ -483,8 +555,24 @@ public class TaskManager : MonoBehaviour
                     t.Deactivate();
                     activeTasks.RemoveAt(i);
                     OnTasksChanged?.Invoke();
+
+                    // Check if this is the tutorial task completing
+                    if (t == singlePaintingTaskRef && requireSinglePaintingFirst)
+                    {
+                        Debug.Log("[TaskManager] Tutorial task completed - triggering other tasks now");
+                        TryStartPostTutorialTasks();
+                    }
                 }
             }
+        }
+
+        // Check if tutorial is complete and trigger other tasks
+        if (requireSinglePaintingFirst && 
+            singlePaintingTaskRef != null && 
+            singlePaintingTaskRef.IsCompleted && 
+            !hasTriggeredPostTutorialTasks)
+        {
+            TryStartPostTutorialTasks();
         }
 
         // If tutorial gating is enabled, pause scheduled task timers until the single painting mini-task completes.
@@ -505,6 +593,20 @@ public class TaskManager : MonoBehaviour
             if (TryStartTrashFromTimer()) ScheduleNextTask();
             else ScheduleNextTask();
         }
+    }
+
+    private void TryStartPostTutorialTasks()
+    {
+        if (hasTriggeredPostTutorialTasks) return;
+
+        hasTriggeredPostTutorialTasks = true;
+        Debug.Log("[TaskManager] Triggering post-tutorial tasks");
+
+        // Immediately activate the painting task
+        TryStartPaintingTask();
+
+        // Immediately activate the trash task (don't rely on timer)
+        TryStartTrashTask();
     }
 
     private bool TryStartTrashFromTimer()
@@ -568,6 +670,68 @@ public class TaskManager : MonoBehaviour
         {
             if (trashTaskRef is TrashTask tt2) tt2.SetPlannedGroup(null, null);
             return false;
+        }
+    }
+
+    private void TryStartTrashTask()
+    {
+        int trashIdx = tasks.IndexOf(trashTaskRef);
+        if (trashTaskRef == null || trashIdx < 0) return;
+        if (disabledTaskIndices != null && disabledTaskIndices.Contains(trashIdx)) return;
+
+        // Select a trash group
+        var groups = new List<Transform[]>();
+        if (HasNonNull(trashSpawnGroupA)) groups.Add(trashSpawnGroupA);
+        if (HasNonNull(trashSpawnGroupB)) groups.Add(trashSpawnGroupB);
+        if (HasNonNull(trashSpawnGroupC)) groups.Add(trashSpawnGroupC);
+
+        Transform[] chosenGroup = null;
+        string groupName = null;
+        if (groups.Count > 0)
+        {
+            chosenGroup = groups[UnityEngine.Random.Range(0, groups.Count)];
+            if (chosenGroup == trashSpawnGroupA) groupName = "Group A";
+            else if (chosenGroup == trashSpawnGroupB) groupName = "Group B";
+            else if (chosenGroup == trashSpawnGroupC) groupName = "Group C";
+            else groupName = "Group (unknown source)";
+        }
+        else if (trashSpawnPoints != null && trashSpawnPoints.Length > 0)
+        {
+            if (HasNonNull(trashSpawnPoints))
+            {
+                chosenGroup = trashSpawnPoints;
+                groupName = "Legacy";
+            }
+        }
+
+        if (chosenGroup == null || chosenGroup.Length == 0)
+        {
+            Debug.LogWarning("[TaskManager] Cannot start trash task - no valid spawn groups configured");
+            return;
+        }
+
+        LastTrashGroupName = groupName;
+        if (trashTaskRef is TrashTask tt) tt.SetPlannedGroup(chosenGroup, groupName);
+
+        if (trashTaskRef.CanActivate(playerTransform))
+        {
+            if (!activeTasks.Contains(trashTaskRef))
+            {
+                activeTasks.Add(trashTaskRef);
+                trashTaskRef.Activate(playerTransform);
+                if (!trashRepeat)
+                {
+                    if (disabledTaskIndices == null) disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
+                    disabledTaskIndices.Add(trashIdx);
+                }
+                OnTasksChanged?.Invoke();
+                Debug.Log("[TaskManager] Trash task activated after tutorial completion");
+            }
+        }
+        else
+        {
+            if (trashTaskRef is TrashTask tt2) tt2.SetPlannedGroup(null, null);
+            Debug.LogWarning("[TaskManager] Trash task cannot activate - CanActivate returned false");
         }
     }
 
