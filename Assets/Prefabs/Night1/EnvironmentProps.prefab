@@ -771,7 +771,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 5.202e-42, y: 1e-45, z: 2.9059618e-21, w: 6.609262e+16}
+  m_BoundingSphereOverride: {x: -0.01441765, y: NaN, z: -2.3400395, w: 7.807709e-34}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -6224,7 +6224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
-  fallOffset: {x: 0, y: -5.5, z: 5.48}
+  fallOffset: {x: 0, y: -3, z: 5.48}
   fallRotationEuler: {x: 90, y: 0, z: 0}
   fallDuration: 0.5
   returnDuration: 0.75
@@ -9954,6 +9954,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: f6a506b5c56bd5742a3d1af186ad7a82, type: 2}
+    - target: {fileID: 4970703593608140439, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0c16abfb76772a14ab940cbe074bcf1d, type: 2}
     - target: {fileID: 5027455709752066087, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
       propertyPath: m_ReceiveGI
       value: 1
@@ -21457,7 +21461,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
-  fallOffset: {x: 4.59, y: 0, z: 6.74}
+  fallOffset: {x: 2.7, y: 0, z: 4}
   fallRotationEuler: {x: 0, y: 90, z: 0}
   fallDuration: 0.5
   returnDuration: 0.75
