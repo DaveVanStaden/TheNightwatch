@@ -1912,10 +1912,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 867335175}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: requireSinglePaintingFirst
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'paintingTargets.Array.data[0]'
       value: 
       objectReference: {fileID: 1216054359}
@@ -2238,7 +2234,7 @@ PrefabInstance:
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[0]'
       value: 
-      objectReference: {fileID: 6829324717808045925}
+      objectReference: {fileID: 0}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[1]'
       value: 
@@ -2246,7 +2242,7 @@ PrefabInstance:
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[2]'
       value: 
-      objectReference: {fileID: 6829324717808045923}
+      objectReference: {fileID: 0}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[3]'
       value: 
@@ -3466,31 +3462,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Statue
---- !u!114 &6829324717808045923 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3891220422144853366, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-  m_PrefabInstance: {fileID: 6829324717808045921}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Statue
 --- !u!114 &6829324717808045924 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1778983873729443905, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-  m_PrefabInstance: {fileID: 6829324717808045921}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Statue
---- !u!114 &6829324717808045925 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7902562326367680913, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
   m_PrefabInstance: {fileID: 6829324717808045921}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
