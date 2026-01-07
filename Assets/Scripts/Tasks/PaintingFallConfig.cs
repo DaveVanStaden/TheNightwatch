@@ -26,4 +26,18 @@ public class PaintingFallConfig : MonoBehaviour
     [Header("Room blocking")]
     [Tooltip("Optional: Transform that represents the room bounds (center + scale as size). If set and the player is inside this room, the painting will NOT be chosen for the task.")]
     public Transform roomBounds;
+
+    [Header("Runtime State (Auto-Saved)")]
+    [Tooltip("Original position stored at Awake - used for reset on game restart")]
+    [HideInInspector] public Vector3 originalPosition;
+    [Tooltip("Original rotation stored at Awake - used for reset on game restart")]
+    [HideInInspector] public Quaternion originalRotation;
+
+    private void Awake()
+    {
+        // Store original transform state on first load
+        // This will be used to reset paintings when game restarts
+        originalPosition = transform.position;
+        originalRotation = transform.rotation;
+    }
 }

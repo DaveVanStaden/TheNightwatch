@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class TaskManager : MonoBehaviour
 {
@@ -55,11 +56,14 @@ public class TaskManager : MonoBehaviour
     [Tooltip("Distance player must be to interact with trash.")]
     public float trashInteractionDistance = 2.5f;
 
-    [Header("Task names")]
-    [Tooltip("Human readable name used for the Painting task (logged/completed list).")]
-    public string PaintingTaskName = "PaintingTask";
-    [Tooltip("Human readable name used for the Trash task (logged/completed list).")]
-    public string TrashTaskName = "TrashTask";
+    // HARDCODED: Task names are constants to prevent accidental changes via inspector
+    // These MUST match what FinalSequenceManager expects!
+    private const string PAINTING_TASK_NAME = "PaintingTask";
+    private const string TRASH_TASK_NAME = "TrashTask";
+
+    // Expose constants as properties for task classes to read
+    public string PaintingTaskName => PAINTING_TASK_NAME;
+    public string TrashTaskName => TRASH_TASK_NAME;
 
     [Header("Special single-painting mini-task")]
     [Tooltip("Assign the specific painting Transform that will be used for the single static fall mini-task.")]
@@ -91,9 +95,8 @@ public class TaskManager : MonoBehaviour
 
     [HideInInspector] public bool specialPhoneCallStarted = false;
 
-    [Header("Tutorial")]
-    [Tooltip("If true, the SinglePaintingFall task must be completed before trash timers/other scheduled tasks may start.")]
-    public bool requireSinglePaintingFirst = true;
+    // HARDCODED: Tutorial is ALWAYS required - not configurable to prevent accidental bypassing
+    private const bool REQUIRE_TUTORIAL_FIRST = true;
 
     [Header("Debug")]
     [Tooltip("DEBUG: If true, ALL paintings (paintingTargets AND specialPaintingTarget) will drop immediately on Start, ignoring all normal activation logic.")]
@@ -131,17 +134,12 @@ public class TaskManager : MonoBehaviour
 
     private void Awake()
     {
-        // Initialize runtime collections but do NOT clear inspector-assigned fields.
-        activeTasks = new List<ITask>();
-        tasks = new List<ITask>();
-        completedTasks = new List<string>();
-        disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
-        nextTaskTimer = 0f;
-        LastTrashGroupName = null;
-        hasTriggeredPostTutorialTasks = false;
-
-        // IMPORTANT: Reset phone call flag on scene reload to allow skip button to work again
-        specialPhoneCallStarted = false;
+        Debug.Log("[TaskManager] ===== AWAKE START =====");
+        Debug.Log($"[TaskManager] Tutorial requirement is HARDCODED to: {REQUIRE_TUTORIAL_FIRST}");
+        
+        // Check if this is a fresh scene load (returning from main menu)
+        // If we're in the game scene and this is a reload, we need to reset everything
+        ResetTaskState();
 
         // try to find player manager if not assigned
         if (playerManager == null)
@@ -151,9 +149,8 @@ public class TaskManager : MonoBehaviour
         if (playerManager != null && playerTransform == null)
             playerTransform = playerManager.transform;
 
-        // ensure task name defaults
-        if (string.IsNullOrWhiteSpace(PaintingTaskName)) PaintingTaskName = "PaintingTask";
-        if (string.IsNullOrWhiteSpace(TrashTaskName)) TrashTaskName = "TrashTask";
+        // Task names are now hardcoded constants - no need to check inspector values
+        Debug.Log($"[TaskManager] Using hardcoded task names - Painting:{PAINTING_TASK_NAME}, Trash:{TRASH_TASK_NAME}");
 
         // Recover inspector references if they are missing after reload
         RestoreInspectorReferencesIfMissing();
@@ -180,8 +177,13 @@ public class TaskManager : MonoBehaviour
         paintingTaskRef = paintingTask;
         trashTaskRef = trashTask;
 
+        Debug.Log($"[TaskManager] Created fresh tasks - SinglePainting.IsCompleted={singlePaintingTask.IsCompleted}, hasTriggeredPostTutorialTasks={hasTriggeredPostTutorialTasks}");
+        Debug.Log($"[TaskManager] completedTasks count: {completedTasks.Count}");
+
         // schedule initial trash timer
         ScheduleNextTask();
+        
+        Debug.Log("[TaskManager] ===== AWAKE END =====");
     }
 
     private void Start()
@@ -468,45 +470,67 @@ public class TaskManager : MonoBehaviour
 
     private void TryStartInitialTasks()
     {
+        Debug.Log("[TaskManager] TryStartInitialTasks called");
+        
         if (singlePaintingTaskRef != null)
         {
             int singleIdx = tasks.IndexOf(singlePaintingTaskRef);
-            if (singleIdx >= 0 && (disabledTaskIndices == null || !disabledTaskIndices.Contains(singleIdx)))
+            bool isDisabled = disabledTaskIndices != null && disabledTaskIndices.Contains(singleIdx);
+            bool canActivate = singlePaintingTaskRef.CanActivate(playerTransform);
+            bool alreadyActive = activeTasks.Contains(singlePaintingTaskRef);
+            
+            Debug.Log($"[TaskManager] Tutorial task check - Index:{singleIdx}, IsDisabled:{isDisabled}, CanActivate:{canActivate}, AlreadyActive:{alreadyActive}");
+            
+            if (singleIdx >= 0 && !isDisabled)
             {
-                if (singlePaintingTaskRef.CanActivate(playerTransform))
+                if (canActivate)
                 {
-                    if (!activeTasks.Contains(singlePaintingTaskRef))
+                    if (!alreadyActive)
                     {
                         activeTasks.Add(singlePaintingTaskRef);
                         singlePaintingTaskRef.Activate(playerTransform);
                         OnTasksChanged?.Invoke();
+                        Debug.Log("[TaskManager] Tutorial task ACTIVATED");
                     }
                 }
             }
         }
 
         // Only start painting task immediately if tutorial requirement is disabled
-        if (!requireSinglePaintingFirst)
+        if (!REQUIRE_TUTORIAL_FIRST)
         {
+            Debug.Log("[TaskManager] Tutorial requirement disabled - starting painting task");
             TryStartPaintingTask();
+        }
+        else
+        {
+            Debug.Log("[TaskManager] Tutorial requirement ENABLED - waiting for tutorial completion");
         }
     }
 
     private void TryStartPaintingTask()
     {
+        Debug.Log("[TaskManager] TryStartPaintingTask called");
+        
         if (paintingTaskRef != null)
         {
             int paintIdx = tasks.IndexOf(paintingTaskRef);
-            if (paintIdx >= 0 && (disabledTaskIndices == null || !disabledTaskIndices.Contains(paintIdx)))
+            bool isDisabled = disabledTaskIndices != null && disabledTaskIndices.Contains(paintIdx);
+            bool canActivate = paintingTaskRef.CanActivate(playerTransform);
+            bool alreadyActive = activeTasks.Contains(paintingTaskRef);
+            
+            Debug.Log($"[TaskManager] Painting task check - Index:{paintIdx}, IsDisabled:{isDisabled}, CanActivate:{canActivate}, AlreadyActive:{alreadyActive}");
+            
+            if (paintIdx >= 0 && !isDisabled)
             {
-                if (paintingTaskRef.CanActivate(playerTransform))
+                if (canActivate)
                 {
-                    if (!activeTasks.Contains(paintingTaskRef))
+                    if (!alreadyActive)
                     {
                         activeTasks.Add(paintingTaskRef);
                         paintingTaskRef.Activate(playerTransform);
                         OnTasksChanged?.Invoke();
-                        Debug.Log("[TaskManager] Painting task activated after tutorial completion");
+                        Debug.Log("[TaskManager] Painting task ACTIVATED");
                     }
                 }
             }
@@ -544,6 +568,7 @@ public class TaskManager : MonoBehaviour
 
                 if (t.IsCompleted)
                 {
+                    Debug.Log($"[TaskManager] Task completed: {t.TaskName}");
                     completedTasks.Add(t.TaskName);
                     var checker = UnityEngine.Object.FindAnyObjectByType<TaskChecker>();
                     if (checker != null) checker.CheckCompletedTasks();
@@ -553,6 +578,8 @@ public class TaskManager : MonoBehaviour
                     {
                         if (t is PaintingTask && !paintingRepeat) disabledTaskIndices.Add(idx);
                         if (t is TrashTask && !trashRepeat) disabledTaskIndices.Add(idx);
+                        // Also disable tutorial task after completion (it shouldn't repeat)
+                        if (t is SinglePaintingFallTask) disabledTaskIndices.Add(idx);
                     }
 
                     t.Deactivate();
@@ -560,7 +587,7 @@ public class TaskManager : MonoBehaviour
                     OnTasksChanged?.Invoke();
 
                     // Check if this is the tutorial task completing
-                    if (t == singlePaintingTaskRef && requireSinglePaintingFirst)
+                    if (t == singlePaintingTaskRef && REQUIRE_TUTORIAL_FIRST)
                     {
                         Debug.Log("[TaskManager] Tutorial task completed - triggering other tasks now");
                         TryStartPostTutorialTasks();
@@ -569,17 +596,8 @@ public class TaskManager : MonoBehaviour
             }
         }
 
-        // Check if tutorial is complete and trigger other tasks
-        if (requireSinglePaintingFirst && 
-            singlePaintingTaskRef != null && 
-            singlePaintingTaskRef.IsCompleted && 
-            !hasTriggeredPostTutorialTasks)
-        {
-            TryStartPostTutorialTasks();
-        }
-
         // If tutorial gating is enabled, pause scheduled task timers until the single painting mini-task completes.
-        if (requireSinglePaintingFirst && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
+        if (REQUIRE_TUTORIAL_FIRST && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
         {
             // Do not decrement nextTaskTimer or auto-start trash while the tutorial task remains incomplete.
             return;
@@ -600,22 +618,29 @@ public class TaskManager : MonoBehaviour
 
     private void TryStartPostTutorialTasks()
     {
-        if (hasTriggeredPostTutorialTasks) return;
+        if (hasTriggeredPostTutorialTasks)
+        {
+            Debug.Log("[TaskManager] TryStartPostTutorialTasks called but already triggered - skipping");
+            return;
+        }
 
         hasTriggeredPostTutorialTasks = true;
-        Debug.Log("[TaskManager] Triggering post-tutorial tasks");
+        Debug.Log("[TaskManager] ===== TRIGGERING POST-TUTORIAL TASKS =====");
+        Debug.Log($"[TaskManager] Call stack: {System.Environment.StackTrace}");
 
         // Immediately activate the painting task
         TryStartPaintingTask();
 
         // Immediately activate the trash task (don't rely on timer)
         TryStartTrashTask();
+        
+        Debug.Log($"[TaskManager] Post-tutorial tasks triggered - Active tasks count: {activeTasks.Count}");
     }
 
     private bool TryStartTrashFromTimer()
     {
         // If tutorial gating is enabled, do not start trash until the single painting mini-task is completed.
-        if (requireSinglePaintingFirst && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
+        if (REQUIRE_TUTORIAL_FIRST && singlePaintingTaskRef != null && !singlePaintingTaskRef.IsCompleted)
         {
             // Defer starting trash until tutorial task finished.
             return false;
@@ -678,9 +703,15 @@ public class TaskManager : MonoBehaviour
 
     private void TryStartTrashTask()
     {
+        Debug.Log("[TaskManager] TryStartTrashTask called");
+        
         int trashIdx = tasks.IndexOf(trashTaskRef);
         if (trashTaskRef == null || trashIdx < 0) return;
-        if (disabledTaskIndices != null && disabledTaskIndices.Contains(trashIdx)) return;
+        
+        bool isDisabled = disabledTaskIndices != null && disabledTaskIndices.Contains(trashIdx);
+        Debug.Log($"[TaskManager] Trash task check - Index:{trashIdx}, IsDisabled:{isDisabled}");
+        
+        if (isDisabled) return;
 
         // Select a trash group
         var groups = new List<Transform[]>();
@@ -716,9 +747,14 @@ public class TaskManager : MonoBehaviour
         LastTrashGroupName = groupName;
         if (trashTaskRef is TrashTask tt) tt.SetPlannedGroup(chosenGroup, groupName);
 
-        if (trashTaskRef.CanActivate(playerTransform))
+        bool canActivate = trashTaskRef.CanActivate(playerTransform);
+        bool alreadyActive = activeTasks.Contains(trashTaskRef);
+        
+        Debug.Log($"[TaskManager] Trash task activation check - CanActivate:{canActivate}, AlreadyActive:{alreadyActive}");
+
+        if (canActivate)
         {
-            if (!activeTasks.Contains(trashTaskRef))
+            if (!alreadyActive)
             {
                 activeTasks.Add(trashTaskRef);
                 trashTaskRef.Activate(playerTransform);
@@ -728,7 +764,7 @@ public class TaskManager : MonoBehaviour
                     disabledTaskIndices.Add(trashIdx);
                 }
                 OnTasksChanged?.Invoke();
-                Debug.Log("[TaskManager] Trash task activated after tutorial completion");
+                Debug.Log("[TaskManager] Trash task ACTIVATED after tutorial completion");
             }
         }
         else
@@ -786,5 +822,101 @@ public class TaskManager : MonoBehaviour
 
         var kb = Keyboard.current;
         return kb != null && kb.eKey.wasPressedThisFrame;
+    }
+
+    /// <summary>
+    /// Add a task to the active tasks list (used by external systems like FinalSequenceManager)
+    /// </summary>
+    public void AddActiveTask(ITask task)
+    {
+        if (task == null) return;
+        
+        if (!activeTasks.Contains(task))
+        {
+            activeTasks.Add(task);
+            OnTasksChanged?.Invoke();
+            Debug.Log($"[TaskManager] Active task added externally: {task.TaskName}");
+        }
+    }
+
+    /// <summary>
+    /// Remove a task from the active tasks list
+    /// </summary>
+    public void RemoveActiveTask(ITask task)
+    {
+        if (task == null) return;
+        
+        if (activeTasks.Contains(task))
+        {
+            activeTasks.Remove(task);
+            OnTasksChanged?.Invoke();
+            Debug.Log($"[TaskManager] Active task removed: {task.TaskName}");
+        }
+    }
+
+    /// <summary>
+    /// Reset all task state to allow proper game restart
+    /// </summary>
+    private void ResetTaskState()
+    {
+        // Initialize runtime collections but do NOT clear inspector-assigned fields.
+        activeTasks = new List<ITask>();
+        tasks = new List<ITask>();
+        completedTasks = new List<string>();
+        disabledTaskIndices = new System.Collections.Generic.HashSet<int>();
+        nextTaskTimer = 0f;
+        LastTrashGroupName = null;
+        hasTriggeredPostTutorialTasks = false;
+
+        // IMPORTANT: Reset phone call flag on scene reload to allow skip button to work again
+        specialPhoneCallStarted = false;
+
+        // Reset all paintings to their original positions (stored in PaintingFallConfig)
+        ResetAllPaintings();
+
+        Debug.Log("[TaskManager] Task state reset - fresh start");
+    }
+
+    /// <summary>
+    /// Reset all paintings to their original upright positions
+    /// This ensures paintings are properly reset when restarting the game
+    /// </summary>
+    private void ResetAllPaintings()
+    {
+        int resetCount = 0;
+
+        // Reset special tutorial painting
+        if (specialPaintingTarget != null)
+        {
+            var cfg = specialPaintingTarget.GetComponent<PaintingFallConfig>();
+            if (cfg != null)
+            {
+                specialPaintingTarget.position = cfg.originalPosition;
+                specialPaintingTarget.rotation = cfg.originalRotation;
+                resetCount++;
+            }
+        }
+
+        // Reset all regular painting task targets
+        if (paintingTargets != null)
+        {
+            foreach (var painting in paintingTargets)
+            {
+                if (painting == null) continue;
+
+                var cfg = painting.GetComponent<PaintingFallConfig>();
+                if (cfg != null)
+                {
+                    painting.position = cfg.originalPosition;
+                    painting.rotation = cfg.originalRotation;
+                    resetCount++;
+                }
+            }
+        }
+
+        if (resetCount > 0)
+        {
+            Debug.Log($"[TaskManager] Reset {resetCount} paintings to their original positions");
+        }
     }
 }

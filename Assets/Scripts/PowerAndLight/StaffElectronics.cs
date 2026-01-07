@@ -71,9 +71,9 @@ public class StaffElectronics : MonoBehaviour
         }
     }
 
-    // NOTE: ResetPower now only toggles global ElectricityLogic and updates local visuals.
-    // It does NOT call BreakerButton.Toggle to avoid running each toggle routine (audio/animation)
-    // and to avoid race conditions/crashes. Instead, we re-apply breaker visual/state silently.
+    // NOTE: ResetPower now properly handles global power state.
+    // The BreakerButton.OnGlobalPowerOut() event will handle turning off all group switches
+    // and updating their visual indicators (red lights).
     public void ResetPower(bool on)
     {
         // Notify ElectricityLogic so global power state and events are consistent.
@@ -82,31 +82,19 @@ public class StaffElectronics : MonoBehaviour
         {
             if (on)
             {
-                // restore global power
+                // restore global power - this will trigger OnGlobalPowerRestored on all BreakerButtons
                 elec.ResetBreakerBox();
             }
             else
             {
-                // force global power out
+                // force global power out - this will trigger OnGlobalPowerOut on all BreakerButtons
+                // which will handle turning them off and updating visuals
                 elec.ForcePowerOut();
             }
         }
         else
         {
             Debug.LogWarning("[StaffElectronics] ElectricityLogic not found in scene; local visuals still updated.");
-        }
-
-        // Replace this line:
-        // var breakers = FindObjectsOfType<BreakerButton>();
-        // With the following:
-        var breakers = Object.FindObjectsByType<BreakerButton>(FindObjectsSortMode.None);
-        if (breakers != null)
-        {
-            foreach (var b in breakers)
-            {
-                if (b == null) continue;
-                //b.ApplyCurrentState(silent: true);
-            }
         }
 
         // Update local visuals/audio/lights to match requested state

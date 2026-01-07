@@ -28,6 +28,11 @@ public class TaskChecker : MonoBehaviour
     [Tooltip("Completed text for SinglePaintingFall task.")]
     [SerializeField] private string singlePaintingCompletedText = "Fixed Singular Painting";
 
+    [Tooltip("Active text for Finale task.")]
+    [SerializeField] private string finaleActiveText = "Finale Task";
+    [Tooltip("Completed text for Finale task.")]
+    [SerializeField] private string finaleCompletedText = "Finale Complete";
+
     [Tooltip("Heading shown above the active task list.")]
     [SerializeField] private string tasksHeading = "<u>Tasks: </u>";
     [Tooltip("Heading shown above the completed tasks list.")]
@@ -128,6 +133,10 @@ public class TaskChecker : MonoBehaviour
             {
                 display = singlePaintingActiveText;
             }
+            else if (task is FinaleTask)
+            {
+                display = finaleActiveText;
+            }
             else
             {
                 // Fallback to name-based mapping (keeps existing behavior for unknown tasks)
@@ -183,6 +192,8 @@ public class TaskChecker : MonoBehaviour
             case "SinglePaintingFall":
             case "SinglePaintingFallTask":
                 return completed ? singlePaintingCompletedText : singlePaintingActiveText;
+            case "FinaleTask":
+                return completed ? finaleCompletedText : finaleActiveText;
             default:
                 // Fallback: if completed show past-tense hint, otherwise show the task name
                 return completed ? $"Completed: {taskName}" : taskName;

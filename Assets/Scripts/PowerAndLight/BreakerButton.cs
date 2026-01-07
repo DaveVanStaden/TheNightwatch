@@ -105,25 +105,36 @@ public class BreakerButton : MonoBehaviour
         // Make this switch unavailable for interaction unless it's explicitly allowed to ignore the global lock.
         if (cachedCollider != null && !ignoreGlobalPowerLock) cachedCollider.enabled = false;
 
-        // If this is the main power switch (ignoreGlobalPowerLock==true) and it's currently ON,
-        // toggle it OFF so the lever visually reflects the global power loss.
-        // Use Toggle() so audio/animation/visual feedback run as normal.
-        if (ignoreGlobalPowerLock && isOn)
+        // For the main power switch: DO NOT toggle it, just update visual indicators
+        // The switch lever should stay in the ON position, only the lights turn off
+        if (ignoreGlobalPowerLock)
         {
-            // Toggle will run even if collider is enabled; for main switch collider stays enabled.
-            Toggle();
-            // Toggle already calls ApplyState, audio, animation and onToggled.
-            // We early-return to avoid calling ApplyState twice.
+            // Just update the group light indicator to show power is out (red)
+            // Don't change isOn state or trigger animations
+            UpdateGroupLightState(false, instantly: true);
             return;
         }
 
-        ApplyState();
+        // For all group switches (A, B, C, D, E, F):
+        // The PowerGroup will automatically turn off via its own OnGlobalPowerOut subscription
+        // We just need to update the visual indicator on the switch itself (red light)
+        UpdateGroupLightState(false, instantly: true);
     }
 
     private void OnGlobalPowerRestored()
     {
-        // Re-enable interaction and re-apply state (turn group on if this switch is on).
+        // Re-enable interaction
         if (cachedCollider != null) cachedCollider.enabled = true;
+        
+        // For main power switch: restore the group light indicator
+        if (ignoreGlobalPowerLock)
+        {
+            UpdateGroupLightState(true, instantly: true);
+            return;
+        }
+        
+        // For group switches: restore PowerGroups and indicators based on switch state
+        // This will turn the PowerGroup on if isOn==true, since global power is now available
         ApplyState();
     }
 
