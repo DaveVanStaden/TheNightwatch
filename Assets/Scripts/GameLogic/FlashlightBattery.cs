@@ -218,7 +218,7 @@ public class FlashlightBattery : MonoBehaviour
         AudioClip clip = boxClip != null ? boxClip : batteryBoxRechargeClip;
         if (batteryBoxSource != null && clip != null)
         {
-            batteryBoxSource.pitch = Random.Range(0.98f, 1.02f);
+            //batteryBoxSource.pitch = Random.Range(0.98f, 1.02f);
             batteryBoxSource.PlayOneShot(clip);
         }
         else if (clip != null && sharedAudioSource != null)
