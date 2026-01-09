@@ -28,16 +28,36 @@ public class PaintingFallConfig : MonoBehaviour
     public Transform roomBounds;
 
     [Header("Runtime State (Auto-Saved)")]
-    [Tooltip("Original position stored at Awake - used for reset on game restart")]
-    [HideInInspector] public Vector3 originalPosition;
-    [Tooltip("Original rotation stored at Awake - used for reset on game restart")]
-    [HideInInspector] public Quaternion originalRotation;
+    [Tooltip("Original position stored at first Awake - used for reset on game restart")]
+    [SerializeField, HideInInspector] public Vector3 originalPosition;
+    [Tooltip("Original rotation stored at first Awake - used for reset on game restart")]
+    [SerializeField, HideInInspector] public Quaternion originalRotation;
+    [Tooltip("Flag to track if original values have been initialized")]
+    [SerializeField, HideInInspector] private bool hasInitializedOriginals = false;
 
     private void Awake()
     {
-        // Store original transform state on first load
-        // This will be used to reset paintings when game restarts
-        originalPosition = transform.position;
-        originalRotation = transform.rotation;
+        // Only store original transform state on the FIRST Awake call (scene first load)
+        // This prevents overwriting with fallen positions when the scene is reloaded
+        if (!hasInitializedOriginals)
+        {
+            originalPosition = transform.position;
+            originalRotation = transform.rotation;
+            hasInitializedOriginals = true;
+            Debug.Log($"[PaintingFallConfig] Initialized original position for '{name}': {originalPosition}");
+        }
+    }
+
+    /// <summary>
+    /// Reset the painting to its original position/rotation immediately.
+    /// Called by TaskManager when restarting the game.
+    /// </summary>
+    public void ResetToOriginal()
+    {
+        if (hasInitializedOriginals)
+        {
+            transform.position = originalPosition;
+            transform.rotation = originalRotation;
+        }
     }
 }

@@ -891,8 +891,7 @@ public class TaskManager : MonoBehaviour
             var cfg = specialPaintingTarget.GetComponent<PaintingFallConfig>();
             if (cfg != null)
             {
-                specialPaintingTarget.position = cfg.originalPosition;
-                specialPaintingTarget.rotation = cfg.originalRotation;
+                cfg.ResetToOriginal();
                 resetCount++;
             }
         }
@@ -907,8 +906,7 @@ public class TaskManager : MonoBehaviour
                 var cfg = painting.GetComponent<PaintingFallConfig>();
                 if (cfg != null)
                 {
-                    painting.position = cfg.originalPosition;
-                    painting.rotation = cfg.originalRotation;
+                    cfg.ResetToOriginal();
                     resetCount++;
                 }
             }
