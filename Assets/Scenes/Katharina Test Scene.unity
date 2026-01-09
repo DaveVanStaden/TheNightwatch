@@ -2080,6 +2080,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45bf0fa172f99314bbe2c079b09154ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  additionalRenderers: []
 --- !u!1 &449561919
 GameObject:
   m_ObjectHideFlags: 0
@@ -3390,6 +3391,7 @@ MonoBehaviour:
   busy: 0
   tutorialActive: 0
   interactionCamera: {fileID: 3072781819977794517}
+  currentAngle: 0
 --- !u!65 &641741601
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8784,6 +8786,10 @@ PrefabInstance:
       propertyPath: m_CastShadows
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: -36508806461330931, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: ac4d3df2ac53d8947b8a073c55e77a43, type: 2}
     - target: {fileID: -10581121615302280, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
       propertyPath: m_CastShadows
       value: 2
@@ -8924,6 +8930,10 @@ PrefabInstance:
       propertyPath: m_CastShadows
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 4278916103578287194, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: ac4d3df2ac53d8947b8a073c55e77a43, type: 2}
     - target: {fileID: 4327892850608826373, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
       propertyPath: m_CastShadows
       value: 2
@@ -10402,6 +10412,7 @@ MonoBehaviour:
   busy: 0
   tutorialActive: 0
   interactionCamera: {fileID: 3072781819977794517}
+  currentAngle: 0
 --- !u!65 &1723764055
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13792,6 +13803,7 @@ MonoBehaviour:
   busy: 0
   tutorialActive: 0
   interactionCamera: {fileID: 3072781819977794517}
+  currentAngle: 0
 --- !u!1001 &6273107347709960747
 PrefabInstance:
   m_ObjectHideFlags: 0
