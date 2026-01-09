@@ -3076,7 +3076,13 @@ MonoBehaviour:
   - objectToEnable: {fileID: 1423694608}
     sanityThreshold: 91
     hasTriggered: 0
+    isWaitingToSpawn: 0
+  minSpawnDistance: 40
+  minSpawnDelay: 0.5
+  maxSpawnDelay: 0.61
+  spawnCheckInterval: 0.41
   debugLog: 0
+  showSpawnRadiusGizmo: 1
 --- !u!1001 &4443337049400436078
 PrefabInstance:
   m_ObjectHideFlags: 0
