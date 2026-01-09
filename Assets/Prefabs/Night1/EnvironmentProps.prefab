@@ -2650,6 +2650,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 499084713025970987}
     m_Modifications:
+    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
+      propertyPath: _group
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -9127561607767440349, guid: ea041820a7cf5b14ea007291948c8b6b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -2758,10 +2762,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e0b9ed7aeeef1c24fb376100facf44b5, type: 2}
-    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
-      propertyPath: _group
-      value: 2
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2871,11 +2871,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.z
@@ -5394,11 +5394,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.z
@@ -7389,11 +7389,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1
+      value: 3.25
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 1
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.z
@@ -14020,6 +14020,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 499084713025970987}
     m_Modifications:
+    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
+      propertyPath: _group
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -9127561607767440349, guid: ea041820a7cf5b14ea007291948c8b6b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -14128,10 +14132,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e0b9ed7aeeef1c24fb376100facf44b5, type: 2}
-    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
-      propertyPath: _group
-      value: 2
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -16759,11 +16759,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 1
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.z
@@ -16865,6 +16865,14 @@ PrefabInstance:
     - target: {fileID: 699797175082887359, guid: 384057bba63af864b859df35a3a2f29f, type: 3}
       propertyPath: m_Name
       value: Painting_Tower
+      objectReference: {fileID: 0}
+    - target: {fileID: 5727089745198484988, guid: 384057bba63af864b859df35a3a2f29f, type: 3}
+      propertyPath: m_AABB.m_Extent.x
+      value: 1.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 5727089745198484988, guid: 384057bba63af864b859df35a3a2f29f, type: 3}
+      propertyPath: m_AABB.m_Extent.y
+      value: 2.05
       objectReference: {fileID: 0}
     - target: {fileID: 5727089745198484988, guid: 384057bba63af864b859df35a3a2f29f, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -21205,11 +21213,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 1
+      value: 2.75
       objectReference: {fileID: 0}
     - target: {fileID: -3887185075125053422, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
       propertyPath: m_AABB.m_Extent.z
@@ -21790,6 +21798,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 499084713025970987}
     m_Modifications:
+    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
+      propertyPath: _group
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: -9127561607767440349, guid: ea041820a7cf5b14ea007291948c8b6b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -21894,10 +21906,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: e0b9ed7aeeef1c24fb376100facf44b5, type: 2}
-    - target: {fileID: 7915643286595455318, guid: 0580ef02ffd2c654dbd6879e691216c7, type: 3}
-      propertyPath: _group
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
