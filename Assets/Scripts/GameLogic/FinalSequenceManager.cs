@@ -70,6 +70,9 @@ public class FinalSequenceManager : MonoBehaviour
     [Tooltip("Optional: End menu to show when player is caught")]
     [SerializeField] private GameObject gameOverScreen;
 
+    // Reference to shadow spawner for disabling during finale
+    private HallucinationSpawner shadowSpawner;
+
     [Header("Debug")]
     [SerializeField] private bool debugLogs = true;
     [Tooltip("DEBUG: If true, the finale sequence will activate immediately on Start (skips all task requirements)")]
@@ -86,6 +89,16 @@ public class FinalSequenceManager : MonoBehaviour
         // Find TaskManager if not assigned
         if (taskManager == null)
             taskManager = FindAnyObjectByType<TaskManager>();
+
+        // Find shadow spawner
+        shadowSpawner = FindAnyObjectByType<HallucinationSpawner>();
+        if (debugLogs)
+        {
+            if (shadowSpawner != null)
+                Debug.Log("[FinalSequence] Found HallucinationSpawner");
+            else
+                Debug.LogWarning("[FinalSequence] HallucinationSpawner not found");
+        }
 
         // Reset sequence state on scene start
         ResetSequence();
@@ -287,6 +300,13 @@ public class FinalSequenceManager : MonoBehaviour
 
         sequenceActivated = true;
         if (debugLogs) Debug.Log("[FinalSequence] FINAL SEQUENCE ACTIVATED!");
+
+        // IMPORTANT: Disable shadow spawning permanently for the finale
+        if (shadowSpawner != null)
+        {
+            shadowSpawner.SetSpawningEnabled(false);
+            if (debugLogs) Debug.Log("[FinalSequence] Shadow spawning DISABLED for finale");
+        }
 
         // Trigger designer events
         onSequenceStart?.Invoke();

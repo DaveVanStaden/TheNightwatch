@@ -330,4 +330,58 @@ public class BreakerButton : MonoBehaviour
             // swallow any animator errors to avoid spamming console
         }
     }
+
+    /// <summary>
+    /// Get the current state of the breaker button
+    /// </summary>
+    public bool GetState()
+    {
+        return isOn;
+    }
+
+    /// <summary>
+    /// Set the state of the breaker button without triggering animations or events
+    /// Used by LightSwitch when lights break to turn off the fuse
+    /// </summary>
+    public void SetState(bool newState)
+    {
+        if (isOn == newState) return;
+        
+        Debug.Log($"[BreakerButton] '{name}' SetState called: {isOn} -> {newState}");
+        isOn = newState;
+        ApplyState();
+        UpdateGroupLightState(powerGroup != null ? powerGroup.AnyLightOn() : isOn, instantly: true);
+    }
+
+    /// <summary>
+    /// Force the breaker to turn off (used when lights break)
+    /// </summary>
+    public void TurnOff()
+    {
+        if (!isOn) return;
+        
+        Debug.Log($"[BreakerButton] '{name}' TurnOff called");
+        isOn = false;
+        ApplyState();
+        UpdateGroupLightState(false, instantly: true);
+        
+        // Trigger the onToggled event
+        onToggled?.Invoke(isOn);
+    }
+
+    /// <summary>
+    /// Force the breaker to turn on (used when lights are repaired)
+    /// </summary>
+    public void TurnOn()
+    {
+        if (isOn) return;
+        
+        Debug.Log($"[BreakerButton] '{name}' TurnOn called");
+        isOn = true;
+        ApplyState();
+        UpdateGroupLightState(powerGroup != null ? powerGroup.AnyLightOn() : isOn, instantly: true);
+        
+        // Trigger the onToggled event
+        onToggled?.Invoke(isOn);
+    }
 }

@@ -260,6 +260,37 @@ public class PlayerInteraction : PlayerModule
             return true;
         }
 
+        // Check for LightSwitch (using reflection to avoid cross-assembly issues)
+        var lightSwitchComponents = hit.collider.GetComponentsInParent<MonoBehaviour>();
+        foreach (var component in lightSwitchComponents)
+        {
+            if (component != null && component.GetType().Name == "LightSwitch")
+            {
+                Debug.Log($"[PlayerInteraction] Toggling LightSwitch on '{component.gameObject.name}'.");
+                var toggleMethod = component.GetType().GetMethod("Toggle");
+                if (toggleMethod != null)
+                {
+                    toggleMethod.Invoke(component, null);
+                    return true;
+                }
+            }
+        }
+
+        var lightSwitchChildComponents = hit.collider.GetComponentsInChildren<MonoBehaviour>();
+        foreach (var component in lightSwitchChildComponents)
+        {
+            if (component != null && component.GetType().Name == "LightSwitch")
+            {
+                Debug.Log($"[PlayerInteraction] Toggling LightSwitch on '{component.gameObject.name}'.");
+                var toggleMethod = component.GetType().GetMethod("Toggle");
+                if (toggleMethod != null)
+                {
+                    toggleMethod.Invoke(component, null);
+                    return true;
+                }
+            }
+        }
+
         // Prefer a BreakerBox if present on the hit object or a parent (handles wrapper Interactable objects)
         BreakerBox breaker = hit.collider.GetComponentInParent<BreakerBox>();
         if (breaker == null)
@@ -350,6 +381,37 @@ public class PlayerInteraction : PlayerModule
             Debug.Log($"[PlayerInteraction] (Overlap) Picking up key '{key.keyId}' via raycast fallback.");
             key.PickupBy(manager, "interaction_fallback");
             return true;
+        }
+
+        // LightSwitch check (using reflection)
+        var lightSwitchComponents = col.GetComponentsInParent<MonoBehaviour>(true);
+        foreach (var component in lightSwitchComponents)
+        {
+            if (component != null && component.GetType().Name == "LightSwitch")
+            {
+                Debug.Log($"[PlayerInteraction] (Overlap) Toggling LightSwitch on '{component.gameObject.name}'.");
+                var toggleMethod = component.GetType().GetMethod("Toggle");
+                if (toggleMethod != null)
+                {
+                    toggleMethod.Invoke(component, null);
+                    return true;
+                }
+            }
+        }
+
+        var lightSwitchChildComponents = col.GetComponentsInChildren<MonoBehaviour>(true);
+        foreach (var component in lightSwitchChildComponents)
+        {
+            if (component != null && component.GetType().Name == "LightSwitch")
+            {
+                Debug.Log($"[PlayerInteraction] (Overlap) Toggling LightSwitch on '{component.gameObject.name}'.");
+                var toggleMethod = component.GetType().GetMethod("Toggle");
+                if (toggleMethod != null)
+                {
+                    toggleMethod.Invoke(component, null);
+                    return true;
+                }
+            }
         }
 
         var breaker = col.GetComponentInParent<BreakerBox>() ?? col.GetComponentInChildren<BreakerBox>();
@@ -484,6 +546,37 @@ public class PlayerInteraction : PlayerModule
                 Debug.Log($"[PlayerInteraction] (Proximity) Picking up key '{key.keyId}'.");
                 key.PickupBy(manager, "proximity_scan");
                 return true;
+            }
+
+            // LightSwitch check (using reflection)
+            var lightSwitchComponents = col.GetComponentsInParent<MonoBehaviour>(true);
+            foreach (var component in lightSwitchComponents)
+            {
+                if (component != null && component.GetType().Name == "LightSwitch")
+                {
+                    Debug.Log($"[PlayerInteraction] (Proximity) Toggling LightSwitch on '{component.gameObject.name}'.");
+                    var toggleMethod = component.GetType().GetMethod("Toggle");
+                    if (toggleMethod != null)
+                    {
+                        toggleMethod.Invoke(component, null);
+                        return true;
+                    }
+                }
+            }
+
+            var lightSwitchChildComponents = col.GetComponentsInChildren<MonoBehaviour>(true);
+            foreach (var component in lightSwitchChildComponents)
+            {
+                if (component != null && component.GetType().Name == "LightSwitch")
+                {
+                    Debug.Log($"[PlayerInteraction] (Proximity) Toggling LightSwitch on '{component.gameObject.name}'.");
+                    var toggleMethod = component.GetType().GetMethod("Toggle");
+                    if (toggleMethod != null)
+                    {
+                        toggleMethod.Invoke(component, null);
+                        return true;
+                    }
+                }
             }
 
             var breaker = col.GetComponentInParent<BreakerBox>() ?? col.GetComponentInChildren<BreakerBox>();

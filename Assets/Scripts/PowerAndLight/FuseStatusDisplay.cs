@@ -58,7 +58,6 @@ public class FuseStatusDisplay : MonoBehaviour
             CheckAndUpdateFuses();
         }
     }
-
     private void CheckAndUpdateFuses()
     {
         foreach (var entry in fuseEntries)
