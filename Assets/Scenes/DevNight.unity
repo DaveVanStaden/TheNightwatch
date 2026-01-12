@@ -793,7 +793,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
   m_PrefabInstance: {fileID: 3681713241123547182}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3681713241123547184}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 909f2175be223ea448aac4f0d805ddb1, type: 3}
@@ -2638,17 +2638,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1620511069}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: specialPhoneDelay
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: specialPaintingTarget
       value: 
       objectReference: {fileID: 867335175}
-    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: requireSinglePaintingFirst
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'paintingTargets.Array.data[0]'
       value: 
@@ -2857,6 +2849,10 @@ PrefabInstance:
       propertyPath: 'trashSpawnPoints.Array.data[17]'
       value: 
       objectReference: {fileID: 226561184}
+    - target: {fileID: 4186384245583446613, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: thresholdEntries.Array.data[0].objectToEnable
+      value: 
+      objectReference: {fileID: 1423694608}
     - target: {fileID: 4826251618115385339, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -2970,119 +2966,46 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2068836945279242157}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: 'statues.Array.data[0]'
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[1]'
       value: 
       objectReference: {fileID: 6829324717808045924}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      propertyPath: 'statues.Array.data[2]'
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[3]'
       value: 
       objectReference: {fileID: 6829324717808045922}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: chaseWall
+      value: 
+      objectReference: {fileID: 477940165}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: endSequenceWall
+      value: 
+      objectReference: {fileID: 398088722}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: activationTrigger
+      value: 
+      objectReference: {fileID: 1645326687}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: painterSpawnPoint
+      value: 
+      objectReference: {fileID: 272506392}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: 'inkObjectsToSpawn.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1052523822}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: 'chaseBlockingObjects.Array.data[0]'
+      value: 
+      objectReference: {fileID: 400958384}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: 'guidanceObjectsToSpawn.Array.data[0]'
+      value: 
+      objectReference: {fileID: 359693880}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4826251618115385339, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3681713241123547185}
-    - targetCorrespondingSourceObject: {fileID: 4826251618115385339, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3681713241123547192}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
---- !u!114 &3681713241123547183 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-  m_PrefabInstance: {fileID: 3681713241123547182}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3681713241123547184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab9b85220dec52645826b00f98c9de4c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TaskManager
---- !u!1 &3681713241123547184 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4826251618115385339, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
-  m_PrefabInstance: {fileID: 3681713241123547182}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &3681713241123547185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3681713241123547184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 299590af0fa0a54409675d3c99f3a703, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FinalSequenceManager
-  sequenceActivated: 0
-  chaseActive: 0
-  sequenceReady: 0
-  painterPrefab: {fileID: 890160062468778197, guid: 6b79497c57e52bf4fa4672ca742bae61, type: 3}
-  painterSpawnPoint: {fileID: 272506392}
-  activationTrigger: {fileID: 1645326687}
-  guidanceObjectsToSpawn:
-  - {fileID: 359693880}
-  inkObjectsToSpawn:
-  - {fileID: 1052523822}
-  chaseWall: {fileID: 477940165}
-  chaseBlockingObjects:
-  - {fileID: 400958384}
-  endSequenceWall: {fileID: 398088722}
-  onSequenceStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onInitialSpawnComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  onChaseStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onPlayerCaught:
-    m_PersistentCalls:
-      m_Calls: []
-  onEndSequenceStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onEndSequenceComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  taskManager: {fileID: 3681713241123547183}
-  gameOverScreen: {fileID: 0}
-  debugLogs: 0
-  debugForceSequenceOnStart: 0
---- !u!114 &3681713241123547192
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3681713241123547184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f664a332853c7d46950b559b68d44dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SanityThresholdManager
-  thresholdEntries:
-  - objectToEnable: {fileID: 1423694608}
-    sanityThreshold: 91
-    hasTriggered: 0
-    isWaitingToSpawn: 0
-  minSpawnDistance: 40
-  minSpawnDelay: 0.5
-  maxSpawnDelay: 0.61
-  spawnCheckInterval: 0.41
-  debugLog: 0
-  showSpawnRadiusGizmo: 1
 --- !u!1001 &4443337049400436078
 PrefabInstance:
   m_ObjectHideFlags: 0
