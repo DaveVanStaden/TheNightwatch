@@ -232,7 +232,7 @@ MonoBehaviour:
   trashMinTimeToStart: 0
   trashMaxTimeToStart: 2
   trashInteractionDistance: 7
-  PaintingTaskName: Fixed painting
+  PaintingTaskName: Fixed paintings
   TrashTaskName: Cleaned trash
   specialPaintingTarget: {fileID: 0}
   specialPhoneDelay: 20
@@ -247,6 +247,7 @@ MonoBehaviour:
   specialPhoneUseCall: 0
   specialPhoneCallStarted: 0
   requireSinglePaintingFirst: 1
+  debugForceAllPaintingsDrop: 0
   completedTasks: []
 --- !u!114 &7397186432879180287
 MonoBehaviour:
