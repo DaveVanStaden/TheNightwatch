@@ -577,7 +577,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5971128773448282910, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
   m_PrefabInstance: {fileID: 3681713241123547182}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1574326186}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 909f2175be223ea448aac4f0d805ddb1, type: 3}
@@ -1494,6 +1494,67 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22e7658c6b3bdaa4f8474624db62b9ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakerButton
+--- !u!1 &1574326186 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4826251618115385339, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+  m_PrefabInstance: {fileID: 3681713241123547182}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1574326189 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+  m_PrefabInstance: {fileID: 3681713241123547182}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1574326186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab9b85220dec52645826b00f98c9de4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TaskManager
+--- !u!114 &1574326194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1574326186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 299590af0fa0a54409675d3c99f3a703, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FinalSequenceManager
+  sequenceActivated: 0
+  chaseActive: 0
+  sequenceReady: 0
+  painterPrefab: {fileID: 890160062468778197, guid: 6b79497c57e52bf4fa4672ca742bae61, type: 3}
+  painterSpawnPoint: {fileID: 0}
+  activationTrigger: {fileID: 0}
+  guidanceObjectsToSpawn: []
+  inkObjectsToSpawn: []
+  chaseWall: {fileID: 0}
+  chaseBlockingObjects: []
+  endSequenceWall: {fileID: 0}
+  onSequenceStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onInitialSpawnComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  onChaseStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onPlayerCaught:
+    m_PersistentCalls:
+      m_Calls: []
+  onEndSequenceStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onEndSequenceComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  taskManager: {fileID: 1574326189}
+  gameOverScreen: {fileID: 0}
+  debugLogs: 1
+  debugForceSequenceOnStart: 0
 --- !u!114 &1583072301 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1993454278840135848, guid: faae868e6762e664caa41475ea180069, type: 3}
@@ -2450,7 +2511,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4826251618115385339, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1574326194}
   m_SourcePrefab: {fileID: 100100000, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
 --- !u!1001 &4443337049400436078
 PrefabInstance:
@@ -2710,6 +2774,10 @@ PrefabInstance:
       propertyPath: powerGroup
       value: 
       objectReference: {fileID: 927111502}
+    - target: {fileID: 1157585630711590976, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1195803940052205712, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: powerGroup
       value: 
@@ -2770,6 +2838,10 @@ PrefabInstance:
       propertyPath: powerGroup
       value: 
       objectReference: {fileID: 1447467137}
+    - target: {fileID: 6307357258507405397, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: ignoreGlobalPowerLock
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6580153433062091121, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: powerGroup
       value: 

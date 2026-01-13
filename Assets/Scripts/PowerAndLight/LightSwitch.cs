@@ -15,6 +15,9 @@ public class LightSwitch : MonoBehaviour
     [Tooltip("Sanity gained per second while lights remain on")]
     [SerializeField] private float sanityPerSecond = 2f;
 
+    [Tooltip("Cooldown in seconds before instant sanity boost can be gained again (counts down while lights OFF)")]
+    [SerializeField] private float sanityBoostCooldown = 120f;
+
     [Header("Breaking Settings")]
     [Tooltip("Initial chance per check for lights to break (0-1)")]
     [SerializeField] private float initialBreakChance = 0.0001f;
@@ -57,6 +60,9 @@ public class LightSwitch : MonoBehaviour
 
     // Track if lights were on before power loss
     private bool wereOnBeforePowerLoss = false;
+
+    // Sanity boost cooldown tracking
+    private float sanityBoostTimer = 0f;
 
     // PlayerStats reflection (kept for cross-assembly compatibility)
     private System.Reflection.MethodInfo changeSanityMethod;
@@ -128,6 +134,16 @@ public class LightSwitch : MonoBehaviour
             Debug.Log($"[LightSwitch] Connected fuse turned back on - restoring lights ON on {gameObject.name}");
             wereOnBeforePowerLoss = false; // Clear flag
             ForceOnDueToPowerRestored();
+        }
+
+        // Count down sanity boost cooldown timer while lights are OFF
+        if (!lightsOn && sanityBoostTimer > 0f)
+        {
+            sanityBoostTimer -= Time.deltaTime;
+            if (sanityBoostTimer < 0f)
+            {
+                sanityBoostTimer = 0f;
+            }
         }
     }
 
@@ -201,8 +217,17 @@ public class LightSwitch : MonoBehaviour
             }
         }
 
-        // Restart sanity gain
-        AddSanity(initialSanityBoost);
+        // Only grant instant sanity boost if cooldown has expired
+        if (sanityBoostTimer <= 0f)
+        {
+            AddSanity(initialSanityBoost);
+            sanityBoostTimer = sanityBoostCooldown; // Reset cooldown
+            Debug.Log($"[LightSwitch] {gameObject.name} granted instant sanity boost (power restored). Cooldown reset to {sanityBoostCooldown}s");
+        }
+        else
+        {
+            Debug.Log($"[LightSwitch] {gameObject.name} instant sanity boost on cooldown (power restored, {sanityBoostTimer:F1}s remaining)");
+        }
 
         if (sanityCoroutine != null)
         {
@@ -277,7 +302,17 @@ public class LightSwitch : MonoBehaviour
 
         if (lightsOn)
         {
-            AddSanity(initialSanityBoost);
+            // Only grant instant sanity boost if cooldown has expired
+            if (sanityBoostTimer <= 0f)
+            {
+                AddSanity(initialSanityBoost);
+                sanityBoostTimer = sanityBoostCooldown; // Reset cooldown
+                Debug.Log($"[LightSwitch] {gameObject.name} granted instant sanity boost of {initialSanityBoost}. Cooldown reset to {sanityBoostCooldown}s");
+            }
+            else
+            {
+                Debug.Log($"[LightSwitch] {gameObject.name} instant sanity boost on cooldown ({sanityBoostTimer:F1}s remaining)");
+            }
 
             if (sanityCoroutine != null)
             {
