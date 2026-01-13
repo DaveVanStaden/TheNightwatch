@@ -16,8 +16,6 @@ GameObject:
   - component: {fileID: 3701113217424796448}
   - component: {fileID: 7397186432879180287}
   - component: {fileID: 8310935552331939685}
-  - component: {fileID: 8361998871881328324}
-  - component: {fileID: 4186384245583446613}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -234,8 +232,10 @@ MonoBehaviour:
   trashMinTimeToStart: 0
   trashMaxTimeToStart: 2
   trashInteractionDistance: 7
+  PaintingTaskName: Fixed paintings
+  TrashTaskName: Cleaned trash
   specialPaintingTarget: {fileID: 0}
-  specialPhoneDelay: 2
+  specialPhoneDelay: 20
   specialPhoneAudioSource: {fileID: 0}
   specialPhoneCompleteClip: {fileID: 0}
   specialCamImage: {fileID: 0}
@@ -246,6 +246,7 @@ MonoBehaviour:
   trashGroupCTag: TrashGroupC
   specialPhoneUseCall: 0
   specialPhoneCallStarted: 0
+  requireSinglePaintingFirst: 1
   debugForceAllPaintingsDrop: 0
   completedTasks: []
 --- !u!114 &7397186432879180287
@@ -276,74 +277,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveSanityDrain
   drainPerSecond: 0.1
   startOnAwake: 1
---- !u!114 &8361998871881328324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4826251618115385339}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 299590af0fa0a54409675d3c99f3a703, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FinalSequenceManager
-  sequenceActivated: 0
-  chaseActive: 0
-  sequenceReady: 0
-  painterPrefab: {fileID: 890160062468778197, guid: 6b79497c57e52bf4fa4672ca742bae61, type: 3}
-  painterSpawnPoint: {fileID: 0}
-  activationTrigger: {fileID: 0}
-  guidanceObjectsToSpawn:
-  - {fileID: 0}
-  inkObjectsToSpawn:
-  - {fileID: 0}
-  chaseWall: {fileID: 0}
-  chaseBlockingObjects:
-  - {fileID: 0}
-  endSequenceWall: {fileID: 0}
-  onSequenceStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onInitialSpawnComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  onChaseStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onPlayerCaught:
-    m_PersistentCalls:
-      m_Calls: []
-  onEndSequenceStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onEndSequenceComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  taskManager: {fileID: 3701113217424796448}
-  gameOverScreen: {fileID: 0}
-  debugLogs: 0
-  debugForceSequenceOnStart: 0
---- !u!114 &4186384245583446613
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4826251618115385339}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f664a332853c7d46950b559b68d44dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SanityThresholdManager
-  thresholdEntries:
-  - objectToEnable: {fileID: 0}
-    sanityThreshold: 91
-    hasTriggered: 0
-    isWaitingToSpawn: 0
-  minSpawnDistance: 40
-  minSpawnDelay: 0.5
-  maxSpawnDelay: 0.61
-  spawnCheckInterval: 0.41
-  debugLog: 0
-  showSpawnRadiusGizmo: 1
