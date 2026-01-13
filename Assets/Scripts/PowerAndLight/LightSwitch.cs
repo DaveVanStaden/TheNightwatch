@@ -6,7 +6,7 @@ public class LightSwitch : MonoBehaviour
 {
     [Header("Lights")]
     [Tooltip("List of lights controlled by this switch")]
-    [SerializeField] private Light[] lights;
+    [SerializeField] private GameObject[] lights;
 
     [Header("Sanity Settings")]
     [Tooltip("Sanity gained immediately when lights are turned on")]
@@ -71,7 +71,7 @@ public class LightSwitch : MonoBehaviour
             {
                 if (light != null)
                 {
-                    light.enabled = false;
+                    light.SetActive(false);
                 }
             }
         }
@@ -137,7 +137,7 @@ public class LightSwitch : MonoBehaviour
             {
                 if (light != null)
                 {
-                    light.enabled = lightsOn;
+                    light.SetActive(lightsOn);
                 }
             }
         }
@@ -262,7 +262,7 @@ public class LightSwitch : MonoBehaviour
             {
                 if (light != null)
                 {
-                    light.enabled = false;
+                    light.SetActive(false);
                 }
             }
         }
