@@ -55,6 +55,9 @@ public class LightSwitch : MonoBehaviour
     private Coroutine sanityCoroutine;
     private Coroutine breakCheckCoroutine;
 
+    // Track if lights were on before power loss
+    private bool wereOnBeforePowerLoss = false;
+
     // PlayerStats reflection (kept for cross-assembly compatibility)
     private System.Reflection.MethodInfo changeSanityMethod;
     private System.Type playerStatsType;
@@ -106,13 +109,143 @@ public class LightSwitch : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (connectedFuse == null) return;
+
+        bool fuseIsOn = connectedFuse.GetState();
+
+        // Scenario 1: Lights are ON and fuse turns OFF -> Force lights off
+        if (lightsOn && !fuseIsOn)
+        {
+            Debug.Log($"[LightSwitch] Connected fuse turned off - forcing lights OFF on {gameObject.name}");
+            wereOnBeforePowerLoss = true; // Remember lights were on
+            ForceOffDueToPowerLoss();
+        }
+        // Scenario 2: Lights are OFF, fuse turns ON, and lights were on before power loss -> Restore lights
+        else if (!lightsOn && fuseIsOn && wereOnBeforePowerLoss && !isBroken)
+        {
+            Debug.Log($"[LightSwitch] Connected fuse turned back on - restoring lights ON on {gameObject.name}");
+            wereOnBeforePowerLoss = false; // Clear flag
+            ForceOnDueToPowerRestored();
+        }
+    }
+
+    /// <summary>
+    /// Force lights off when power is lost (fuse turned off)
+    /// Similar to Toggle but doesn't toggle the state - just turns off
+    /// </summary>
+    private void ForceOffDueToPowerLoss()
+    {
+        lightsOn = false;
+
+        // Turn off all lights
+        if (lights != null)
+        {
+            foreach (var light in lights)
+            {
+                if (light != null)
+                {
+                    light.enabled = false;
+                }
+            }
+        }
+
+        // Stop sanity gain
+        if (sanityCoroutine != null)
+        {
+            StopCoroutine(sanityCoroutine);
+            sanityCoroutine = null;
+        }
+
+        // Stop break checking
+        if (breakCheckCoroutine != null)
+        {
+            StopCoroutine(breakCheckCoroutine);
+            breakCheckCoroutine = null;
+        }
+
+        // Reset break chance and time
+        timeOn = 0f;
+        currentBreakChance = initialBreakChance;
+
+        // Re-enable shadow spawning
+        if (shadowSpawner != null && shadowsDisabledByThisSwitch)
+        {
+            shadowSpawner.SetSpawningEnabled(true);
+            shadowsDisabledByThisSwitch = false;
+            Debug.Log($"[LightSwitch] {gameObject.name} re-enabled shadow spawning (power lost)");
+        }
+
+        // Play off sound for feedback
+        PlaySound(switchOffClip);
+    }
+
+    /// <summary>
+    /// Force lights on when power is restored (fuse turned back on)
+    /// Restores lights to their previous state before power loss
+    /// </summary>
+    private void ForceOnDueToPowerRestored()
+    {
+        lightsOn = true;
+
+        // Turn on all lights
+        if (lights != null)
+        {
+            foreach (var light in lights)
+            {
+                if (light != null)
+                {
+                    light.enabled = true;
+                }
+            }
+        }
+
+        // Restart sanity gain
+        AddSanity(initialSanityBoost);
+
+        if (sanityCoroutine != null)
+        {
+            StopCoroutine(sanityCoroutine);
+        }
+        sanityCoroutine = StartCoroutine(SanityGainCoroutine());
+
+        // Restart break checking
+        if (breakCheckCoroutine != null)
+        {
+            StopCoroutine(breakCheckCoroutine);
+        }
+        breakCheckCoroutine = StartCoroutine(BreakCheckCoroutine());
+
+        // Disable shadow spawning
+        if (shadowSpawner != null)
+        {
+            shadowSpawner.DestroyCurrentShadow();
+            shadowSpawner.SetSpawningEnabled(false);
+            shadowsDisabledByThisSwitch = true;
+            Debug.Log($"[LightSwitch] {gameObject.name} disabled shadow spawning (power restored)");
+        }
+
+        // Play on sound for feedback
+        PlaySound(switchOnClip);
+    }
+
     public void Toggle()
     {
         Debug.Log($"[LightSwitch] Toggle called on {gameObject.name}. Current state: lightsOn={lightsOn}, isBroken={isBroken}");
         
-        // Check if the connected fuse is on - if it is, allow turning on even if previously broken
+        // Check if the connected fuse is on
         bool fuseIsOn = connectedFuse != null && connectedFuse.GetState();
         
+        // IMPORTANT: Cannot turn lights ON if the fuse/breaker is OFF
+        if (!lightsOn && connectedFuse != null && !fuseIsOn)
+        {
+            Debug.Log($"[LightSwitch] Cannot turn lights on - connected fuse '{connectedFuse.name}' is OFF on {gameObject.name}");
+            PlaySound(switchOffClip); // Play feedback sound to indicate failed attempt
+            return;
+        }
+        
+        // Check if lights are broken and fuse is off
         if (isBroken && !fuseIsOn)
         {
             Debug.Log($"[LightSwitch] Cannot toggle - lights are broken and fuse is off on {gameObject.name}");
@@ -188,6 +321,9 @@ public class LightSwitch : MonoBehaviour
             timeOn = 0f;
             currentBreakChance = initialBreakChance;
             Debug.Log($"[LightSwitch] Break chance reset to {initialBreakChance} on {gameObject.name}");
+
+            // Clear the power loss flag since lights are being manually turned off
+            wereOnBeforePowerLoss = false;
 
             // Re-enable shadow spawning when lights turn off
             if (shadowSpawner != null && shadowsDisabledByThisSwitch)
