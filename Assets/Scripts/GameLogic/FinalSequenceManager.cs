@@ -84,6 +84,10 @@ public class FinalSequenceManager : MonoBehaviour
     // Track last check state to avoid log spam
     private int lastCompletedCount = -1;
 
+    // Cutscene state tracking
+    private bool cutscenePlaying = false;
+    private PlayerManager cachedPlayerManager;
+
     private void Start()
     {
         // Find TaskManager if not assigned
@@ -228,9 +232,15 @@ public class FinalSequenceManager : MonoBehaviour
     private void OnChaseWallTriggered(Collider other)
     {
         if (!IsPlayer(other)) return;
-        if (!sequenceActivated || chaseActive) return;
+        if (!sequenceActivated || chaseActive || cutscenePlaying) return;
 
-        StartChase();
+        // Get player manager reference
+        cachedPlayerManager = other.GetComponent<PlayerManager>();
+        if (cachedPlayerManager == null)
+            cachedPlayerManager = other.GetComponentInParent<PlayerManager>();
+
+        // Start cutscene instead of chase directly
+        StartCoroutine(CutsceneCoroutine());
     }
 
     /// <summary>
@@ -374,7 +384,13 @@ public class FinalSequenceManager : MonoBehaviour
             painterAI.SetChaseActive(false);
         }
 
-        if (debugLogs) Debug.Log($"[FinalSequence] Painter spawned at {spawnPos}");
+        // No need to initialize animator - it will be triggered by the cutscene
+        if (debugLogs) Debug.Log("[FinalSequence] Painter spawned (animator will be triggered during cutscene)");
+
+        // Disable the painter GameObject until chase trigger is entered
+        // This prevents it from being visible before the cutscene
+        painterInstance.SetActive(false);
+        if (debugLogs) Debug.Log($"[FinalSequence] Painter spawned at {spawnPos} and set to inactive (will activate on chase trigger)");
     }
 
     /// <summary>
@@ -413,6 +429,144 @@ public class FinalSequenceManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Cutscene coroutine that freezes player and plays the Timeline cutscene
+    /// </summary>
+    private IEnumerator CutsceneCoroutine()
+    {
+        cutscenePlaying = true;
+        if (debugLogs) Debug.Log("[FinalSequence] CUTSCENE STARTED - Freezing player");
+
+        // Freeze player
+        FreezePlayer(true);
+
+        // Activate the painter GameObject (it was inactive since spawn)
+        if (painterInstance != null)
+        {
+            painterInstance.SetActive(true);
+            if (debugLogs) Debug.Log("[FinalSequence] Painter GameObject activated for cutscene");
+        }
+
+        // Get the PlayableDirector from the painter
+        UnityEngine.Playables.PlayableDirector playableDirector = null;
+        if (painterInstance != null)
+        {
+            playableDirector = painterInstance.GetComponent<UnityEngine.Playables.PlayableDirector>();
+            
+            if (playableDirector != null)
+            {
+                // Play the cutscene Timeline
+                playableDirector.Play();
+                if (debugLogs) Debug.Log($"[FinalSequence] Playing cutscene Timeline. Duration: {playableDirector.duration}s");
+                
+                // Wait for the cutscene to complete
+                while (playableDirector.state == UnityEngine.Playables.PlayState.Playing)
+                {
+                    yield return null;
+                }
+                
+                if (debugLogs) Debug.Log("[FinalSequence] Cutscene Timeline finished");
+            }
+            else
+            {
+                Debug.LogWarning("[FinalSequence] Painter has no PlayableDirector component! Cutscene will not play.");
+                // Still wait a bit so it doesn't feel instant
+                yield return new WaitForSeconds(1f);
+            }
+        }
+        else
+        {
+            Debug.LogError("[FinalSequence] Painter instance is null, cannot play cutscene!");
+            yield return new WaitForSeconds(1f);
+        }
+
+        // Unfreeze player
+        FreezePlayer(false);
+
+        cutscenePlaying = false;
+        if (debugLogs) Debug.Log("[FinalSequence] CUTSCENE ENDED - Starting chase");
+
+        // Trigger "Spawn" animation on painter AFTER cutscene ends (if it wasn't handled by Timeline)
+        // This can be used to transition from cutscene pose to idle/ready pose
+        if (painterInstance != null)
+        {
+            Animator animator = GetPainterAnimator();
+            if (animator != null)
+            {
+                animator.SetTrigger("Spawn");
+                if (debugLogs) Debug.Log("[FinalSequence] Triggered 'Spawn' animation on Painter (post-cutscene)");
+            }
+            else
+            {
+                Debug.LogWarning("[FinalSequence] No Animator found to trigger Spawn animation!");
+            }
+        }
+
+        // Now start the actual chase
+        StartChase();
+    }
+
+    /// <summary>
+    /// Freeze or unfreeze the player (movement, camera, interactions)
+    /// </summary>
+    private void FreezePlayer(bool freeze)
+    {
+        if (cachedPlayerManager == null)
+        {
+            Debug.LogWarning("[FinalSequence] Cannot freeze player - PlayerManager not found");
+            return;
+        }
+
+        if (freeze)
+        {
+            // Disable PlayerManager to stop all movement and input
+            cachedPlayerManager.enabled = false;
+
+            // Disable camera rotation (pause it for the cutscene duration)
+            cachedPlayerManager.PauseCamera();
+
+            if (debugLogs) Debug.Log("[FinalSequence] Player frozen");
+        }
+        else
+        {
+            // Re-enable PlayerManager
+            cachedPlayerManager.enabled = true;
+
+            // Re-enable camera
+            cachedPlayerManager.ResumeCamera();
+
+            if (debugLogs) Debug.Log("[FinalSequence] Player unfrozen");
+        }
+    }
+
+    /// <summary>
+    /// Helper method to get the Animator from the Painter (checks child "Painter Animated" first)
+    /// </summary>
+    private Animator GetPainterAnimator()
+    {
+        if (painterInstance == null) return null;
+
+        // First, try to find the "Painter Animated" child
+        Transform painterAnimated = painterInstance.transform.Find("Painter Animated");
+        if (painterAnimated != null)
+        {
+            Animator animator = painterAnimated.GetComponent<Animator>();
+            if (animator != null)
+            {
+                return animator;
+            }
+        }
+
+        // Fallback: search in all children
+        Animator fallbackAnimator = painterInstance.GetComponentInChildren<Animator>();
+        if (fallbackAnimator != null && debugLogs)
+        {
+            Debug.LogWarning($"[FinalSequence] 'Painter Animated' child not found, using animator from: {fallbackAnimator.gameObject.name}");
+        }
+
+        return fallbackAnimator;
+    }
+
+    /// <summary>
     /// Called when player enters the chase wall trigger
     /// </summary>
     public void StartChase()
@@ -421,6 +575,10 @@ public class FinalSequenceManager : MonoBehaviour
 
         chaseActive = true;
         if (debugLogs) Debug.Log("[FinalSequence] CHASE STARTED!");
+
+        // Trigger "Walk" animation on painter
+        // Use a small delay to ensure Spawn animation can finish if it's playing
+        StartCoroutine(TriggerWalkAnimationDelayed());
 
         // Trigger designer event
         onChaseStart?.Invoke();
@@ -447,6 +605,30 @@ public class FinalSequenceManager : MonoBehaviour
 
         // Keep chase wall active - don't disable it
         // (Player may need to move back through it)
+    }
+
+    /// <summary>
+    /// Trigger Walk animation with a small delay to allow Spawn to complete
+    /// </summary>
+    private IEnumerator TriggerWalkAnimationDelayed()
+    {
+        // Wait a short time to let Spawn animation start/finish
+        yield return new WaitForSeconds(0.2f);
+
+        Animator animator = GetPainterAnimator();
+        if (animator != null)
+        {
+            // Reset any states to ensure clean transition
+            animator.ResetTrigger("Spawn");
+            
+            // Now trigger Walk
+            animator.SetTrigger("Walk");
+            if (debugLogs) Debug.Log("[FinalSequence] Triggered 'Walk' animation on Painter (delayed)");
+        }
+        else
+        {
+            Debug.LogWarning("[FinalSequence] No Animator found to trigger Walk animation!");
+        }
     }
 
     /// <summary>
@@ -552,6 +734,14 @@ public class FinalSequenceManager : MonoBehaviour
         chaseActive = false;
         sequenceReady = false;
         lastCompletedCount = -1;
+        cutscenePlaying = false;
+
+        // Unfreeze player if frozen
+        if (cachedPlayerManager != null)
+        {
+            FreezePlayer(false);
+            cachedPlayerManager = null;
+        }
 
         // Destroy painter instance if it exists
         if (painterInstance != null)
