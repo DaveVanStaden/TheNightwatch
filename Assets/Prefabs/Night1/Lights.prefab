@@ -4142,6 +4142,8 @@ MonoBehaviour:
   - {fileID: 6910789366665486921}
   - {fileID: 7358252463310118223}
   - {fileID: 6272633393771778043}
+  - {fileID: 8572403291113638849}
+  - {fileID: 7915146123344703525}
 --- !u!1 &4035946560227170403
 GameObject:
   m_ObjectHideFlags: 0
@@ -8640,7 +8642,7 @@ Transform:
   m_GameObject: {fileID: 7915146123344703525}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 161.09, y: 9.28, z: -16.8}
+  m_LocalPosition: {x: 162.55, y: 8.24, z: -16.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8657,8 +8659,8 @@ Light:
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.57254905, g: 0.70860845, b: 0.9254902, a: 1}
-  m_Intensity: 11.3
-  m_Range: 20.94
+  m_Intensity: 22
+  m_Range: 25
   m_SpotAngle: 137.69232
   m_InnerSpotAngle: 40.578323
   m_CookieSize: 10
@@ -8696,10 +8698,10 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 2
+  m_Lightmapping: 1
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 73.9
+  m_BounceIntensity: 10
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 7.7782776e+31, y: 2.6785336e+20, z: 1.6266924e+10, w: 4.3607752e+27}
@@ -9884,7 +9886,7 @@ Transform:
   m_GameObject: {fileID: 8572403291113638849}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 162.79, y: 9.28, z: -50.99}
+  m_LocalPosition: {x: 162.79, y: 8.24, z: -48.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9901,8 +9903,8 @@ Light:
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 0.57254905, g: 0.70860845, b: 0.9254902, a: 1}
-  m_Intensity: 11.3
-  m_Range: 20.94
+  m_Intensity: 22
+  m_Range: 25
   m_SpotAngle: 137.69232
   m_InnerSpotAngle: 40.578323
   m_CookieSize: 10
@@ -9940,10 +9942,10 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 2
+  m_Lightmapping: 1
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 73.9
+  m_BounceIntensity: 10
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 2.3509887e-38, y: -4.441163e-16, z: -0.06250002, w: 1.5046333e-36}

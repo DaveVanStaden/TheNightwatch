@@ -2721,7 +2721,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7440342191920194209, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9090033536227389672, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2990,6 +2990,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 927111502}
     - target: {fileID: 864583727902273603, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: lights.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 864583727902273603, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: 'lights.Array.data[0]'
       value: 
       objectReference: {fileID: 1120741930}
@@ -3005,6 +3009,10 @@ PrefabInstance:
       propertyPath: 'lights.Array.data[3]'
       value: 
       objectReference: {fileID: 804612652}
+    - target: {fileID: 864583727902273603, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: 'lights.Array.data[4]'
+      value: 
+      objectReference: {fileID: 8355554499927841921}
     - target: {fileID: 1195803940052205712, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: powerGroup
       value: 
@@ -3102,6 +3110,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6157480602279098228, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: lights.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157480602279098228, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: 'lights.Array.data[0]'
       value: 
       objectReference: {fileID: 7845140585356311350}
@@ -3117,10 +3129,18 @@ PrefabInstance:
       propertyPath: 'lights.Array.data[3]'
       value: 
       objectReference: {fileID: 7845140585356311347}
+    - target: {fileID: 6157480602279098228, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: 'lights.Array.data[4]'
+      value: 
+      objectReference: {fileID: 8355554499927841922}
     - target: {fileID: 6307357258507405397, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: powerGroup
       value: 
       objectReference: {fileID: 1447467137}
+    - target: {fileID: 6444152587028540201, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: lights.Array.size
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6444152587028540201, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: 'lights.Array.data[0]'
       value: 
@@ -3129,10 +3149,18 @@ PrefabInstance:
       propertyPath: 'lights.Array.data[1]'
       value: 
       objectReference: {fileID: 882285549}
+    - target: {fileID: 6444152587028540201, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: 'lights.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8355554499927841924}
     - target: {fileID: 6580153433062091121, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: powerGroup
       value: 
       objectReference: {fileID: 1823367058}
+    - target: {fileID: 6779412869407183322, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: lights.Array.size
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 6779412869407183322, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: 'lights.Array.data[0]'
       value: 
@@ -3153,6 +3181,10 @@ PrefabInstance:
       propertyPath: 'lights.Array.data[4]'
       value: 
       objectReference: {fileID: 1776628758}
+    - target: {fileID: 6779412869407183322, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
+      propertyPath: 'lights.Array.data[5]'
+      value: 
+      objectReference: {fileID: 8355554499927841923}
     - target: {fileID: 7039698453636341955, guid: 1f5666da783cb39409a12448ec00d736, type: 3}
       propertyPath: powerGroup
       value: 
@@ -4060,7 +4092,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: Lights
       objectReference: {fileID: 0}
+    - target: {fileID: 2997599776432106703, guid: faae868e6762e664caa41475ea180069, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3020907039128859046, guid: faae868e6762e664caa41475ea180069, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3108552699500844132, guid: faae868e6762e664caa41475ea180069, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -4073,6 +4113,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4169921628191800959, guid: faae868e6762e664caa41475ea180069, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4483141434222882493, guid: faae868e6762e664caa41475ea180069, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -4128,6 +4172,10 @@ PrefabInstance:
       propertyPath: 'Lights.Array.data[20]'
       value: 
       objectReference: {fileID: 371869923}
+    - target: {fileID: 5502770944610559578, guid: faae868e6762e664caa41475ea180069, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6790085372537398149, guid: faae868e6762e664caa41475ea180069, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -4386,6 +4434,26 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 924eed004a024234582db290b2c4c814, type: 3}
+--- !u!1 &8355554499927841921 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 960682849011728100, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8355554499927841922 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8370603385708785333, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8355554499927841923 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2246243277781608840, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8355554499927841924 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3293987249621119898, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8421797751341606073
 PrefabInstance:
   m_ObjectHideFlags: 0
