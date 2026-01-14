@@ -23,6 +23,7 @@ public class GrabPhone : MonoBehaviour
     private Coroutine waitToFallCoroutine;
     private Coroutine fallCoroutine;
     private MeshRenderer phoneMeshRenderer; // Cache the mesh renderer
+    private bool callWasSkipped = false; // Track if call was manually skipped
 
     // Start is called before the first frame update
     void Start()
@@ -120,10 +121,20 @@ public class GrabPhone : MonoBehaviour
     IEnumerator WaitToFall()
     {
         yield return new WaitForSeconds(speakers.clip.length);
-        fallCoroutine = StartCoroutine(Fall(true));
+        
+        // Only fall if call wasn't manually skipped
+        if (!callWasSkipped)
+        {
+            fallCoroutine = StartCoroutine(Fall(true));
+        }
+        
+        waitToFallCoroutine = null;
     }
     IEnumerator Fall(bool skipDialTone = false)
     {
+        // Mark as no longer attached so X key won't trigger this again
+        isAttatched = false;
+        
         // Detach phone and enable physics
         Rigidbody rb = GetComponentInChildren<Rigidbody>();
         if (rb != null)
@@ -223,6 +234,9 @@ public class GrabPhone : MonoBehaviour
 
     public void SkipCall()
     {
+        // Mark that call was skipped to prevent WaitToFall from triggering
+        callWasSkipped = true;
+        
         // Set the flag in TaskManager to allow the tutorial painting to fall
         if (taskManager != null)
         {
@@ -254,7 +268,7 @@ public class GrabPhone : MonoBehaviour
             speakers.Stop();
         }
         
-        // Play dial tone (hang up sound) before dropping
-        fallCoroutine = StartCoroutine(Fall(false));
+        // Play dial tone before dropping when manually skipping
+        fallCoroutine = StartCoroutine(Fall(skipDialTone: false));
     }
 }
