@@ -10,10 +10,17 @@ public class MainMenu : MonoBehaviour
 {
     [Tooltip("Build index of the game scene. Default = 1.")]
     public int gameSceneIndex = 1;
+    public int dayModeSceneIndex = 2;
     public void StartGame()
     {
         Time.timeScale = 1f; // ensure time scale is normal
         SceneManager.LoadScene(gameSceneIndex);
+    }
+
+    public void StartDayMode()
+    {
+        Time.timeScale = 1f; // ensure time scale is normal
+        SceneManager.LoadScene(dayModeSceneIndex);
     }
 
     public void ExitGame()
