@@ -695,7 +695,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!224 &223598110
 RectTransform:
@@ -2291,6 +2291,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
   gameSceneIndex: 1
   dayModeSceneIndex: 2
+  dayModeButton: {fileID: 0}
+  debugLogs: 1
 --- !u!222 &947742247
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -12437,8 +12439,8 @@ SceneRoots:
   m_Roots:
   - {fileID: 1282280728}
   - {fileID: 1444858351}
+  - {fileID: 1588764213}
   - {fileID: 223598110}
   - {fileID: 2011435124}
   - {fileID: 599173418}
   - {fileID: 174115480}
-  - {fileID: 1588764213}

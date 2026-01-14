@@ -160,7 +160,7 @@ public class LightSwitch : MonoBehaviour
             {
                 if (light != null)
                 {
-                    light.enabled = false;
+                    light.SetActive(false);
                 }
             }
         }
