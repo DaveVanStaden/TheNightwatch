@@ -74,6 +74,10 @@ public class LightSwitch : MonoBehaviour
 
     private void Start()
     {
+        // Lights should ALWAYS start OFF, regardless of breaker state
+        // They must be manually toggled ON by the player
+        lightsOn = false;
+        
         if (lights != null)
         {
             foreach (var light in lights)
@@ -125,16 +129,11 @@ public class LightSwitch : MonoBehaviour
         if (lightsOn && !fuseIsOn)
         {
             Debug.Log($"[LightSwitch] Connected fuse turned off - forcing lights OFF on {gameObject.name}");
-            wereOnBeforePowerLoss = true; // Remember lights were on
+            wereOnBeforePowerLoss = true; // Remember lights were on so they can be manually turned on again
             ForceOffDueToPowerLoss();
         }
-        // Scenario 2: Lights are OFF, fuse turns ON, and lights were on before power loss -> Restore lights
-        else if (!lightsOn && fuseIsOn && wereOnBeforePowerLoss && !isBroken)
-        {
-            Debug.Log($"[LightSwitch] Connected fuse turned back on - restoring lights ON on {gameObject.name}");
-            wereOnBeforePowerLoss = false; // Clear flag
-            ForceOnDueToPowerRestored();
-        }
+        // Lights will NOT automatically restore when power comes back
+        // Player must manually toggle the switch ON again
 
         // Count down sanity boost cooldown timer while lights are OFF
         if (!lightsOn && sanityBoostTimer > 0f)
@@ -149,7 +148,6 @@ public class LightSwitch : MonoBehaviour
 
     /// <summary>
     /// Force lights off when power is lost (fuse turned off)
-    /// Similar to Toggle but doesn't toggle the state - just turns off
     /// </summary>
     private void ForceOffDueToPowerLoss()
     {
@@ -195,64 +193,6 @@ public class LightSwitch : MonoBehaviour
 
         // Play off sound for feedback
         PlaySound(switchOffClip);
-    }
-
-    /// <summary>
-    /// Force lights on when power is restored (fuse turned back on)
-    /// Restores lights to their previous state before power loss
-    /// </summary>
-    private void ForceOnDueToPowerRestored()
-    {
-        lightsOn = true;
-
-        // Turn on all lights
-        if (lights != null)
-        {
-            foreach (var light in lights)
-            {
-                if (light != null)
-                {
-                    light.enabled = true;
-                }
-            }
-        }
-
-        // Only grant instant sanity boost if cooldown has expired
-        if (sanityBoostTimer <= 0f)
-        {
-            AddSanity(initialSanityBoost);
-            sanityBoostTimer = sanityBoostCooldown; // Reset cooldown
-            Debug.Log($"[LightSwitch] {gameObject.name} granted instant sanity boost (power restored). Cooldown reset to {sanityBoostCooldown}s");
-        }
-        else
-        {
-            Debug.Log($"[LightSwitch] {gameObject.name} instant sanity boost on cooldown (power restored, {sanityBoostTimer:F1}s remaining)");
-        }
-
-        if (sanityCoroutine != null)
-        {
-            StopCoroutine(sanityCoroutine);
-        }
-        sanityCoroutine = StartCoroutine(SanityGainCoroutine());
-
-        // Restart break checking
-        if (breakCheckCoroutine != null)
-        {
-            StopCoroutine(breakCheckCoroutine);
-        }
-        breakCheckCoroutine = StartCoroutine(BreakCheckCoroutine());
-
-        // Disable shadow spawning
-        if (shadowSpawner != null)
-        {
-            shadowSpawner.DestroyCurrentShadow();
-            shadowSpawner.SetSpawningEnabled(false);
-            shadowsDisabledByThisSwitch = true;
-            Debug.Log($"[LightSwitch] {gameObject.name} disabled shadow spawning (power restored)");
-        }
-
-        // Play on sound for feedback
-        PlaySound(switchOnClip);
     }
 
     public void Toggle()
@@ -302,6 +242,9 @@ public class LightSwitch : MonoBehaviour
 
         if (lightsOn)
         {
+            // Clear power loss flag since lights are now on
+            wereOnBeforePowerLoss = false;
+            
             // Only grant instant sanity boost if cooldown has expired
             if (sanityBoostTimer <= 0f)
             {
