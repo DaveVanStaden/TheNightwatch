@@ -196,10 +196,6 @@ public class FinalSequenceManager : MonoBehaviour
             activationTrigger.SetActive(false); // Start inactive until tasks are complete
             if (debugLogs) Debug.Log($"[FinalSequence] Activation trigger '{activationTrigger.name}' setup complete");
         }
-        else
-        {
-            Debug.LogWarning("[FinalSequence] Activation trigger not assigned! Sequence will activate immediately when tasks complete.");
-        }
     }
 
     /// <summary>
@@ -285,10 +281,7 @@ public class FinalSequenceManager : MonoBehaviour
     private bool AreAllTasksCompleted()
     {
         if (taskManager == null)
-        {
-            if (debugLogs) Debug.LogWarning("[FinalSequence] TaskManager is null!");
             return false;
-        }
 
         // Check for the 3 specific tasks:
         // 1. SinglePaintingFallTask (tutorial)
@@ -381,10 +374,7 @@ public class FinalSequenceManager : MonoBehaviour
     private void SpawnPainter()
     {
         if (painterPrefab == null)
-        {
-            Debug.LogWarning("[FinalSequence] Painter prefab not assigned!");
             return;
-        }
 
         Vector3 spawnPos = painterSpawnPoint != null ? painterSpawnPoint.position : transform.position;
         Quaternion spawnRot = painterSpawnPoint != null ? painterSpawnPoint.rotation : Quaternion.identity;
@@ -401,9 +391,6 @@ public class FinalSequenceManager : MonoBehaviour
         {
             painterAI.SetChaseActive(false);
         }
-
-        // No need to initialize animator - it will be triggered by the cutscene
-        if (debugLogs) Debug.Log("[FinalSequence] Painter spawned (animator will be triggered during cutscene)");
 
         // Disable the painter GameObject until chase trigger is entered
         // This prevents it from being visible before the cutscene
@@ -449,11 +436,9 @@ public class FinalSequenceManager : MonoBehaviour
 
         if (runtimeCeilingHandObject == null)
         {
-            Debug.LogWarning("[FinalSequence] Could not find 'Ceiling hand animation' in painter prefab. Ceiling hand will not be disabled after cutscene.");
-            
-            // Debug: List all children to help find the correct name
             if (debugLogs)
             {
+                Debug.Log("[FinalSequence] Could not find 'Ceiling hand animation' in painter prefab");
                 Debug.Log("[FinalSequence] Listing all children of painter instance:");
                 foreach (Transform child in painterInstance.GetComponentsInChildren<Transform>(true))
                 {
@@ -538,7 +523,7 @@ public class FinalSequenceManager : MonoBehaviour
         if (painterInstance != null)
         {
             painterInstance.SetActive(true);
-            if (debugLogs) Debug.Log("[FinalSequence] Painter GameObject activated for cutscene");
+            if (debugLogs) Debug.Log($"[FinalSequence] Painter GameObject activated for cutscene (Active: {painterInstance.activeSelf})");
         }
 
         // Get the PlayableDirector from the painter
@@ -575,14 +560,12 @@ public class FinalSequenceManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("[FinalSequence] Painter has no PlayableDirector component! Cutscene will not play.");
                 // Still wait a bit so it doesn't feel instant
                 yield return new WaitForSeconds(1f);
             }
         }
         else
         {
-            Debug.LogError("[FinalSequence] Painter instance is null, cannot play cutscene!");
             yield return new WaitForSeconds(1f);
         }
 
@@ -592,9 +575,17 @@ public class FinalSequenceManager : MonoBehaviour
             runtimeCeilingHandObject.SetActive(false);
             if (debugLogs) Debug.Log("[FinalSequence] Ceiling hand object disabled after cutscene");
         }
-        else if (debugLogs)
+
+        // CRITICAL: Enable NavMeshAgent NOW before unfreezing player and starting chase
+        // The cutscene is over, so it's safe to enable pathfinding
+        if (painterInstance != null)
         {
-            Debug.LogWarning("[FinalSequence] No ceiling hand object to disable");
+            var navAgent = painterInstance.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (navAgent != null)
+            {
+                navAgent.enabled = true;
+                if (debugLogs) Debug.Log($"[FinalSequence] NavMeshAgent enabled after cutscene - Enabled: {navAgent.enabled}");
+            }
         }
 
         // Unfreeze player
@@ -613,10 +604,7 @@ public class FinalSequenceManager : MonoBehaviour
     private void FreezePlayer(bool freeze)
     {
         if (cachedPlayerManager == null)
-        {
-            Debug.LogWarning("[FinalSequence] Cannot freeze player - PlayerManager not found");
             return;
-        }
 
         if (freeze)
         {
@@ -660,11 +648,6 @@ public class FinalSequenceManager : MonoBehaviour
 
         // Fallback: search in all children
         Animator fallbackAnimator = painterInstance.GetComponentInChildren<Animator>();
-        if (fallbackAnimator != null && debugLogs)
-        {
-            Debug.LogWarning($"[FinalSequence] 'Painter Animated' child not found, using animator from: {fallbackAnimator.gameObject.name}");
-        }
-
         return fallbackAnimator;
     }
 
@@ -701,14 +684,6 @@ public class FinalSequenceManager : MonoBehaviour
                     paintSplotch.localRotation = Quaternion.identity;
                     if (debugLogs) Debug.Log("[FinalSequence] Reset 'Paint Splotch 1' transform to (0,0,0)");
                 }
-                else if (debugLogs)
-                {
-                    Debug.LogWarning("[FinalSequence] Could not find 'Paint Splotch 1' child in Painter Animated!");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("[FinalSequence] Could not find 'Painter Animated' child to reset transform!");
             }
         }
 
@@ -723,18 +698,19 @@ public class FinalSequenceManager : MonoBehaviour
             animator.SetTrigger("Walk");
             if (debugLogs) Debug.Log("[FinalSequence] Triggered 'Walk' animation on Painter");
         }
-        else
-        {
-            Debug.LogWarning("[FinalSequence] No Animator found to trigger Walk animation!");
-        }
 
         // Activate painter AI chase
         if (painterInstance != null)
         {
             var painterAI = painterInstance.GetComponent<PainterAI>();
+            
             if (painterAI != null)
             {
+                // NavMeshAgent is already enabled at the end of cutscene
+                // Just activate the chase
                 painterAI.SetChaseActive(true);
+                
+                if (debugLogs) Debug.Log("[FinalSequence] Chase activated on PainterAI");
             }
         }
 
@@ -807,7 +783,6 @@ public class FinalSequenceManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[FinalSequence] Painter death screen not assigned! Auto-restarting from checkpoint...");
             // If no death screen assigned, auto-restart after a brief pause
             yield return new WaitForSecondsRealtime(2f);
             RestartFromCheckpoint();
@@ -846,27 +821,18 @@ public class FinalSequenceManager : MonoBehaviour
     {
         if (debugLogs) Debug.Log("[FinalSequence] Starting respawn sequence");
 
-        // Despawn the painter
+        // Destroy the old painter completely
         if (painterInstance != null)
         {
-            // Deactivate chase if active
-            var painterAI = painterInstance.GetComponent<PainterAI>();
-            if (painterAI != null)
-            {
-                painterAI.SetChaseActive(false);
-            }
-
-            // Destroy the painter
             Destroy(painterInstance);
             painterInstance = null;
-            
-            if (debugLogs) Debug.Log("[FinalSequence] Painter despawned after player caught");
+            if (debugLogs) Debug.Log("[FinalSequence] Old painter destroyed");
         }
 
-        // Reset chase state so it can be triggered again
+        // Reset chase state - IMPORTANT: don't start chase yet!
         chaseActive = false;
         cutscenePlaying = false;
-        if (debugLogs) Debug.Log("[FinalSequence] Chase state reset - can be triggered again");
+        if (debugLogs) Debug.Log("[FinalSequence] Chase state reset");
 
         // Respawn player at designated position
         if (cachedPlayerManager != null && playerRespawnPosition != null)
@@ -895,10 +861,8 @@ public class FinalSequenceManager : MonoBehaviour
         }
         else
         {
-            if (playerRespawnPosition == null)
-                Debug.LogWarning("[FinalSequence] Player respawn position not assigned!");
-            if (cachedPlayerManager == null)
-                Debug.LogWarning("[FinalSequence] Could not find PlayerManager!");
+            if (playerRespawnPosition == null && debugLogs)
+                Debug.Log("[FinalSequence] Player respawn position not assigned");
         }
 
         // Gradual fade back in (clear the screen)
@@ -907,13 +871,44 @@ public class FinalSequenceManager : MonoBehaviour
             ScreenFadeManager.Instance.FadeFromBlack();
         }
 
+        // Orient player camera to look at cutscene target before fade completes
+        if (cachedPlayerManager != null && cachedPlayerManager.playerCamera != null && cutsceneCameraTarget != null)
+        {
+            Transform cameraTransform = cachedPlayerManager.playerCamera.transform;
+            Vector3 directionToTarget = cutsceneCameraTarget.position - cameraTransform.position;
+            Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+            cameraTransform.rotation = targetRotation;
+            
+            if (debugLogs) Debug.Log($"[FinalSequence] Player camera oriented to look at cutscene target");
+        }
+
         // Wait for fade to complete
         yield return new WaitForSeconds(2f);
 
-        // Re-spawn the painter at original position (but keep it inactive until chase triggers again)
-        SpawnPainter();
+        // Spawn a NEW painter (fresh instance that will pathfind properly)
+        if (painterPrefab == null)
+        {
+            if (debugLogs) Debug.Log("[FinalSequence] Painter prefab not assigned");
+            yield break;
+        }
 
-        if (debugLogs) Debug.Log("[FinalSequence] Respawn sequence complete - ready for retry");
+        Vector3 spawnPos = painterSpawnPoint != null ? painterSpawnPoint.position : transform.position;
+        Quaternion spawnRot = painterSpawnPoint != null ? painterSpawnPoint.rotation : Quaternion.identity;
+
+        painterInstance = Instantiate(painterPrefab, spawnPos, spawnRot);
+        painterInstance.name = "Painter_AI";
+        
+        if (debugLogs) Debug.Log($"[FinalSequence] New painter spawned at {spawnPos}");
+
+        // Find the ceiling hand object in the new painter instance
+        FindCeilingHandInPainter();
+
+        // Set painter INACTIVE so it's hidden until cutscene starts
+        painterInstance.SetActive(false);
+
+        // Start cutscene immediately (no wait needed since player is already at checkpoint)
+        if (debugLogs) Debug.Log("[FinalSequence] Starting cutscene immediately after respawn");
+        StartCoroutine(CutsceneCoroutine());
     }
 
     /// <summary>
