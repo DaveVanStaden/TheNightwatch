@@ -10911,10 +10911,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9186011446983093108}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
 --- !u!4 &1584989694420590410 stripped
@@ -16136,7 +16133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e7bd168c15cc7459d7cc673a6d0317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PaintingFallConfig
-  fallOffset: {x: 0, y: -4.2, z: 2.11}
+  fallOffset: {x: 0, y: -1.4, z: 2.11}
   fallRotationEuler: {x: 90, y: 0, z: 0}
   fallDuration: 0.5
   returnDuration: 0.75
@@ -24271,8 +24268,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.61346436, y: 2.0863264, z: 21.256702}
-  m_Center: {x: 0, y: -0.9586028, z: 0.0000019073486}
+  m_Size: {x: 0.006134643, y: 0.21256699, z: 0.02086326}
+  m_Center: {x: 0.000000029802322, y: -0.000000018626448, z: -0.009586022}
 --- !u!1 &2259173024908714796 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5621968189365284578, guid: 8fadfa2adb2356342b36d3d7a259f7a7, type: 3}
@@ -45315,7 +45312,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: eb31d005e0c71034c848e1576505ab83, type: 3}
       propertyPath: m_Name
-      value: Statue_SittingThinking 2
+      value: Statue_SittingThinkingHitboxAndRock
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: eb31d005e0c71034c848e1576505ab83, type: 3}
       propertyPath: m_StaticEditorFlags
