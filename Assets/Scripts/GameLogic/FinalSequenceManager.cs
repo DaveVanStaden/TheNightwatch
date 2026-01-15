@@ -36,6 +36,10 @@ public class FinalSequenceManager : MonoBehaviour
     [Tooltip("(Optional) GameObject to disable after spawn cutscene - auto-searches for 'Ceiling hand animation' child in painter prefab")]
     [SerializeField] private GameObject ceilingHandObject;
     
+    [Header("Chase Audio")]
+    [Tooltip("AudioSource that plays the chase music (should have loop enabled). Starts playing when chase begins.")]
+    [SerializeField] private AudioSource chaseMusicSource;
+    
     // Runtime reference to the ceiling hand found in the painter instance
     private GameObject runtimeCeilingHandObject;
 
@@ -664,6 +668,13 @@ public class FinalSequenceManager : MonoBehaviour
         // Trigger designer event
         onChaseStart?.Invoke();
 
+        // Start chase music
+        if (chaseMusicSource != null)
+        {
+            chaseMusicSource.Play();
+            if (debugLogs) Debug.Log("[FinalSequence] Chase music started");
+        }
+
         // Get the Painter Animated child and reset its transform
         if (painterInstance != null)
         {
@@ -748,6 +759,13 @@ public class FinalSequenceManager : MonoBehaviour
     private IEnumerator PlayerCaughtSequence()
     {
         if (debugLogs) Debug.Log("[FinalSequence] Starting player caught sequence");
+
+        // Stop chase music immediately when caught
+        if (chaseMusicSource != null && chaseMusicSource.isPlaying)
+        {
+            chaseMusicSource.Stop();
+            if (debugLogs) Debug.Log("[FinalSequence] Chase music stopped (player caught)");
+        }
 
         // Get player reference if we don't have it cached
         if (cachedPlayerManager == null)
@@ -967,6 +985,13 @@ public class FinalSequenceManager : MonoBehaviour
             painterInstance = null;
             
             if (debugLogs) Debug.Log("[FinalSequence] Painter despawned");
+        }
+
+        // Stop chase music
+        if (chaseMusicSource != null && chaseMusicSource.isPlaying)
+        {
+            chaseMusicSource.Stop();
+            if (debugLogs) Debug.Log("[FinalSequence] Chase music stopped");
         }
 
         // Mark chase as inactive
