@@ -322,7 +322,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &141886236
 Transform:
@@ -636,7 +636,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &276829162
 Transform:
@@ -1275,6 +1275,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1b8ddf4303afdc54aa8dd34c12a387e0, type: 2}
+    - target: {fileID: -8691411531010988131, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_LocalScale.x
       value: 26.042925
@@ -1331,6 +1335,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1b8ddf4303afdc54aa8dd34c12a387e0, type: 2}
+    - target: {fileID: -7490219255663228956, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: -6996393430612822280, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1359,10 +1367,18 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -0.013
       objectReference: {fileID: 0}
+    - target: {fileID: -4535993358250624415, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: -3710144585005508635, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1b8ddf4303afdc54aa8dd34c12a387e0, type: 2}
+    - target: {fileID: -2919942962880101901, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: -2805280937849679267, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_LocalScale.x
       value: 25.117609
@@ -1386,6 +1402,10 @@ PrefabInstance:
     - target: {fileID: -2805280937849679267, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.013
+      objectReference: {fileID: 0}
+    - target: {fileID: -2777873247380781595, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: -2322446004422892180, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_LocalScale.x
@@ -1411,13 +1431,33 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -0.013
       objectReference: {fileID: 0}
+    - target: {fileID: -1980355025651545658, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: -743899663358431570, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1b8ddf4303afdc54aa8dd34c12a387e0, type: 2}
+    - target: {fileID: 640046544504268482, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 668702030875328702, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_Name
       value: Hand Biblical angel Scultpure
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 1128268823535629882, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 1275342944366007774, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_LocalScale.x
@@ -1522,6 +1562,10 @@ PrefabInstance:
     - target: {fileID: 2527778503487609137, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.013
+      objectReference: {fileID: 0}
+    - target: {fileID: 2675930932679825506, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 3397159920545964215, guid: 4caf6a8893240af40995aa0ea7e9e5e9, type: 3}
       propertyPath: m_LocalScale.x
@@ -1977,7 +2021,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &713944092
 Transform:
@@ -2504,7 +2548,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &939612293
 Transform:
@@ -2640,7 +2684,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &973254634
 Transform:
@@ -3651,7 +3695,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1764404000
 Transform:
