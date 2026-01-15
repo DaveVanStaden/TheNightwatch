@@ -25,6 +25,40 @@ public class HallucinationSpawner : MonoBehaviour
     private bool hasSpawnedOnce = false;
     private bool wasBelowThresholdLastFrame = false;
 
+    // Control whether spawning is allowed
+    private bool spawningEnabled = true;
+
+    /// <summary>
+    /// Enable or disable shadow spawning
+    /// </summary>
+    public void SetSpawningEnabled(bool enabled)
+    {
+        spawningEnabled = enabled;
+        Debug.Log($"[HallucinationSpawner] Spawning {(enabled ? "ENABLED" : "DISABLED")}");
+
+        // If disabled, destroy current hallucination immediately
+        if (!enabled && currentHallucination != null)
+        {
+            Debug.Log($"[HallucinationSpawner] Destroying current hallucination due to spawning disabled");
+            Destroy(currentHallucination);
+            currentHallucination = null;
+        }
+    }
+
+    /// <summary>
+    /// Destroy the current shadow and reset cooldown
+    /// </summary>
+    public void DestroyCurrentShadow()
+    {
+        if (currentHallucination != null)
+        {
+            Debug.Log($"[HallucinationSpawner] Destroying current shadow");
+            Destroy(currentHallucination);
+            currentHallucination = null;
+            cooldownTimer = respawnCooldown;
+        }
+    }
+
     private void Awake()
     {
         playerStats = PlayerStats.Instance != null ? PlayerStats.Instance : FindAnyObjectByType<PlayerStats>();
@@ -43,6 +77,18 @@ public class HallucinationSpawner : MonoBehaviour
         // basic guards
         if (playerTransform == null || hallucinationPrefabs == null || hallucinationPrefabs.Length == 0 || playerStats == null)
             return;
+
+        // If spawning is disabled, don't spawn new shadows
+        if (!spawningEnabled)
+        {
+            // Make sure any existing shadow is destroyed
+            if (currentHallucination != null)
+            {
+                Destroy(currentHallucination);
+                currentHallucination = null;
+            }
+            return;
+        }
 
         // cooldown tick
         if (cooldownTimer > 0f)

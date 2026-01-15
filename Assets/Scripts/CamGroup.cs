@@ -145,8 +145,12 @@ public class CamGroup : MonoBehaviour
 
     IEnumerator StartSetUp()
     {
+        float volume = audioSource.volume;
+        audioSource.volume = 0f;
         yield return new WaitForSeconds(.2f);
         ReplaceCameras();
         FindAnyObjectByType<DisableCams>().SwitchEm();
+        yield return new WaitForSeconds(1f);
+        audioSource.volume = volume;
     }
 }

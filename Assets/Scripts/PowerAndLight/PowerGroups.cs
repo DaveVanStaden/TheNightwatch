@@ -43,10 +43,16 @@ public class PowerGroups : MonoBehaviour
 
     public void TurnOnLights()
     {
+        Debug.Log($"[PowerGroups] '{name}' TurnOnLights called");
+        
         // Only turn on if global power available
         if (Object.FindAnyObjectByType<ElectricityLogic>() is ElectricityLogic e && e.IsPowerOut)
+        {
+            Debug.LogWarning($"[PowerGroups] '{name}' TurnOnLights blocked - global power is out (IsPowerOut={e.IsPowerOut})");
             return;
+        }
 
+        Debug.Log($"[PowerGroups] '{name}' Setting lights to ON");
         SetLights(true);
     }
 

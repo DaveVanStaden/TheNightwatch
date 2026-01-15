@@ -5119,15 +5119,16 @@ GameObject:
   m_Component:
   - component: {fileID: 7968201868105823227}
   - component: {fileID: 7469345617362366199}
+  - component: {fileID: 2248613097982902008}
   - component: {fileID: 4910006514984922709}
   - component: {fileID: 5463646065199017786}
   m_Layer: 0
-  m_Name: LowSanityAudio(wip)
+  m_Name: LowSanityAudio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7968201868105823227
 Transform:
   m_ObjectHideFlags: 0
@@ -5152,15 +5153,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 2271425110126426886}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c247c317fcaab6e4f97f7c0c0d99e56b, type: 3}
+  m_Script: {fileID: 11500000, guid: 07ae4e7efef5fbb469ab537e1d1085e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  audioSources: []
-  maxVol:
-  - 0
-  - 0
-  minSanity: 20
-  maxSanity: 60
+  minVolume: 0
+  maxVolume: 0.3
+  maxSanityThreshold: 50
+  minSanityThreshold: 30
+  audioSources:
+  - {fileID: 4910006514984922709}
+  smoothing: 2
+--- !u!114 &2248613097982902008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2271425110126426886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ae4e7efef5fbb469ab537e1d1085e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  minVolume: 0
+  maxVolume: 0.2
+  maxSanityThreshold: 30
+  minSanityThreshold: 0
+  audioSources:
+  - {fileID: 5463646065199017786}
+  smoothing: 2
 --- !u!82 &4910006514984922709
 AudioSource:
   m_ObjectHideFlags: 0
@@ -5174,7 +5195,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 94a5e786647fa0848b095d6d367b35dd, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -5271,7 +5292,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 7f9d46363769e124da19dd5106f368c4, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.05
+  m_Volume: 0
   m_Pitch: 1
   Loop: 1
   Mute: 0

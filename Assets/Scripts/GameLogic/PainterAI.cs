@@ -16,6 +16,8 @@ public class PainterAI : MonoBehaviour
     [SerializeField] private float chaseSpeed = 3.5f;
     [Tooltip("How close the painter needs to be to catch the player")]
     [SerializeField] private float catchDistance = 1.5f;
+    [Tooltip("How close the painter will get before stopping (should be slightly less than catchDistance)")]
+    [SerializeField] private float stoppingDistance = 1.2f;
 
     [Header("References")]
     [Tooltip("The player transform to chase (will auto-find if null)")]
@@ -65,8 +67,16 @@ public class PainterAI : MonoBehaviour
         if (agent != null)
         {
             agent.speed = chaseSpeed;
-            agent.stoppingDistance = catchDistance * 0.8f;
+            agent.stoppingDistance = stoppingDistance; // Stop before reaching player
+            agent.acceleration = 8f; // Smooth acceleration
+            agent.angularSpeed = 120f; // Smooth turning
+            agent.autoBraking = true; // Slow down when approaching destination
             agent.enabled = false; // Disabled until chase starts
+            
+            if (debugLogs)
+            {
+                Debug.Log($"[PainterAI] NavMeshAgent configured - Speed:{chaseSpeed}, StoppingDist:{stoppingDistance}, CatchDist:{catchDistance}");
+            }
         }
     }
 
@@ -76,16 +86,17 @@ public class PainterAI : MonoBehaviour
             return;
 
         // Update destination to player position
-        if (agent.enabled)
+        if (agent.enabled && agent.isOnNavMesh)
         {
-            agent.SetDestination(playerTarget.position);
-
-            // Update animator if present
-            if (animator != null)
+            // Only update destination if player has moved significantly
+            float distanceToDestination = Vector3.Distance(agent.destination, playerTarget.position);
+            if (distanceToDestination > 0.5f)
             {
-                float speed = agent.velocity.magnitude;
-                animator.SetFloat("Speed", speed);
+                agent.SetDestination(playerTarget.position);
             }
+
+            // NOTE: No animator parameters to update - only triggers "Spawn" and "Walk" exist
+            // Movement animation should be handled by the animator's state machine based on velocity
         }
 
         // Check if close enough to catch player
@@ -124,11 +135,8 @@ public class PainterAI : MonoBehaviour
                 audioSource.Play();
             }
 
-            // Set animator state
-            if (animator != null)
-            {
-                animator.SetBool("Chasing", true);
-            }
+            // NOTE: Animation triggers are handled by FinalSequenceManager
+            // We don't set any animator parameters here since only "Spawn" and "Walk" triggers exist
         }
         else
         {
@@ -140,12 +148,7 @@ public class PainterAI : MonoBehaviour
                 audioSource.Stop();
             }
 
-            // Set animator state
-            if (animator != null)
-            {
-                animator.SetBool("Chasing", false);
-                animator.SetFloat("Speed", 0f);
-            }
+            // NOTE: No animator parameters to set - triggers are one-time only
         }
     }
 
@@ -166,11 +169,8 @@ public class PainterAI : MonoBehaviour
             agent.ResetPath();
         }
 
-        // Trigger catch animation
-        if (animator != null)
-        {
-            animator.SetTrigger("Catch");
-        }
+        // NOTE: No "Catch" trigger exists - add one if needed for catch animation
+        // Catch animation could be handled through other means (Timeline, manual animation, etc.)
 
         // Notify sequence manager
         if (sequenceManager != null)
