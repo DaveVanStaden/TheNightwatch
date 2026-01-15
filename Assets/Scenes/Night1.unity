@@ -2417,6 +2417,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: newTaskSource
+      value: 
+      objectReference: {fileID: 6787768}
+    - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: playerManager
       value: 
       objectReference: {fileID: 2068836945279242157}
@@ -2787,7 +2791,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7440342191920194209, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9090033536227389672, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3002,6 +3006,14 @@ PrefabInstance:
       propertyPath: 'powerGroups.Array.data[6]'
       value: 
       objectReference: {fileID: 1583072301}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: mainPowerSwitch
+      value: 
+      objectReference: {fileID: 703380393}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: powerAlmostUpSource
+      value: 
+      objectReference: {fileID: 6787768}
     - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
       propertyPath: onPowerOut.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -3888,6 +3900,30 @@ PrefabInstance:
       propertyPath: originalCam
       value: 
       objectReference: {fileID: 1039914804}
+    - target: {fileID: 8941842376622089662, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: fuseEntries.Array.data[0].breakerButton
+      value: 
+      objectReference: {fileID: 1451216476}
+    - target: {fileID: 8941842376622089662, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: fuseEntries.Array.data[1].breakerButton
+      value: 
+      objectReference: {fileID: 1484905356}
+    - target: {fileID: 8941842376622089662, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: fuseEntries.Array.data[2].breakerButton
+      value: 
+      objectReference: {fileID: 15996999}
+    - target: {fileID: 8941842376622089662, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: fuseEntries.Array.data[3].breakerButton
+      value: 
+      objectReference: {fileID: 1545644037}
+    - target: {fileID: 8941842376622089662, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: fuseEntries.Array.data[4].breakerButton
+      value: 
+      objectReference: {fileID: 1498272737}
+    - target: {fileID: 8941842376622089662, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
+      propertyPath: fuseEntries.Array.data[5].breakerButton
+      value: 
+      objectReference: {fileID: 664013306}
     - target: {fileID: 9207369702305962432, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
       propertyPath: audioSource
       value: 

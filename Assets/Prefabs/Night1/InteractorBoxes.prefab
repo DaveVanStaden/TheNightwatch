@@ -294,6 +294,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElectricityLogic
   startPowerLevel: 100
   fullDrainSecondsWhenAllActive: 300
+  powerAlmostUpSource: {fileID: 0}
+  powerAlmostUpClip: {fileID: 8300000, guid: 09c036649b6ef15409061c2dc2450e14, type: 3}
+  powerAlmostUpThreshold: 10
   onPowerOut:
     m_PersistentCalls:
       m_Calls:

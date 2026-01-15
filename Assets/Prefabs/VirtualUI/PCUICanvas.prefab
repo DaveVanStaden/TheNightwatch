@@ -1557,6 +1557,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2510954466162039960}
   - component: {fileID: 5946095706589602083}
+  - component: {fileID: 8664738356401920654}
   m_Layer: 5
   m_Name: FuseGroups
   m_TagString: Untagged
@@ -1613,6 +1614,22 @@ MonoBehaviour:
   m_Spacing: {x: 20, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
+--- !u!114 &8664738356401920654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3960555977170487841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12963751eacc01246a612cd4ea9a6042, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FuseStatusDisplay
+  fuseEntries: []
+  onColor: {r: 0, g: 1, b: 0, a: 1}
+  offColor: {r: 1, g: 0, b: 0, a: 1}
+  updateInterval: 0.2
 --- !u!1 &4548561071121010686
 GameObject:
   m_ObjectHideFlags: 0
@@ -3166,6 +3183,8 @@ MonoBehaviour:
   trashCompletedText: Cleaned <b>Trash</b>
   singlePaintingActiveText: Restore the <b>fallen Painting</b> on cam <b><u>B1</b></u>
   singlePaintingCompletedText: Restored the <b>fallen Painting</b>
+  finaleActiveText: Finale Task
+  finaleCompletedText: Finale Complete
   tasksHeading: <u>Tasks:</u>
   completedHeading: 'Completed tasks: '
 --- !u!224 &7139608412199901749 stripped
