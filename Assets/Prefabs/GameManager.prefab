@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 8310935552331939685}
   - component: {fileID: 8361998871881328324}
   - component: {fileID: 4186384245583446613}
+  - component: {fileID: 4683980288454814007}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -350,5 +351,32 @@ MonoBehaviour:
   minSpawnDelay: 0.5
   maxSpawnDelay: 0.61
   spawnCheckInterval: 0.41
+  debugLog: 0
+  showSpawnRadiusGizmo: 1
+--- !u!114 &4683980288454814007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4826251618115385339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f664a332853c7d46950b559b68d44dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SanityThresholdManager
+  thresholdEntries:
+  - objectToEnable: {fileID: 0}
+    sanityThreshold: 10
+    hasTriggered: 0
+    isWaitingToSpawn: 0
+  - objectToEnable: {fileID: 0}
+    sanityThreshold: 0
+    hasTriggered: 0
+    isWaitingToSpawn: 0
+  minSpawnDistance: 45
+  minSpawnDelay: 0.5
+  maxSpawnDelay: 2
+  spawnCheckInterval: 0.5
   debugLog: 0
   showSpawnRadiusGizmo: 1
