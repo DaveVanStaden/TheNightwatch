@@ -184,6 +184,13 @@ public class TrashTask : ITask
             float d = Vector3.Distance(player.position, trash.transform.position);
             if (d <= manager.trashInteractionDistance && manager != null && manager.InteractPressed())
             {
+                // Check if trash has a TrashPickup component and trigger it
+                var trashPickup = trash.GetComponent<TrashPickup>();
+                if (trashPickup != null)
+                {
+                    trashPickup.Pickup();
+                }
+
                 Object.Destroy(trash);
                 spawnedTrash.RemoveAt(i);
                 // notify UI (count decreased)
