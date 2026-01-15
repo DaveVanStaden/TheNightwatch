@@ -18,6 +18,10 @@ public class ElectricityLogic : MonoBehaviour
     [Tooltip("Power threshold - sound plays when power dips below this value (default: 10% = low power warning).")]
     [SerializeField] [Range(0f, 100f)] private float powerAlmostUpThreshold = 10f;
 
+    [Header("Main Power Switch")]
+    [Tooltip("Main power breaker switch to toggle when resetting the breaker box.")]
+    [SerializeField] private BreakerButton mainPowerSwitch;
+
     [Header("Events")]
     [Tooltip("Invoked once when power is depleted. Designer will hook this to disable all powergroups.")]
     public UnityEvent onPowerOut;
@@ -100,8 +104,17 @@ public class ElectricityLogic : MonoBehaviour
     {
         IsPowerOut = true;
         PowerLevel = 0f;
+        
+        // Toggle the main power switch OFF when power is depleted (use TurnOff instead of Toggle to avoid guards)
+        if (mainPowerSwitch != null)
+        {
+            mainPowerSwitch.TurnOff();
+            Debug.Log("[ElectricityLogic] Power depleted - turned OFF main power switch.");
+        }
+        
         // invoke public event so designer can implement disabling all powergroups
         onPowerOut?.Invoke();
+        
         Debug.Log("[ElectricityLogic] Power depleted - onPowerOut invoked.");
     }
 
@@ -135,7 +148,7 @@ public class ElectricityLogic : MonoBehaviour
         IsPowerOut = false;
         powerAlmostUpSoundPlayed = false; // Reset sound flag when power is restored
         onPowerRestored?.Invoke();
-        Debug.Log("[ElectricityLogic] ResetBreakerBox called - power restored.");
+        Debug.Log("[ElectricityLogic] ResetBreakerBox called - power restored to 100%.");
     }
 
     /// <summary>

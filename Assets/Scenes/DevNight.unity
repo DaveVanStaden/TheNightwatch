@@ -1902,7 +1902,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -3329,7 +3329,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -3743,7 +3743,7 @@ PrefabInstance:
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: newTaskClip
       value: 
-      objectReference: {fileID: 8300000, guid: 58d40b9daea35a447afa6b42ec627a51, type: 3}
+      objectReference: {fileID: 8300000, guid: 0285a01d8056ccf4895a1303d2625fac, type: 3}
     - target: {fileID: 3701113217424796448, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: newTaskSource
       value: 
@@ -4317,7 +4317,7 @@ PrefabInstance:
     - target: {fileID: 8245649345107392882, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
       propertyPath: powerAlmostUpClip
       value: 
-      objectReference: {fileID: 8300000, guid: 51cea30543268c14195cfcff28767fa0, type: 3}
+      objectReference: {fileID: 8300000, guid: aa0d64f4c513dd949a04fecd9da7abac, type: 3}
     - target: {fileID: 8245649345107392882, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
       propertyPath: powerAlmostUpSource
       value: 
@@ -4355,6 +4355,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 664013306}
     - target: {fileID: 8245649345107392882, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: powerAlmostUpThreshold
+      value: 94.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8245649345107392882, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
       propertyPath: powerGroups.Array.size
       value: 7
       objectReference: {fileID: 0}
@@ -4386,6 +4390,26 @@ PrefabInstance:
       propertyPath: 'powerGroups.Array.data[6]'
       value: 
       objectReference: {fileID: 1583072301}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: mainPowerSwitch
+      value: 
+      objectReference: {fileID: 703380393}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: powerAlmostUpClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 51cea30543268c14195cfcff28767fa0, type: 3}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: powerAlmostUpSource
+      value: 
+      objectReference: {fileID: 905309918}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: powerAlmostUpThreshold
+      value: 89.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
+      propertyPath: fullDrainSecondsWhenAllActive
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 8945834088348332667, guid: ecc7181054f4f2a46ac40ea5730fa622, type: 3}
       propertyPath: onPowerOut.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 

@@ -107,6 +107,12 @@ public class BreakerButton : MonoBehaviour
         // Subscribe to global power events so this button becomes unavailable when power is out,
         // and re-enabled when power is restored.
         SubscribeToElectricityEvents();
+        
+        // If this is the main power switch, subscribe to its own toggle event to reset power
+        if (ignoreGlobalPowerLock)
+        {
+            onToggled.AddListener(OnMainPowerToggled);
+        }
     }
 
     private void OnDisable()
@@ -116,6 +122,25 @@ public class BreakerButton : MonoBehaviour
         {
             elec.onPowerOut.RemoveListener(OnGlobalPowerOut);
             elec.onPowerRestored.RemoveListener(OnGlobalPowerRestored);
+        }
+        
+        if (ignoreGlobalPowerLock)
+        {
+            onToggled.RemoveListener(OnMainPowerToggled);
+        }
+    }
+    
+    private void OnMainPowerToggled(bool newState)
+    {
+        // When main power switch is toggled ON, reset the breaker box (restore power to 100%)
+        if (newState)
+        {
+            var elec = Object.FindAnyObjectByType<ElectricityLogic>();
+            if (elec != null && elec.IsPowerOut)
+            {
+                elec.ResetBreakerBox();
+                Debug.Log("[BreakerButton] Main power switch toggled ON - called ResetBreakerBox()");
+            }
         }
     }
 
@@ -135,9 +160,13 @@ public class BreakerButton : MonoBehaviour
         }
 
         // For all group switches (A, B, C, D, E, F):
-        // The PowerGroup will automatically turn off via its own OnGlobalPowerOut subscription
-        // We just need to update the visual indicator on the switch itself (red light)
-        UpdateGroupLightState(false, instantly: true);
+        // Call Toggle() to properly turn them off if they're currently on
+        // This ensures all the proper state management, animations, and events fire
+        if (isOn)
+        {
+            Debug.Log($"[BreakerButton] '{name}' toggling OFF due to global power outage");
+            Toggle();
+        }
     }
 
     private void OnGlobalPowerRestored()
@@ -406,6 +435,7 @@ public class BreakerButton : MonoBehaviour
         isOn = false;
         ApplyState();
         UpdateGroupLightState(false, instantly: true);
+        ToggleAnimation(); // Update animator to show OFF position
         
         // Trigger the onToggled event
         onToggled?.Invoke(isOn);
@@ -422,6 +452,7 @@ public class BreakerButton : MonoBehaviour
         isOn = true;
         ApplyState();
         UpdateGroupLightState(powerGroup != null ? powerGroup.AnyLightOn() : isOn, instantly: true);
+        ToggleAnimation(); // Update animator to show ON position
         
         // Trigger the onToggled event
         onToggled?.Invoke(isOn);
