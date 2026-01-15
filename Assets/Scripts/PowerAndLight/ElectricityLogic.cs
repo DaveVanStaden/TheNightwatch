@@ -10,6 +10,18 @@ public class ElectricityLogic : MonoBehaviour
     [Tooltip("Seconds it takes to drain from 100 -> 0 when ALL registered powergroups are active (approx. 5-6 minutes = 330s default)")]
     [SerializeField] private float fullDrainSecondsWhenAllActive = 330f;
 
+    [Header("Power Almost Up Audio")]
+    [Tooltip("AudioSource to play the power almost up sound from.")]
+    [SerializeField] private AudioSource powerAlmostUpSource;
+    [Tooltip("AudioClip to play when power dips below the threshold.")]
+    [SerializeField] private AudioClip powerAlmostUpClip;
+    [Tooltip("Power threshold - sound plays when power dips below this value (default: 10% = low power warning).")]
+    [SerializeField] [Range(0f, 100f)] private float powerAlmostUpThreshold = 10f;
+
+    [Header("Main Power Switch")]
+    [Tooltip("Main power breaker switch to toggle when resetting the breaker box.")]
+    [SerializeField] private BreakerButton mainPowerSwitch;
+
     [Header("Events")]
     [Tooltip("Invoked once when power is depleted. Designer will hook this to disable all powergroups.")]
     public UnityEvent onPowerOut;
@@ -24,6 +36,8 @@ public class ElectricityLogic : MonoBehaviour
 
     // tracked BreakerButtons (powergroups). Designers can register/unregister at runtime if needed.
     private readonly List<BreakerButton> registeredBreakers = new List<BreakerButton>();
+
+    private bool powerAlmostUpSoundPlayed;
 
     private void Awake()
     {
@@ -63,6 +77,9 @@ public class ElectricityLogic : MonoBehaviour
         if (activeCount == 0)
             return; // no consumption when nothing is active
 
+        // Store previous power level to detect threshold crossing
+        float previousPowerLevel = PowerLevel;
+
         // Drain calculation:
         // If all groups active => drain rate = 100 / fullDrainSecondsWhenAllActive (percent per second).
         // For partial active groups: drain scales linearly by (activeCount / total).
@@ -70,6 +87,12 @@ public class ElectricityLogic : MonoBehaviour
         float drainPerSecond = (activeCount / (float)total) * (100f / Mathf.Max(1e-6f, fullDrainSecondsWhenAllActive));
         PowerLevel -= drainPerSecond * Time.deltaTime;
         PowerLevel = Mathf.Clamp(PowerLevel, 0f, 100f);
+
+        // Check if power dipped below threshold (was above, now below)
+        if (!powerAlmostUpSoundPlayed && previousPowerLevel >= powerAlmostUpThreshold && PowerLevel < powerAlmostUpThreshold)
+        {
+            PlayPowerAlmostUpSound();
+        }
 
         if (PowerLevel <= 0f && !IsPowerOut)
         {
@@ -81,8 +104,17 @@ public class ElectricityLogic : MonoBehaviour
     {
         IsPowerOut = true;
         PowerLevel = 0f;
+        
+        // Toggle the main power switch OFF when power is depleted (use TurnOff instead of Toggle to avoid guards)
+        if (mainPowerSwitch != null)
+        {
+            mainPowerSwitch.TurnOff();
+            Debug.Log("[ElectricityLogic] Power depleted - turned OFF main power switch.");
+        }
+        
         // invoke public event so designer can implement disabling all powergroups
         onPowerOut?.Invoke();
+        
         Debug.Log("[ElectricityLogic] Power depleted - onPowerOut invoked.");
     }
 
@@ -114,8 +146,9 @@ public class ElectricityLogic : MonoBehaviour
     {
         PowerLevel = 100f;
         IsPowerOut = false;
+        powerAlmostUpSoundPlayed = false; // Reset sound flag when power is restored
         onPowerRestored?.Invoke();
-        Debug.Log("[ElectricityLogic] ResetBreakerBox called - power restored.");
+        Debug.Log("[ElectricityLogic] ResetBreakerBox called - power restored to 100%.");
     }
 
     /// <summary>
@@ -157,4 +190,14 @@ public class ElectricityLogic : MonoBehaviour
 
     // Optional helper: returns current percentage 0..100
     public float PowerPercent => PowerLevel;
+
+    private void PlayPowerAlmostUpSound()
+    {
+        if (powerAlmostUpSource != null && powerAlmostUpClip != null)
+        {
+            powerAlmostUpSource.PlayOneShot(powerAlmostUpClip);
+            powerAlmostUpSoundPlayed = true;
+            Debug.Log($"[ElectricityLogic] Power almost up sound played at {PowerLevel}% (threshold: {powerAlmostUpThreshold}%)");
+        }
+    }
 }

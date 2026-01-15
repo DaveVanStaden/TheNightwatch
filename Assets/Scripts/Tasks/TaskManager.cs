@@ -75,6 +75,12 @@ public class TaskManager : MonoBehaviour
     [Tooltip("Optional AudioClip played by specialPhoneAudioSource when the mini-task completes.")]
     public AudioClip specialPhoneCompleteClip;
 
+    [Header("Task Notification Audio")]
+    [Tooltip("AudioSource to play the new task notification sound from.")]
+    public AudioSource newTaskSource;
+    [Tooltip("AudioClip to play when a new task is added to the task list.")]
+    public AudioClip newTaskClip;
+
     [Tooltip("Optional: assign the CamImage (e.g. B2) to be used by the single painting fall task. If null the script will look up by SpecialCamName.")]
     public CamImage specialCamImage;
 
@@ -490,6 +496,7 @@ public class TaskManager : MonoBehaviour
                         activeTasks.Add(singlePaintingTaskRef);
                         singlePaintingTaskRef.Activate(playerTransform);
                         OnTasksChanged?.Invoke();
+                        PlayNewTaskSound();
                         Debug.Log("[TaskManager] Tutorial task ACTIVATED");
                     }
                 }
@@ -530,6 +537,7 @@ public class TaskManager : MonoBehaviour
                         activeTasks.Add(paintingTaskRef);
                         paintingTaskRef.Activate(playerTransform);
                         OnTasksChanged?.Invoke();
+                        PlayNewTaskSound();
                         Debug.Log("[TaskManager] Painting task ACTIVATED");
                     }
                 }
@@ -691,6 +699,7 @@ public class TaskManager : MonoBehaviour
                     disabledTaskIndices.Add(trashIdx);
                 }
                 OnTasksChanged?.Invoke();
+                PlayNewTaskSound();
             }
             return true;
         }
@@ -764,6 +773,7 @@ public class TaskManager : MonoBehaviour
                     disabledTaskIndices.Add(trashIdx);
                 }
                 OnTasksChanged?.Invoke();
+                PlayNewTaskSound();
                 Debug.Log("[TaskManager] Trash task ACTIVATED after tutorial completion");
             }
         }
@@ -835,6 +845,7 @@ public class TaskManager : MonoBehaviour
         {
             activeTasks.Add(task);
             OnTasksChanged?.Invoke();
+            PlayNewTaskSound();
             Debug.Log($"[TaskManager] Active task added externally: {task.TaskName}");
         }
     }
@@ -915,6 +926,15 @@ public class TaskManager : MonoBehaviour
         if (resetCount > 0)
         {
             Debug.Log($"[TaskManager] Reset {resetCount} paintings to their original positions");
+        }
+    }
+
+    private void PlayNewTaskSound()
+    {
+        if (newTaskSource != null && newTaskClip != null)
+        {
+            newTaskSource.PlayOneShot(newTaskClip);
+            Debug.Log("[TaskManager] New task sound played");
         }
     }
 }
