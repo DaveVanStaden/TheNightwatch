@@ -239,11 +239,33 @@ MonoBehaviour:
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
+--- !u!114 &187757111 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6231572148093720005, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+  m_PrefabInstance: {fileID: 6829324717808045921}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Statue
 --- !u!1 &205615016 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2196641524118120468, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
   m_PrefabInstance: {fileID: 6829324717808045921}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &212467194 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8840406023615857082, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+  m_PrefabInstance: {fileID: 6829324717808045921}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Statue
 --- !u!4 &226561184 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3822978035606046562, guid: 3c268f4c77ab3ef4c846663b0f747ebd, type: 3}
@@ -1751,6 +1773,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6255477179465790459, guid: 3c268f4c77ab3ef4c846663b0f747ebd, type: 3}
   m_PrefabInstance: {fileID: 6796537077229032853}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1610280020 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4575097602134447601, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+  m_PrefabInstance: {fileID: 6829324717808045921}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Statue
 --- !u!1 &1613337289
 GameObject:
   m_ObjectHideFlags: 0
@@ -2105,6 +2138,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87778d3361165a144a39b88318dfeb23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &2108914319 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4073531693112124754, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+  m_PrefabInstance: {fileID: 6829324717808045921}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Statue
 --- !u!82 &2134729106 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 6842213838590236919, guid: 924eed004a024234582db290b2c4c814, type: 3}
@@ -2689,19 +2733,19 @@ PrefabInstance:
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[0]'
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 212467194}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[1]'
       value: 
-      objectReference: {fileID: 6829324717808045924}
+      objectReference: {fileID: 1610280020}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[2]'
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2108914319}
     - target: {fileID: 7767526375770893696, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: 'statues.Array.data[3]'
       value: 
-      objectReference: {fileID: 6829324717808045922}
+      objectReference: {fileID: 187757111}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2721,7 +2765,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7440342191920194209, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9090033536227389672, guid: 70c83cc19b1cedd409f046173e7f6cdf, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4016,66 +4060,28 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnvironmentProps
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 6893795682055696276, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: roomBounds
+      value: 
+      objectReference: {fileID: 1270239503}
+    - target: {fileID: 6893795682055696276, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: fallOffset.y
+      value: -1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7312064762739873871, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: m_Name
+      value: Statue_SittingThinkingHitboxAndRock
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057525965572885626, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 1778983873729443905, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8911989782332987868, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 9207154600896130545, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 2290909042220324885, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 5911695393904967783, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 5297895536584689355, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 476353199795305475, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 6086495696731423698, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 135275309029305729, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 6212341073493189224, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7052516159238934305, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 2293576017359981624, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
---- !u!114 &6829324717808045922 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 310496866794484079, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-  m_PrefabInstance: {fileID: 6829324717808045921}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Statue
---- !u!114 &6829324717808045924 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1778983873729443905, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
-  m_PrefabInstance: {fileID: 6829324717808045921}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75c1c6e1a0fc06b40b26bbb87e26ed3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Statue
 --- !u!1001 &7845140585356311342
 PrefabInstance:
   m_ObjectHideFlags: 0

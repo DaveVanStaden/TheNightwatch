@@ -146,9 +146,9 @@ MonoBehaviour:
   cameraEventCooldownSeconds: 10
   cameraEventChanceMultiplierOnCamera: 100
   cameraEntitySanityDrainPerSecond: 1
-  breakerEventSanityThreshold: 92
-  breakerEventMinCooldownSeconds: 70
-  breakerEventMaxCooldownSeconds: 180
+  breakerEventSanityThreshold: 90
+  breakerEventMinCooldownSeconds: 100
+  breakerEventMaxCooldownSeconds: 300
   allCamGroups: []
 --- !u!114 &3701113217424796448
 MonoBehaviour:
@@ -246,7 +246,7 @@ MonoBehaviour:
   trashGroupCTag: TrashGroupC
   specialPhoneUseCall: 0
   specialPhoneCallStarted: 0
-  debugForceAllPaintingsDrop: 0
+  debugForceAllPaintingsDrop: 1
   completedTasks: []
 --- !u!114 &7397186432879180287
 MonoBehaviour:
@@ -294,6 +294,8 @@ MonoBehaviour:
   painterPrefab: {fileID: 890160062468778197, guid: 6b79497c57e52bf4fa4672ca742bae61, type: 3}
   painterSpawnPoint: {fileID: 0}
   activationTrigger: {fileID: 0}
+  cutsceneCameraTarget: {fileID: 0}
+  ceilingHandObject: {fileID: 0}
   guidanceObjectsToSpawn:
   - {fileID: 0}
   inkObjectsToSpawn:
@@ -322,6 +324,9 @@ MonoBehaviour:
       m_Calls: []
   taskManager: {fileID: 3701113217424796448}
   gameOverScreen: {fileID: 0}
+  painterDeathScreen: {fileID: 0}
+  endSequenceSceneIndex: 2
+  playerRespawnPosition: {fileID: 0}
   debugLogs: 0
   debugForceSequenceOnStart: 0
 --- !u!114 &4186384245583446613
