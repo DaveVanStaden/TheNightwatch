@@ -214,6 +214,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint guys outside
       objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -326,6 +330,10 @@ PrefabInstance:
     - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_Name
       value: Paint guys outside
+      objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
@@ -487,21 +495,25 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0.0201
       objectReference: {fileID: 0}
+    - target: {fileID: 180891398484226523, guid: e7845076b07350f4a874cfee3336f381, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2419946016500846988, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 1207642876253712561, guid: fc10275ec2853bb4d82e26711ae79b98, type: 3}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 1.23
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.1893
+      value: 1.23
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 1.23
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalPosition.x
@@ -545,7 +557,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_ConstrainProportionsScale
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4221452181582655577, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_Name
@@ -747,6 +759,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 'Paint Stroke '
       objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.0899178
@@ -761,43 +777,43 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 97.531395
+      value: 97.52
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 611.72626
+      value: 612.53
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -110.19255
+      value: -110.2
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.075685695
+      value: 0.01053786
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.68522644
+      value: 0.689313
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.06928418
+      value: 0.00077521784
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.72106606
+      value: -0.7243866
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 36.908
+      value: 0.897
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -75.151
+      value: -87.151
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: -81.65
+      value: -179.186
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1007,6 +1023,10 @@ PrefabInstance:
     - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_Name
       value: Paint Ghost  (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
@@ -1456,6 +1476,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4221452181582655577, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_Name
       value: WallSign (6)
@@ -1480,7 +1504,6 @@ PrefabInstance:
         Florence to attend the Classical Arts Academy there. After her studies she
         began to experiment more with her art which led to her unique approach to
         painting.
-
 
 
         In her new exhibition, named ''Eyes'', she strived to
@@ -1581,20 +1604,24 @@ PrefabInstance:
     m_TransformParent: {fileID: 1062075256}
     m_Modifications:
     - target: {fileID: 180891398484226523, guid: e7845076b07350f4a874cfee3336f381, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 180891398484226523, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.007391304
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 180891398484226523, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.007391304
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 180891398484226523, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.007391304
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 180891398484226523, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0201
+      value: 0.0069
       objectReference: {fileID: 0}
     - target: {fileID: 2419946016500846988, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -1602,15 +1629,15 @@ PrefabInstance:
       objectReference: {fileID: 1207642876253712561, guid: fc10275ec2853bb4d82e26711ae79b98, type: 3}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 1.16
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.1893
+      value: 1.16
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 1.16
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1618,7 +1645,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.115
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1654,7 +1681,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3593393974787205859, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_ConstrainProportionsScale
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4221452181582655577, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_Name
@@ -1914,6 +1941,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Stroke  (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
       value: 3.71673
@@ -2130,6 +2161,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Stroke  (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.89392996
@@ -2281,6 +2316,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint guys outside
       objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2318,6 +2357,10 @@ PrefabInstance:
     - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_Name
       value: Paint Stroke  (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
@@ -2821,6 +2864,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Stroke  (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -2915,6 +2962,10 @@ PrefabInstance:
     - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_Name
       value: Paint Stroke  (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
@@ -3321,6 +3372,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint guys outside
       objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3389,6 +3444,10 @@ PrefabInstance:
     - target: {fileID: 7451677518714685702, guid: 8e149b61484857446b1ed62fefd90da0, type: 3}
       propertyPath: m_Name
       value: Paint Eye Variant (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7451677518714685702, guid: 8e149b61484857446b1ed62fefd90da0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3747,6 +3806,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Stroke  (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.089918
@@ -3921,6 +3984,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Ghost  (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.2623694
@@ -4020,6 +4087,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Ghost  (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.46847445
@@ -4088,6 +4159,10 @@ PrefabInstance:
     - target: {fileID: 3439950670128879970, guid: 28ccd375b9cc73b4aa758c0b26befb84, type: 3}
       propertyPath: m_Name
       value: Paint Ghost
+      objectReference: {fileID: 0}
+    - target: {fileID: 3439950670128879970, guid: 28ccd375b9cc73b4aa758c0b26befb84, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4149058880843723866, guid: 28ccd375b9cc73b4aa758c0b26befb84, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -4367,6 +4442,10 @@ PrefabInstance:
     - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
       propertyPath: m_Name
       value: Paint guys outside
+      objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4920,6 +4999,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Stroke  (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -4988,6 +5071,10 @@ PrefabInstance:
     - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_Name
       value: 'Paint Ghost '
+      objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
@@ -5149,7 +5236,7 @@ PrefabInstance:
     - target: {fileID: 8342701953548561964, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_text
       value: "<i> This exhibition is still in progress</i>\n<size=0.6em> \nUnfortunately,
-        a body was found in a lake closeby the cottage of this Nameless Painter.
+        a body was found in a lake close by the cottage of this Nameless Painter.
         He often painted this lake, but instead of the lush and serene depictions,
         they became more bleak and hopeless.  Perhaps he found comfort in the darkness?"
       objectReference: {fileID: 0}
@@ -5208,6 +5295,10 @@ PrefabInstance:
     - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_Name
       value: 'Paint Ghost '
+      objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
@@ -5270,6 +5361,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 6261434484177026405, guid: 58753fd2fcb9c5a4aa0dd863b0973899, type: 3}
   m_PrefabInstance: {fileID: 1778382325}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1165125560 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+  m_PrefabInstance: {fileID: 1122116653}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1172340612 stripped
 GameObject:
@@ -5381,6 +5477,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Man  (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5439,6 +5539,10 @@ PrefabInstance:
     - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_Name
       value: Paint Ghost  (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
@@ -5535,6 +5639,10 @@ PrefabInstance:
     - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_Name
       value: 'Paint Stroke '
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
@@ -5703,12 +5811,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8342701953548561964, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_text
-      value: 'Spiralling
+      value: '<u><b>Spiralling</u></b>
 
-        This room holds a cariety of art pieces that depict
-        a similar theme. A sculpture made of concrete, but organic spirals emit from
-        inside. Paintings depicting figures twisting and turning. Is it the body,
-        or the mind that spirals down?'
+        This room holds a variety of art
+        pieces that depict a similar theme. A sculpture made of concrete, but organic
+        spirals emit from inside. Paintings depicting figures twisting and turning.
+        Is it the body, or the mind that spirals down?'
       objectReference: {fileID: 0}
     - target: {fileID: 8342701953548561964, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_fontSize
@@ -5754,6 +5862,10 @@ PrefabInstance:
     - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_Name
       value: Paint guys outside
+      objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
@@ -5897,6 +6009,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint guys outside
       objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5979,6 +6095,10 @@ PrefabInstance:
     - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_Name
       value: Paint Stroke  (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
@@ -6221,6 +6341,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Stroke  (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -6289,6 +6413,10 @@ PrefabInstance:
     - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_Name
       value: Paint Stroke  (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
@@ -6837,7 +6965,7 @@ PrefabInstance:
       value: '<i></i>
 
         <size=0.6em> A collection of landscapes and portraits
-        by various artists, depicting every life and cityscapes. '
+        by various artists, depicting ways of life and cityscapes. '
       objectReference: {fileID: 0}
     - target: {fileID: 8342701953548561964, guid: e7845076b07350f4a874cfee3336f381, type: 3}
       propertyPath: m_fontStyle
@@ -7148,6 +7276,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Ghost  (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.3432806
@@ -7355,6 +7487,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Eye Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 7451677518714685702, guid: 8e149b61484857446b1ed62fefd90da0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7428,6 +7564,10 @@ PrefabInstance:
     - target: {fileID: 7451677518714685702, guid: 8e149b61484857446b1ed62fefd90da0, type: 3}
       propertyPath: m_Name
       value: Paint Eye Variant (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7451677518714685702, guid: 8e149b61484857446b1ed62fefd90da0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7561,6 +7701,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint Splotch 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3439950670128879970, guid: 28ccd375b9cc73b4aa758c0b26befb84, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5033315226601370394, guid: 28ccd375b9cc73b4aa758c0b26befb84, type: 3}
       propertyPath: m_LocalScale.x
       value: 3.3094687
@@ -7687,6 +7831,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint guys outside
       objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7718,6 +7866,10 @@ PrefabInstance:
     - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_Name
       value: 'Paint Stroke '
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536273744463638797, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5971757714189262067, guid: 98118a4d98687b64aa5eaefd2c8128fc, type: 3}
       propertyPath: m_LocalScale.x
@@ -7986,6 +8138,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Paint guys outside
       objectReference: {fileID: 0}
+    - target: {fileID: 1172552902638579985, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8189588959989913573, guid: fcf54046f3c95c44c83de1406d1209e5, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.8932749
@@ -8233,6 +8389,10 @@ PrefabInstance:
     - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
       propertyPath: m_Name
       value: Paint Man  (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8519,6 +8679,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 'Paint Man '
       objectReference: {fileID: 0}
+    - target: {fileID: 3069727497829914172, guid: 8befb1927566e9f4c81e7e3619d9dc00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8786,6 +8950,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1948109550}
     - target: {fileID: 4186384245583446613, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: thresholdEntries.Array.data[1].objectToEnable
+      value: 
+      objectReference: {fileID: 1165125560}
+    - target: {fileID: 4186384245583446613, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: thresholdEntries.Array.data[2].objectToEnable
       value: 
       objectReference: {fileID: 1455946661}
@@ -8863,7 +9031,7 @@ PrefabInstance:
       objectReference: {fileID: 1884133333}
     - target: {fileID: 4186384245583446613, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: thresholdEntries.Array.data[1].sanityThreshold
-      value: 59
+      value: 79
       objectReference: {fileID: 0}
     - target: {fileID: 4186384245583446613, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: thresholdEntries.Array.data[20].objectToEnable
@@ -9138,6 +9306,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7397186432879180287, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7397186432879180287, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: finishedScreen
       value: 
       objectReference: {fileID: 469071817}
@@ -9161,6 +9333,10 @@ PrefabInstance:
       propertyPath: 'statues.Array.data[3]'
       value: 
       objectReference: {fileID: 187757111}
+    - target: {fileID: 8310935552331939685, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: drainPerSecond
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: chaseWall
       value: 
@@ -9221,6 +9397,82 @@ PrefabInstance:
       propertyPath: 'guidanceObjectsToSpawn.Array.data[0]'
       value: 
       objectReference: {fileID: 1506735963}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 8355554499927841927}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 8355554499927841926}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[2].m_Target
+      value: 
+      objectReference: {fileID: 8355554499927841925}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[2].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetActive
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: SetActive
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
+      value: SetActive
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UnityEngine.GameObject, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: UnityEngine.GameObject, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
+      value: UnityEngine.GameObject, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -10540,9 +10792,25 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: -5081792898505675300, guid: 5e9f1e0d75ccc7b4d976f5d77fee9afd, type: 3}
+    - target: {fileID: 1991541163883376140, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: m_AABB.m_Extent.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1991541163883376140, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: m_AABB.m_Extent.y
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 4058444638416378428, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
       propertyPath: m_Name
       value: EnvironmentProps
+      objectReference: {fileID: 0}
+    - target: {fileID: 6102500461015439482, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: m_AABB.m_Extent.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6102500461015439482, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
+      propertyPath: m_AABB.m_Extent.y
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 6374927749720432819, guid: d9a6a349011cc3e41810d66d3b6ba8ab, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -10945,6 +11213,21 @@ GameObject:
 --- !u!1 &8355554499927841924 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3293987249621119898, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8355554499927841925 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8202020691484496618, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8355554499927841926 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1146684167103995809, guid: 924eed004a024234582db290b2c4c814, type: 3}
+  m_PrefabInstance: {fileID: 8355554499927841920}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8355554499927841927 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5691406136440409364, guid: 924eed004a024234582db290b2c4c814, type: 3}
   m_PrefabInstance: {fileID: 8355554499927841920}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8421797751341606073
