@@ -25,7 +25,7 @@ public class CatMauwSound : MonoBehaviour
         }
     }
 
-    void startChase()
+    public void startChase()
     {
         chase = true;
     }

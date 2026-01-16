@@ -6009,6 +6009,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1437532490}
   - component: {fileID: 1437532491}
+  - component: {fileID: 1437532492}
   m_Layer: 0
   m_Name: Cat noise
   m_TagString: Untagged
@@ -6046,7 +6047,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -6128,6 +6129,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1437532492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1437532489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f085bfbf481a45449d79e6a6d45233e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMauwSound
+  mauwSource: {fileID: 1437532491}
 --- !u!114 &1439468698 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2608218980392344828, guid: d490fcf092accf8479b5808fb00291f0, type: 3}
@@ -9245,6 +9259,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1506735963}
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onChaseStart.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.size
       value: 4
       objectReference: {fileID: 0}
@@ -9252,6 +9270,14 @@ PrefabInstance:
       propertyPath: ChaseColliderStart.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onChaseStart.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onChaseStart.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1437532492}
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 6
@@ -9267,6 +9293,10 @@ PrefabInstance:
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[3].m_Mode
       value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onChaseStart.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -9287,6 +9317,10 @@ PrefabInstance:
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: ChaseColliderStart.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onChaseStart.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: startChase
       objectReference: {fileID: 0}
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: ChaseColliderStart.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -9333,6 +9367,10 @@ PrefabInstance:
       value: SetActive
       objectReference: {fileID: 0}
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onChaseStart.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: CatMauwSound, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: UnityEngine.GameObject, UnityEngine
       objectReference: {fileID: 0}
@@ -9355,6 +9393,10 @@ PrefabInstance:
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: ChaseColliderStart.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: UnityEngine.GameObject, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
+      propertyPath: onChaseStart.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 8361998871881328324, guid: 7460cd6f93e579a45b8c27161325b231, type: 3}
       propertyPath: onSequenceStart.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
