@@ -66,6 +66,7 @@ public class FinalSequenceManager : MonoBehaviour
     public UnityEvent onInitialSpawnComplete;
 
     [Header("Events - Chase")]
+    public UnityEvent ChaseColliderStart;
     [Tooltip("Called when player triggers the chase wall")]
     public UnityEvent onChaseStart;
     [Tooltip("Called when painter catches the player")]
@@ -507,6 +508,7 @@ public class FinalSequenceManager : MonoBehaviour
     /// </summary>
     private IEnumerator CutsceneCoroutine()
     {
+        ChaseColliderStart?.Invoke();
         cutscenePlaying = true;
         if (debugLogs) Debug.Log("[FinalSequence] CUTSCENE STARTED - Freezing player");
 
