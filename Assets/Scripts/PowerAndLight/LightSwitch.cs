@@ -93,8 +93,8 @@ public class LightSwitch : MonoBehaviour
 
         if (connectedFuse != null)
         {
-            Debug.Log($"[LightSwitch] '{gameObject.name}' has connected fuse: '{connectedFuse.name}'");
-            Debug.Log($"[LightSwitch] Connected fuse initial state: isOn={connectedFuse.GetState()}");
+            //Debug.Log($"[LightSwitch] '{gameObject.name}' has connected fuse: '{connectedFuse.name}'");
+           // Debug.Log($"[LightSwitch] Connected fuse initial state: isOn={connectedFuse.GetState()}");
         }
         else
         {
@@ -111,7 +111,7 @@ public class LightSwitch : MonoBehaviour
         shadowSpawner = Object.FindFirstObjectByType<HallucinationSpawner>();
         if (shadowSpawner != null)
         {
-            Debug.Log($"[LightSwitch] '{gameObject.name}' found HallucinationSpawner");
+            //Debug.Log($"[LightSwitch] '{gameObject.name}' found HallucinationSpawner");
         }
         else
         {

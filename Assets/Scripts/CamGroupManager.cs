@@ -80,7 +80,7 @@ public class CamGroupManager : MonoBehaviour
     private void ApplyActiveGroupInternal()
     {
         // Debug trace
-        Debug.Log($"[CamGroupManager] Applying ActiveGroup = '{ActiveGroup?.name ?? "null"}'");
+        //Debug.Log($"[CamGroupManager] Applying ActiveGroup = '{ActiveGroup?.name ?? "null"}'");
 
         // Ensure any zoomed camera is collapsed instantly so it cannot block new group's rendering
         var allCamImagesForCollapse = FindObjectsByType<CamImage>(FindObjectsSortMode.None);
@@ -138,7 +138,7 @@ public class CamGroupManager : MonoBehaviour
             ActiveGroup.ReplaceLights();
             ActiveGroup.ReplaceIcons();
 
-            Debug.Log($"[CamGroupManager] Activated group '{ActiveGroup.name}' and enabled {ActiveGroup.cameras?.Length ?? 0} camera slots.");
+            //Debug.Log($"[CamGroupManager] Activated group '{ActiveGroup.name}' and enabled {ActiveGroup.cameras?.Length ?? 0} camera slots.");
         }
     }
 

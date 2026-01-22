@@ -137,11 +137,11 @@ public class PaintingTask : ITask
         }
 
         // log chosen names/positions for debugging
-        foreach (var c in chosen)
-        {
-            if (c != null)
-                Debug.Log($"[PaintingTask] Chosen painting: {c.name} at {c.position}");
-        }
+        //foreach (var c in chosen)
+        //{
+        //    if (c != null)
+        //        Debug.Log($"[PaintingTask] Chosen painting: {c.name} at {c.position}");
+        //}
 
         // create state entries for each chosen painting
         foreach (var p in chosen)

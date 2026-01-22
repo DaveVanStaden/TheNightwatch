@@ -35,8 +35,13 @@ public class PaintingFallConfig : MonoBehaviour
     [Tooltip("Flag to track if original values have been initialized")]
     [SerializeField, HideInInspector] private bool hasInitializedOriginals = false;
 
+    [Tooltip("Sounds to play when paintings get placed back on the wall")]
+    [SerializeField] AudioClip[] restoreSounds;
+    public AudioSource audioSource;
+
     private void Awake()
     {
+        audioSource = GetComponent<AudioSource>();
         // Only store original transform state on the FIRST Awake call (scene first load)
         // This prevents overwriting with fallen positions when the scene is reloaded
         if (!hasInitializedOriginals)

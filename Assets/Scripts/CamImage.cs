@@ -148,4 +148,16 @@ public class CamImage : MonoBehaviour
     {
         return isBig;
     }
+    public IEnumerator ForceZoomTrue()
+    {
+        if (isBig)
+            IsZoomed();
+        else
+        {
+            isBig = true;
+            IsZoomed();
+            yield return new WaitForSeconds(1);
+            isBig = false;
+        }
+    }
 }

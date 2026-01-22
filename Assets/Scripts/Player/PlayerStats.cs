@@ -57,7 +57,7 @@ public class PlayerStats : MonoBehaviour
         set
         {
             sanity = Mathf.Clamp(value, 0, maxSanity);
-            Debug.Log("Sanity property set to: " + sanity);
+            //Debug.Log("Sanity property set to: " + sanity);
         }
     }
 
@@ -126,7 +126,7 @@ public class PlayerStats : MonoBehaviour
         {
             Sanity = Mathf.Clamp(sanity + delta, 0, maxSanity);
             sanityAccumulator -= delta;
-            Debug.Log("Sanity changed to: " + sanity + ", delta: " + delta);
+            //Debug.Log("Sanity changed to: " + sanity + ", delta: " + delta);
         }
     }
 

@@ -240,13 +240,13 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   initialSanityBoost: 5
-  sanityPerSecond: 1
+  sanityPerSecond: 2.5
   sanityBoostCooldown: 120
   initialBreakChance: 0.01
-  breakChanceIncreasePerSecond: 0.01
+  breakChanceIncreasePerSecond: 0.005
   maxBreakChance: 0.1
   breakCheckInterval: 0.75
-  maxTimeBeforeBreak: 60
+  maxTimeBeforeBreak: 45
   connectedFuse: {fileID: 0}
   audioSource: {fileID: 3803337127167402898}
   switchOnClip: {fileID: 8300000, guid: 8941624083631fb418395c71e1ccb09f, type: 3}

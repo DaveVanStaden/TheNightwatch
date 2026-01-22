@@ -164,36 +164,36 @@ public class BreakerButton : MonoBehaviour
         // This ensures all the proper state management, animations, and events fire
         if (isOn)
         {
-            Debug.Log($"[BreakerButton] '{name}' toggling OFF due to global power outage");
+            //Debug.Log($"[BreakerButton] '{name}' toggling OFF due to global power outage");
             Toggle();
         }
     }
 
     private void OnGlobalPowerRestored()
     {
-        Debug.Log($"[BreakerButton] '{name}' OnGlobalPowerRestored called. isOn={isOn}, ignoreGlobalPowerLock={ignoreGlobalPowerLock}");
+        //Debug.Log($"[BreakerButton] '{name}' OnGlobalPowerRestored called. isOn={isOn}, ignoreGlobalPowerLock={ignoreGlobalPowerLock}");
         
         // Re-enable interaction
         if (cachedCollider != null)
         {
             cachedCollider.enabled = true;
-            Debug.Log($"[BreakerButton] '{name}' collider re-enabled");
+            //Debug.Log($"[BreakerButton] '{name}' collider re-enabled");
         }
         
         // For main power switch: restore the group light indicator
         if (ignoreGlobalPowerLock)
         {
-            Debug.Log($"[BreakerButton] '{name}' is main power switch (ignoreGlobalPowerLock=true) - updating indicator only");
+            //Debug.Log($"[BreakerButton] '{name}' is main power switch (ignoreGlobalPowerLock=true) - updating indicator only");
             UpdateGroupLightState(true, instantly: true);
             return;
         }
         
         // For group switches: restore PowerGroups and indicators based on switch state
         // This will turn the PowerGroup on if isOn==true, since global power is now available
-        Debug.Log($"[BreakerButton] '{name}' is group switch - calling ApplyState() to restore based on isOn={isOn}");
+        //Debug.Log($"[BreakerButton] '{name}' is group switch - calling ApplyState() to restore based on isOn={isOn}");
         ApplyState();
         
-        Debug.Log($"[BreakerButton] '{name}' OnGlobalPowerRestored complete. PowerGroup lights should now be: {(isOn ? "ON" : "OFF")}");
+        //Debug.Log($"[BreakerButton] '{name}' OnGlobalPowerRestored complete. PowerGroup lights should now be: {(isOn ? "ON" : "OFF")}");
     }
 
     private void CacheAndInstanceMaterials()
@@ -233,7 +233,7 @@ public class BreakerButton : MonoBehaviour
 
     private void ApplyState(bool initial = false)
     {
-        Debug.Log($"[BreakerButton] '{name}' ApplyState called. isOn={isOn}, initial={initial}, powerGroup={(powerGroup != null ? powerGroup.name : "null")}");
+        //Debug.Log($"[BreakerButton] '{name}' ApplyState called. isOn={isOn}, initial={initial}, powerGroup={(powerGroup != null ? powerGroup.name : "null")}");
         
         // Respect global power: PowerGroups should already be handling global power via ElectricityLogic subscriptions.
         if (powerGroup != null)
@@ -241,18 +241,18 @@ public class BreakerButton : MonoBehaviour
             // When global power is out PowerGroups will force-off; when available, respect this button's isOn.
             if (isOn)
             {
-                Debug.Log($"[BreakerButton] '{name}' calling TurnOnLights() on PowerGroup '{powerGroup.name}'");
+                //Debug.Log($"[BreakerButton] '{name}' calling TurnOnLights() on PowerGroup '{powerGroup.name}'");
                 powerGroup.TurnOnLights();
             }
             else
             {
-                Debug.Log($"[BreakerButton] '{name}' calling TurnOffLights() on PowerGroup '{powerGroup.name}'");
+                //Debug.Log($"[BreakerButton] '{name}' calling TurnOffLights() on PowerGroup '{powerGroup.name}'");
                 powerGroup.TurnOffLights();
             }
         }
 
         bool groupActive = powerGroup != null ? powerGroup.AnyLightOn() : isOn;
-        Debug.Log($"[BreakerButton] '{name}' groupActive={groupActive}, updating indicator light");
+        //Debug.Log($"[BreakerButton] '{name}' groupActive={groupActive}, updating indicator light");
         UpdateGroupLightState(groupActive, instantly: initial);
 
         if (initial)
@@ -266,13 +266,13 @@ public class BreakerButton : MonoBehaviour
         // allow toggling if collider enabled OR if this button ignores the global lock
         if (cachedCollider != null && !cachedCollider.enabled && !ignoreGlobalPowerLock)
         {
-            Debug.Log($"[BreakerButton] '{name}' Toggle blocked - collider disabled");
+            //Debug.Log($"[BreakerButton] '{name}' Toggle blocked - collider disabled");
             return;
         }
 
         isOn = !isOn;
-        Debug.Log($"[BreakerButton] '{name}' toggled -> {isOn}");
-        Debug.Log($"[BreakerButton] '{name}' Toggle call stack:\n{System.Environment.StackTrace}");
+        //Debug.Log($"[BreakerButton] '{name}' toggled -> {isOn}");
+        //Debug.Log($"[BreakerButton] '{name}' Toggle call stack:\n{System.Environment.StackTrace}");
 
         ApplyState();
 

@@ -38,12 +38,12 @@ public class PowerGroups : MonoBehaviour
     {
         // When global power is restored we'll let breakers decide whether to turn this group on.
         // No action here to avoid overriding breakers.
-        Debug.Log($"[PowerGroups] Global power restored for group '{name}'. Breakers will reapply state.");
+        //Debug.Log($"[PowerGroups] Global power restored for group '{name}'. Breakers will reapply state.");
     }
 
     public void TurnOnLights()
     {
-        Debug.Log($"[PowerGroups] '{name}' TurnOnLights called");
+        //Debug.Log($"[PowerGroups] '{name}' TurnOnLights called");
         
         // Only turn on if global power available
         if (Object.FindAnyObjectByType<ElectricityLogic>() is ElectricityLogic e && e.IsPowerOut)
@@ -52,7 +52,7 @@ public class PowerGroups : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[PowerGroups] '{name}' Setting lights to ON");
+        //Debug.Log($"[PowerGroups] '{name}' Setting lights to ON");
         SetLights(true);
     }
 
@@ -73,7 +73,7 @@ public class PowerGroups : MonoBehaviour
             light.SetActive(on);
 
             // Debug: log which gameobjects are being changed so we can trace unexpected toggles
-            Debug.Log($"[PowerGroups] Group '{name}' SetLights({on}) on object '{light.name}' (active now = {light.activeSelf})");
+            //Debug.Log($"[PowerGroups] Group '{name}' SetLights({on}) on object '{light.name}' (active now = {light.activeSelf})");
         }
     }
 

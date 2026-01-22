@@ -84,17 +84,17 @@ public class PlayerInteraction : PlayerModule
             }
             else
             {
-                Debug.Log("[PlayerInteraction] Primary raycast missed. Running prioritized fallbacks.");
+                //Debug.Log("[PlayerInteraction] Primary raycast missed. Running prioritized fallbacks.");
 
                 // 1) RaycastAll fallback - iterate through sorted hits until one is handled
                 var allHits = Physics.RaycastAll(ray, range, ~0, QueryTriggerInteraction.Collide);
                 if (allHits != null && allHits.Length > 0)
                 {
                     System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
-                    Debug.Log($"[PlayerInteraction] RaycastAll returned {allHits.Length} hits - iterating for actionable hit.");
+                    //Debug.Log($"[PlayerInteraction] RaycastAll returned {allHits.Length} hits - iterating for actionable hit.");
                     foreach (var h in allHits)
                     {
-                        Debug.Log($"[PlayerInteraction] RaycastAll candidate: {h.collider.name} @ {h.distance}");
+                        //Debug.Log($"[PlayerInteraction] RaycastAll candidate: {h.collider.name} @ {h.distance}");
                         if (ProcessHit(h)) return;
                     }
                 }
@@ -105,10 +105,10 @@ public class PlayerInteraction : PlayerModule
                 if (sphereHits != null && sphereHits.Length > 0)
                 {
                     System.Array.Sort(sphereHits, (a, b) => a.distance.CompareTo(b.distance));
-                    Debug.Log($"[PlayerInteraction] SphereCastAll returned {sphereHits.Length} hits (r={sphereRadius}) - iterating for actionable hit.");
+                    //Debug.Log($"[PlayerInteraction] SphereCastAll returned {sphereHits.Length} hits (r={sphereRadius}) - iterating for actionable hit.");
                     foreach (var sh in sphereHits)
                     {
-                        Debug.Log($"[PlayerInteraction] SphereCast candidate: {sh.collider.name} @ {sh.distance}");
+                        //Debug.Log($"[PlayerInteraction] SphereCast candidate: {sh.collider.name} @ {sh.distance}");
                         if (ProcessHit(sh)) return;
                     }
                 }
